@@ -104,7 +104,40 @@ See DEVICE-BUTTON")
 
 You should never need this.
 
-See DEVICE"))
+See DEVICE")
+
+  (function gamepad-init
+    "Calls the Gamepad_init C function to initialize the library.")
+
+  (function gamepad-shutdown
+    "Calls the Gamepad_shutdown C function to clean up the library.")
+
+  (function gamepad-num-devices
+    "Calls the Gamepad_numDevices C function, returning the number of devices currently known to the library.")
+
+  (function gamepad-device-at-index
+    "Calls the Gamepad_deviceAtIndex C function, returning a device pointer corresponding to the index.")
+
+  (function gamepad-detect-devices
+    "Calls the Gamepad_detectDevices C function, leading to new devices being recognised.")
+  
+  (function gamepad-process-events
+    "Calls the Gamepad_processEvents C function, leading to input events being captured and the callbacks being invoked.")
+
+  (function gamepad-device-attach-func
+    "Calls the Gamepad_deviceAttachFunc C function, registering the callback function.")
+
+  (function gamepad-device-remove-func
+    "Calls the Gamepad_deviceRemoveFunc C function, registering the callback function.")
+
+  (function gamepad-button-down-func
+    "Calls the Gamepad_buttonDownFunc C function, registering the callback function.")
+
+  (function gamepad-button-up-func
+    "Calls the Gamepad_buttonUpFunc C function, registering the callback function.")
+
+  (function gamepad-axis-move-func
+    "Calls the Gamepad_axisMoveFunc C function, registering the callback function."))
 
 ;; wrapper.lisp
 (docs:define-docs

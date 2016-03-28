@@ -24,7 +24,7 @@
 
 (use-foreign-library libstem-gamepad)
 
-(defcstruct (gamepad-device :conc-name device-)
+(defcstruct (device :class device :conc-name device-)
   (id :uint)
   (description :string)
   (vendor :int)
@@ -41,33 +41,45 @@
 (defun device-button (device button)
   (mem-aref (device-button-states device) :bool button))
 
+(defun device-plist (device)
+  (flet ((to-vector (p size type)
+           (let ((array (make-array size)))
+             (dotimes (i size array)
+               (setf (aref array i) (mem-aref p type i))))))
+    `(:id ,(device-id device)
+      :description ,(device-description device)
+      :vendor ,(device-vendor device)
+      :product ,(device-product device)
+      :axis-states ,(to-vector (device-axis-states device) (device-axes device) :float)
+      :button-states ,(to-vector (device-button-states device) (device-buttons device) :bool))))
+
 (defmacro with-callback-handling (() &body body)
   `(ignore-errors
     (with-simple-restart (continue "Ignore problem and continue.")
       (handler-bind ((error #'invoke-debugger))
         ,@body))))
 
-(defcallback device-attach-func :void ((device :pointer (:struct gamepad-device)) (context :pointer))
+(defcallback device-attach-func :void ((device :pointer (:struct device)) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()
     (device-attached device)))
 
-(defcallback device-remove-func :void ((device :pointer (:struct gamepad-device)) (context :pointer))
+(defcallback device-remove-func :void ((device :pointer (:struct device)) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()
     (device-removed device)))
 
-(defcallback button-down-func :void ((device :pointer (:struct gamepad-device)) (button :uint) (timestamp :double) (context :pointer))
+(defcallback button-down-func :void ((device :pointer (:struct device)) (button :uint) (timestamp :double) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()
     (button-pressed button timestamp device)))
 
-(defcallback button-up-func :void ((device :pointer (:struct gamepad-device)) (button :uint) (timestamp :double) (context :pointer))
+(defcallback button-up-func :void ((device :pointer (:struct device)) (button :uint) (timestamp :double) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()
     (button-released button timestamp device)))
 
-(defcallback axis-move-func :void ((device :pointer (:struct gamepad-device)) (axis :uint) (value :float) (last-value :float) (timestamp :double) (context :pointer))
+(defcallback axis-move-func :void ((device :pointer (:struct device)) (axis :uint) (value :float) (last-value :float) (timestamp :double) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()
     (axis-moved axis last-value value timestamp device)))
@@ -78,18 +90,18 @@
 
 (defcfun (gamepad-num-devices "Gamepad_numDevices") :uint)
 
-(defcfun (gamepad-device-at "Gamepad_deviceAtIndex") (:pointer (:struct gamepad-device))
+(defcfun (gamepad-device-at-index "Gamepad_deviceAtIndex") (:pointer (:struct device))
   (device-index :uint))
 
 (defcfun (gamepad-detect-devices "Gamepad_detectDevices") :void)
 
 (defcfun (gamepad-process-events "Gamepad_processEvents") :void)
 
-(defcfun (gamepad-device-attach-func "Gamepad_deviceAttachFunc") :void
+(defcfun (device-attach-func "Gamepad_deviceAttachFunc") :void
   (callback :pointer)
   (context :pointer))
 
-(defcfun (gamepad-device-remove-func "Gamepad_deviceRemoveFunc") :void
+(defcfun (device-remove-func "Gamepad_deviceRemoveFunc") :void
   (callback :pointer)
   (context :pointer))
 

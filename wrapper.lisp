@@ -30,7 +30,8 @@
 (defun axis (device axis)
   (check-type axis integer)
   (let ((count (1- (axis-count device))))
-    (unless (<= 0 count) (error 'index-out-of-range :index axis :range (cons 0 count))))
+    (unless (<= 0 axis count)
+      (error 'index-out-of-range :index axis :range (cons 0 count))))
   (cffi:mem-aref (device-axis-states device) :float axis))
 
 (defun axes (device)
@@ -43,7 +44,8 @@
 (defun button (device button)
   (check-type button integer)
   (let ((count (1- (button-count device))))
-    (unless (<= 0 count) (error 'index-out-of-range :index button :range (cons 0 count))))
+    (unless (<= 0 button count)
+      (error 'index-out-of-range :index button :range (cons 0 count))))
   (cffi:mem-aref (device-button-states device) :bool button))
 
 (defun buttons (device)
@@ -76,6 +78,10 @@
   (gamepad-num-devices))
 
 (defun device (index)
+  (check-type index integer)
+  (let ((count (1- (device-count))))
+    (unless (<= 0 index count)
+      (error 'index-out-of-range :index index :range (cons 0 count))))
   (gamepad-device-at-index index))
 
 (defun devices ()

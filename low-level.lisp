@@ -4,7 +4,7 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-(in-package #:org.shirakumo.fraf.gamepad)
+(in-package #:org.shirakumo.fraf.gamepad.cffi)
 
 (defvar *here* #.(or *compile-file-pathname* *load-pathname* *default-pathname-defaults*))
 (defvar *static* (make-pathname :name NIL :type NIL :defaults (merge-pathnames "static/" *here*)))

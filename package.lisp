@@ -5,22 +5,42 @@
 |#
 
 (in-package #:cl-user)
-(defpackage #:cl-gamepad
-  (:nicknames #:org.shirakumo.fraf.gamepad)
-  (:use #:cl :cffi)
+(defpackage #:cl-gamepad-cffi
+  (:nicknames #:org.shirakumo.fraf.gamepad.cffi)
+  (:use #:cl #:cffi)
   ;; low-level.lisp
   (:export
+   #:libstem-gamepad
+   #:device
    #:device-id
    #:device-description
    #:device-vendor
    #:device-product
-   #:device-axes
-   #:device-buttons
+   #:device-axis-count
+   #:device-button-count
    #:device-axis-states
    #:device-button-states
    #:device-private-data
-   #:device-axis
-   #:device-button)
+   #:device-attach-func
+   #:device-remove-func
+   #:button-down-func
+   #:button-up-func
+   #:axis-move-func
+   #:gamepad-init
+   #:gamepad-shutdown
+   #:gamepad-num-devices
+   #:gamepad-device-at-index
+   #:gamepad-detect-devices
+   #:gamepad-process-events
+   #:gamepad-device-attach-func
+   #:gamepad-device-remove-func
+   #:gamepad-button-down-func
+   #:gamepad-button-up-func
+   #:gamepad-axis-move-func))
+
+(defpackage #:cl-gamepad
+  (:nicknames #:org.shirakumo.fraf.gamepad)
+  (:use #:cl #:org.shirakumo.fraf.gamepad.cffi)
   ;; wrapper.lisp
   (:export
    #:device-attached
@@ -32,5 +52,6 @@
    #:shutdown
    #:device-count
    #:device
+   #:devices
    #:detect-devices
    #:process-events))

@@ -29,29 +29,11 @@
   (description :string)
   (vendor :int)
   (product :int)
-  (axes :int)
-  (buttons :int)
+  (axis-count :int)
+  (button-count :int)
   (axis-states (:pointer :float))
   (button-states (:pointer :bool))
   (private-data :pointer))
-
-(defun device-axis (device axis)
-  (mem-aref (device-axis-states device) :float axis))
-
-(defun device-button (device button)
-  (mem-aref (device-button-states device) :bool button))
-
-(defun device-plist (device)
-  (flet ((to-vector (p size type)
-           (let ((array (make-array size)))
-             (dotimes (i size array)
-               (setf (aref array i) (mem-aref p type i))))))
-    `(:id ,(device-id device)
-      :description ,(device-description device)
-      :vendor ,(device-vendor device)
-      :product ,(device-product device)
-      :axis-states ,(to-vector (device-axis-states device) (device-axes device) :float)
-      :button-states ,(to-vector (device-button-states device) (device-buttons device) :bool))))
 
 (defmacro with-callback-handling (() &body body)
   `(ignore-errors

@@ -6,9 +6,14 @@
 
 (in-package #:org.shirakumo.fraf.gamepad)
 
+(defvar *here* #.(or *compile-file-pathname* *load-pathname* *default-pathname-defaults*))
+(defvar *static* (make-pathname :name NIL :type NIL :defaults (merge-pathnames "static/" *here*)))
+(pushnew *static* cffi:*foreign-library-directories*)
+
 (define-foreign-library libstem-gamepad
-  (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so"))
-  (:unix (:or "libstem_gamepad.so"))
+  (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so" "mac64-libstem_gamepad.so"))
+  (:unix (:or "libstem_gamepad.so" "lin64-libstem_gamepad.so"))
+  (:windows (:or "stem_gamepad.dll" "win32-libstem_gamepad.dll" "win64-libstem_gamepad.dll"))
   (t (:default "stem_gamepad")))
 
 (use-foreign-library libstem-gamepad)

@@ -1,0 +1,19 @@
+#|
+ This file is a part of cl-gamepad
+ (c) 2016 Shirakumo http://tymoon.eu (shinmera@tymoon.eu)
+ Author: Nicolas Hafner <shinmera@tymoon.eu>
+|#
+
+(in-package #:cl-user)
+(asdf:defsystem cl-gamepad
+  :version "1.0.0"
+  :license "Artistic"
+  :author "Nicolas Hafner <shinmera@tymoon.eu>"
+  :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
+  :description "Bindings to libstem_gamepad, allowing the handling of gamepad input."
+  :homepage "https://github.com/Shirakumo/cl-gamepad"
+  :serial T
+  :components ((:file "package")
+               
+               (:file "documentation"))
+  :depends-on (:cffi))

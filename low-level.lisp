@@ -9,12 +9,12 @@
 (define-foreign-library libstem-gamepad
   (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so"))
   (:unix (:or "libstem_gamepad.so"))
-  (t (:default "libstem_gamepad")))
+  (t (:default "stem_gamepad")))
 
 (use-foreign-library libstem-gamepad)
 
-(defcstruct gamepad-device
-  (device-id :uint)
+(defcstruct (gamepad-device :conc-name device-)
+  (id :uint)
   (description :string)
   (vendor :int)
   (product :int)
@@ -24,20 +24,42 @@
   (button-states (:pointer :bool))
   (private-data :pointer))
 
+(defun device-axis (device axis)
+  (mem-aref (device-axis-states device) :float axis))
+
+(defun device-button (device button)
+  (mem-aref (device-button-states device) :bool button))
+
+(defmacro with-callback-handling (() &body body)
+  `(ignore-errors
+    (with-simple-restart (continue "Ignore problem and continue.")
+      (handler-bind ((error #'invoke-debugger))
+        ,@body))))
+
 (defcallback device-attach-func :void ((device :pointer (:struct gamepad-device)) (context :pointer))
-  (ignore-errors (device-attached device)))
+  (declare (ignore context))
+  (with-callback-handling ()
+    (device-attached device)))
 
 (defcallback device-remove-func :void ((device :pointer (:struct gamepad-device)) (context :pointer))
-  (ignore-errors (device-removed device)))
+  (declare (ignore context))
+  (with-callback-handling ()
+    (device-removed device)))
 
 (defcallback button-down-func :void ((device :pointer (:struct gamepad-device)) (button :uint) (timestamp :double) (context :pointer))
-  (ignore-errors (button-pressed button time device)))
+  (declare (ignore context))
+  (with-callback-handling ()
+    (button-pressed button timestamp device)))
 
 (defcallback button-up-func :void ((device :pointer (:struct gamepad-device)) (button :uint) (timestamp :double) (context :pointer))
-  (ignore-errors (button-released button time device)))
+  (declare (ignore context))
+  (with-callback-handling ()
+    (button-released button timestamp device)))
 
 (defcallback axis-move-func :void ((device :pointer (:struct gamepad-device)) (axis :uint) (value :float) (last-value :float) (timestamp :double) (context :pointer))
-  (ignore-errors (axis-moved axis last-value value time device)))
+  (declare (ignore context))
+  (with-callback-handling ()
+    (axis-moved axis last-value value timestamp device)))
 
 (defcfun (gamepad-init "Gamepad_init") :void)
 

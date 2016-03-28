@@ -42,6 +42,7 @@
 
 (define-slot (main update) ()
   (declare (connected timer (timeout)))
+  (cl-gamepad:detect-devices)
   (cl-gamepad:process-events)
   (q+:update main))
 

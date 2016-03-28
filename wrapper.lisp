@@ -10,15 +10,14 @@
 (defun device-removed (device))
 (defun button-pressed (button time device))
 (defun button-released (button time device))
-
 (defun axis-moved (axis last-value value time device))
 
 (defun init ()
-  (gamepad-device-attach-func (callback device-attach-func))
-  (gamepad-device-remove-func (callback device-remove-func))
-  (gamepad-button-down-func (callback button-down-func))
-  (gamepad-button-up-func (callback button-up-func))
-  (gamepad-axis-move-func (callback axis-move-func))
+  (gamepad-device-attach-func (callback device-attach-func) (null-pointer))
+  (gamepad-device-remove-func (callback device-remove-func) (null-pointer))
+  (gamepad-button-down-func (callback button-down-func) (null-pointer))
+  (gamepad-button-up-func (callback button-up-func) (null-pointer))
+  (gamepad-axis-move-func (callback axis-move-func) (null-pointer))
   (gamepad-init))
 
 (defun shutdown ()
@@ -27,7 +26,7 @@
 (defun device-count ()
   (gamepad-num-devices))
 
-(defun device-at (index)
+(defun device (index)
   (gamepad-device-at index))
 
 (defun detect-devices ()

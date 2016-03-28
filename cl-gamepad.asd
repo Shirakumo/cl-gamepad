@@ -17,4 +17,5 @@
                (:file "low-level")
                (:file "wrapper")
                (:file "documentation"))
-  :depends-on (:cffi))
+  :depends-on (:cffi
+               :trivial-features))

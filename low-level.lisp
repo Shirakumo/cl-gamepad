@@ -11,9 +11,15 @@
 (pushnew *static* cffi:*foreign-library-directories*)
 
 (define-foreign-library libstem-gamepad
-  (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so" "mac64-libstem_gamepad.so"))
-  (:unix (:or "libstem_gamepad.so" "lin64-libstem_gamepad.so"))
-  (:windows (:or "stem_gamepad.dll" "win32-libstem_gamepad.dll" "win64-libstem_gamepad.dll"))
+  (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so"
+                #+X86 "mac32-libstem_gamepad.so"
+                #+X86-64 "mac64-libstem_gamepad.so"))
+  (:unix (:or "libstem_gamepad.so"
+              #+X86 "lin32-libstem_gamepad.so"
+              #+X86-64 "lin64-libstem_gamepad.so"))
+  (:windows (:or "stem_gamepad.dll"
+                 #+X86 "win32-libstem_gamepad.dll"
+                 #+X86-64 "win64-libstem_gamepad.dll"))
   (t (:default "stem_gamepad")))
 
 (use-foreign-library libstem-gamepad)

@@ -79,11 +79,11 @@
 
 (defcfun (gamepad-process-events "Gamepad_processEvents") :void)
 
-(defcfun (device-attach-func "Gamepad_deviceAttachFunc") :void
+(defcfun (gamepad-device-attach-func "Gamepad_deviceAttachFunc") :void
   (callback :pointer)
   (context :pointer))
 
-(defcfun (device-remove-func "Gamepad_deviceRemoveFunc") :void
+(defcfun (gamepad-device-remove-func "Gamepad_deviceRemoveFunc") :void
   (callback :pointer)
   (context :pointer))
 

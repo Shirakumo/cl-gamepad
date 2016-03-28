@@ -11,6 +11,7 @@
   ;; low-level.lisp
   (:export
    #:libstem-gamepad
+   
    #:device
    #:device-id
    #:device-description
@@ -21,11 +22,18 @@
    #:device-axis-states
    #:device-button-states
    #:device-private-data
+   
+   #:device-attached
+   #:device-removed
+   #:button-pressed
+   #:button-released
+   #:axis-moved
    #:device-attach-func
    #:device-remove-func
    #:button-down-func
    #:button-up-func
    #:axis-move-func
+   
    #:gamepad-init
    #:gamepad-shutdown
    #:gamepad-num-devices
@@ -43,11 +51,28 @@
   (:use #:cl #:org.shirakumo.fraf.gamepad.cffi)
   ;; wrapper.lisp
   (:export
+   #:index-out-of-range
+   #:index
+   #:range
+
+   #:id
+   #:vendor
+   #:product
+   #:description
+   #:axis-count
+   #:button-count
+   #:axis
+   #:axes
+   #:button
+   #:buttons
+   #:device-plist   
+   
    #:device-attached
    #:device-removed
    #:button-pressed
    #:button-released
    #:axis-moved
+   
    #:init
    #:shutdown
    #:device-count

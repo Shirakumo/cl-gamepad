@@ -41,6 +41,12 @@
       (handler-bind ((error #'invoke-debugger))
         ,@body))))
 
+(defun device-attached (device) (declare (ignore device)))
+(defun device-removed (device) (declare (ignore device)))
+(defun button-pressed (button time device) (declare (ignore button time device)))
+(defun button-released (button time device) (declare (ignore button time device)))
+(defun axis-moved (axis last-value value time device) (declare (ignore axis last-value value time device)))
+
 (defcallback device-attach-func :void ((device :pointer (:struct device)) (context :pointer))
   (declare (ignore context))
   (with-callback-handling ()

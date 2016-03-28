@@ -7,4 +7,4 @@
 (in-package #:cl-user)
 (defpackage #:cl-gamepad
   (:nicknames #:org.shirakumo.fraf.gamepad)
-  (:use #:cl))
+  (:use #:cl :cffi))

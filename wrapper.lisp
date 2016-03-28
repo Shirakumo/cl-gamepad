@@ -53,7 +53,7 @@
          (p (device-button-states device))
          (array (make-array size)))
     (dotimes (i size array)
-      (setf (aref array i) (cffi:mem-aref p :float i)))))
+      (setf (aref array i) (cffi:mem-aref p :bool i)))))
 
 (defun device-plist (device)
   `(:id ,(device-id device)

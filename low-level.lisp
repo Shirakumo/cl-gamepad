@@ -32,7 +32,7 @@
   (axis-count :uint)
   (button-count :uint)
   (axis-states (:pointer :float))
-  (button-states (:pointer :bool))
+  (button-states (:pointer :uint))
   (private-data :pointer))
 
 (defmacro with-callback-handling (() &body body)

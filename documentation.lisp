@@ -95,6 +95,8 @@ See DEVICE-AXIS")
   
   (function device-button-states
     "Accesses the pointer to the bool array that describes the state of the various buttons.
+Note that the bools are not strict in the sense that anything greater than 0
+should be taken as TRUE.
 
 See DEVICE
 See DEVICE-BUTTON")

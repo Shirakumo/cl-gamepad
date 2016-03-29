@@ -46,14 +46,14 @@
   (let ((count (1- (button-count device))))
     (unless (<= 0 button count)
       (error 'index-out-of-range :index button :range (cons 0 count))))
-  (cffi:mem-aref (device-button-states device) :bool button))
+  (< 0 (cffi:mem-aref (device-button-states device) :uint button)))
 
 (defun buttons (device)
   (let* ((size (device-button-count device))
          (p (device-button-states device))
          (array (make-array size)))
     (dotimes (i size array)
-      (setf (aref array i) (cffi:mem-aref p :bool i)))))
+      (setf (aref array i) (< 0 (cffi:mem-aref p :uint i))))))
 
 (defun device-plist (device)
   `(:id ,(device-id device)

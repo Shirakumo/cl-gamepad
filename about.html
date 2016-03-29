@@ -68,7 +68,7 @@
 <p>Cl-gamepad includes a little visualizer Qt application that lets you view the complete controller state graphically. You can use this to test the library, your controller, or figure out the ID mapping of the buttons and axis.</p>
 
 <pre><code>(ql:quickload :cl-gamepad-visualizer)
-(cl-gamepad-visualizer:main)
+(<a href="#CL-GAMEPAD-VISUALIZER:MAIN">cl-gamepad-visualizer:main</a>)
 </code></pre>
 </span>
         
@@ -93,49 +93,6 @@
                 <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD)</span>
               </h3>
               <ul><li>
-                  <a name="CL-GAMEPAD:DEVICE"/>
-                  <article>
-                    <header class="class">
-                      <span class="type">class</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:DEVICE" class="name">DEVICE</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">()</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">C struct that contains all relevant information about a gamepad device.
-
-You should never SETF any of its fields unless you really 
-know what you're doing. Passing a pointer to this struct
-outside of the dynamic-extent in which it was provided will
-cause undefined behaviour and even lead as far as crashing
-your program. If you need to pass it around, you should use
-DEVICE-PLIST to serialise it.
-
-See ID
-See VENDOR
-See PRODUCT
-See DESCRIPTION
-See AXIS-COUNT
-See AXIS
-See AXES
-See BUTTON-COUNT
-See BUTTON
-See BUTTONS
-See DEVICE-PLIST
-
-See DEVICE-ID
-See DEVICE-VENDOR
-See DEVICE-PRODUCT
-See DEVICE-DESCRIPTION
-See DEVICE-AXIS-COUNT
-See DEVICE-AXIS-STATES
-See DEVICE-BUTTON-COUNT
-See DEVICE-BUTTON-STATES
-See DEVICE-PRIVATE-DATA
-See DETECT-DEVICES</pre>
-                  </article>
-                </li><li>
                   <a name="CL-GAMEPAD:DEVICE"/>
                   <article>
                     <header class="class">
@@ -280,39 +237,6 @@ See DETECT-DEVICES
 See PROCESS-EVENTS</pre>
                   </article>
                 </li><li>
-                  <a name="CL-GAMEPAD:AXIS-MOVED"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:AXIS-MOVED" class="name">AXIS-MOVED</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(AXIS LAST-VALUE VALUE TIME DEVICE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">This function is called whenever an axis is moved.
-
-AXIS is an integer identifying the axis on the controller.
-LAST-VALUE is a float representing the value of this axis at
-the previous time AXIS-MOVED was called.
-VALUE is a float representing the current value of this axis.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-LAST-VALUE and VALUE are in the range of [-1 1].
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre>
-                  </article>
-                </li><li>
                   <a name="CL-GAMEPAD:BUTTON"/>
                   <article>
                     <header class="function">
@@ -360,62 +284,6 @@ See DEVICE</pre>
                       </code>
                     </header>
                     <pre class="docstring">This function is called whenever a button is pressed.
-
-BUTTON is an integer identifying the button on the controller.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre>
-                  </article>
-                </li><li>
-                  <a name="CL-GAMEPAD:BUTTON-PRESSED"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:BUTTON-PRESSED" class="name">BUTTON-PRESSED</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(BUTTON TIME DEVICE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">This function is called whenever a button is pressed.
-
-BUTTON is an integer identifying the button on the controller.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre>
-                  </article>
-                </li><li>
-                  <a name="CL-GAMEPAD:BUTTON-RELEASED"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:BUTTON-RELEASED" class="name">BUTTON-RELEASED</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(BUTTON TIME DEVICE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">This function is called whenever a button is released.
 
 BUTTON is an integer identifying the button on the controller.
 TIME is a float representing the time at which the movement
@@ -530,47 +398,6 @@ as far as potentially crashing your program.
 See DEVICE</pre>
                   </article>
                 </li><li>
-                  <a name="CL-GAMEPAD:DEVICE"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:DEVICE" class="name">DEVICE</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(INDEX)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">Returns the device at the specified index.
-
-The index should be a number from 0 below DEVICE-COUNT.
-Passing an invalid number results in undefined behaviour, going
-as far as potentially crashing your program.
-
-See DEVICE</pre>
-                  </article>
-                </li><li>
-                  <a name="CL-GAMEPAD:DEVICE-ATTACHED"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:DEVICE-ATTACHED" class="name">DEVICE-ATTACHED</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(DEVICE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">This function is called whenever a new device is attached.
-
-You should override this function if you want to use a
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-call occurs that triggers it and may thus block it.
-
-See DEVICE
-See DETECT-DEVICES</pre>
-                  </article>
-                </li><li>
                   <a name="CL-GAMEPAD:DEVICE-ATTACHED"/>
                   <article>
                     <header class="function">
@@ -633,28 +460,6 @@ See DESCRIPTION
 See AXES
 See BUTTONS
 See DEVICE</pre>
-                  </article>
-                </li><li>
-                  <a name="CL-GAMEPAD:DEVICE-REMOVED"/>
-                  <article>
-                    <header class="function">
-                      <span class="type">function</span>
-                      <code>
-                        <h4><a href="#CL-GAMEPAD:DEVICE-REMOVED" class="name">DEVICE-REMOVED</a></h4>
-                        <span class="qualifiers"></span>
-                        <span class="arguments">(DEVICE)</span>
-                      </code>
-                    </header>
-                    <pre class="docstring">This function is called whenever a device is removed.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the PROCESS-EVENTS
-call occurs that triggers it and may thus block it.
-
-See DEVICE
-See PROCESS-EVENTS</pre>
                   </article>
                 </li><li>
                   <a name="CL-GAMEPAD:DEVICE-REMOVED"/>
@@ -1331,6 +1136,38 @@ See PROCESS-EVENTS</pre>
                       </code>
                     </header>
                     <pre class="docstring">Calls the Gamepad_shutdown C function to clean up the library.</pre>
+                  </article>
+                </li></ul>
+            </li><li class="package">
+              <h3>
+                <a name="CL-GAMEPAD-VISUALIZER" href="#CL-GAMEPAD-VISUALIZER">CL-GAMEPAD-VISUALIZER</a>
+                <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD.VISUALIZER)</span>
+              </h3>
+              <ul><li>
+                  <a name="CL-GAMEPAD-VISUALIZER:MAIN"/>
+                  <article>
+                    <header class="class">
+                      <span class="type">class</span>
+                      <code>
+                        <h4><a href="#CL-GAMEPAD-VISUALIZER:MAIN" class="name">MAIN</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
+                  </article>
+                </li><li>
+                  <a name="CL-GAMEPAD-VISUALIZER:MAIN"/>
+                  <article>
+                    <header class="function">
+                      <span class="type">function</span>
+                      <code>
+                        <h4><a href="#CL-GAMEPAD-VISUALIZER:MAIN" class="name">MAIN</a></h4>
+                        <span class="qualifiers"></span>
+                        <span class="arguments">()</span>
+                      </code>
+                    </header>
+                    <pre class="docstring"/>
                   </article>
                 </li></ul>
             </li></ul>

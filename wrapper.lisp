@@ -12,20 +12,26 @@
   (:report (lambda (c s) (format s "The index ~s is not within the range [~a ~a]."
                                  (index c) (car (range c)) (cdr (range c))))))
 
-(defmacro define-alias (name original)
+;; We don't need any special handling for these, so let's
+;; just wrap 'em up nice with as much inlining as possible.
+(defmacro define-alias ((name original) args)
   `(progn
      (declaim (inline ,name))
-     (defun ,name (device)
-       (,original device))
-     (define-compiler-macro ,name (device)
-       (list ',original device))))
+     (defun ,name ,args
+       (,original ,@args))
+     (define-compiler-macro ,name ,args
+       (list ',original ,@args))))
 
-(define-alias id device-id)
-(define-alias vendor device-vendor)
-(define-alias product device-product)
-(define-alias description device-description)
-(define-alias axis-count device-axis-count)
-(define-alias button-count device-button-count)
+(define-alias (id device-id) (device))
+(define-alias (vendor device-vendor) (device))
+(define-alias (product device-product) (device))
+(define-alias (description device-description) (device))
+(define-alias (axis-count device-axis-count) (device))
+(define-alias (button-count device-button-count) (device))
+(define-alias (shutdown gamepad-shutdown) ())
+(define-alias (device-count gamepad-num-devices) ())
+(define-alias (detect-devices gamepad-detect-devices) ())
+(define-alias (process-events gamepad-process-events) ())
 
 (defun axis (device axis)
   (check-type axis integer)
@@ -71,12 +77,6 @@
   (gamepad-axis-move-func (cffi:callback axis-move-func) (cffi:null-pointer))
   (gamepad-init))
 
-(defun shutdown ()
-  (gamepad-shutdown))
-
-(defun device-count ()
-  (gamepad-num-devices))
-
 (defun device (index)
   (check-type index integer)
   (let ((count (1- (device-count))))
@@ -87,9 +87,3 @@
 (defun devices ()
   (loop for i from 0 below (device-count)
         collect (device i)))
-
-(defun detect-devices ()
-  (gamepad-detect-devices))
-
-(defun process-events ()
-  (gamepad-process-events))

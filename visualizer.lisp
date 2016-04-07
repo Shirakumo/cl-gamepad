@@ -62,9 +62,10 @@
              (q+:translate painter 0 (* *field-height* 2)))))))
 
 (defun paint-device (device painter)
-  (q+:draw-text painter 0 20 (format NIL "ID: ~a (~a) ~a"
+  (q+:draw-text painter 0 20 (format NIL "ID: ~a (~a:~a) ~a"
                                     (cl-gamepad:id device)
                                     (cl-gamepad:vendor device)
+                                    (cl-gamepad:product device)
                                     (cl-gamepad:description device)))
   (q+:translate painter 20 20)
   (q+:draw-text painter 0 *field-height* (format NIL "Axis:"))

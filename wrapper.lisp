@@ -87,3 +87,8 @@
 (defun devices ()
   (loop for i from 0 below (device-count)
         collect (device i)))
+
+(defun print-device (device stream)
+  (print-unreadable-object (device stream)
+    (format stream "~s #~s (~s:~s) ~s"
+            'device (id device) (vendor device) (product device) (description device))))

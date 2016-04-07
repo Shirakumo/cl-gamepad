@@ -79,4 +79,5 @@
    #:device
    #:devices
    #:detect-devices
-   #:process-events))
+   #:process-events
+   #:print-device))

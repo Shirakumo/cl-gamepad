@@ -237,7 +237,7 @@ See BUTTON")
     "Constructs a plist from the device's values.
 
 Returned is:
-(:ID id
+\(:ID id
  :VENDOR vendor
  :PRODUCT product 
  :DESCRIPTION description
@@ -390,4 +390,11 @@ this function is called. The corresponding DEVICE-REMOVED function
 is then called. If a new device is plugged in, events for it will
 not be processed until it is registered through DETECT-DEVICES.
 
-See DETECT-DEVICES"))
+See DETECT-DEVICES")
+
+  (function print-device
+    "Prints an unreadable representation of DEVICE to STREAM.
+
+Useful for debugging prints.
+
+See DEVICE"))

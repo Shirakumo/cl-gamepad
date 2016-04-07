@@ -89,6 +89,12 @@
         collect (device i)))
 
 (defun print-device (device stream)
-  (print-unreadable-object (device stream)
-    (format stream "~s #~s (~s:~s) ~s"
-            'device (id device) (vendor device) (product device) (description device))))
+  (flet ((actually-print (stream)
+           (print-unreadable-object (device stream)
+             (format stream "~s #~s (~s:~s) ~s"
+                     'device (id device) (vendor device) (product device) (description device)))))
+    (etypecase stream
+      ((eql T) (actually-print *standard-output*))
+      ((eql NIL) (with-output-to-string (stream)
+                   (actually-print stream)))
+      (stream (actually-print stream)))))

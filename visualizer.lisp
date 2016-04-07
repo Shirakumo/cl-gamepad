@@ -30,6 +30,26 @@
                ,@body)
      (q+:restore ,painter)))
 
+(defun cl-gamepad:device-attached (device)
+  (cl-gamepad:print-device device T)
+  (format T " Attached~%"))
+
+(defun cl-gamepad:device-removed (device)
+  (cl-gamepad:print-device device T)
+  (format T " Removed~%"))
+
+(defun cl-gamepad:button-pressed (button time device)
+  (cl-gamepad:print-device device T)
+  (format T " Button ~a pressed at ~a~%" button time))
+
+(defun cl-gamepad:button-released (button time device)
+  (cl-gamepad:print-device device T)
+  (format T " Button ~a released at ~a~%" button time))
+
+(defun cl-gamepad:axis-moved (axis last-value value time device)
+  (cl-gamepad:print-device device T)
+  (format T " Axis ~a moved from ~a to ~a at ~a~%" axis last-value value time))
+
 (define-widget main (QWidget)
   ())
 

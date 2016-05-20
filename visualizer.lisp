@@ -128,10 +128,7 @@
     (draw-text-centered painter name *field-width* *field-height*)))
 
 (qtools:define-user-libs (libstem-gamepad cl-gamepad-cffi::*static*)
-  #+linux ("lin64-libstem_gamepad.so")
-  #+darwin ("mac64-libstem_gamepad.so")
-  #+(and x86_64 windows) ("win64-libstem_gamepad.so")
-  #+(and x86 windows) ("win32-libstem_gamepad.so"))
+  (cl-gamepad-cffi:libstem-gamepad))
 
 (defun main ()
   (cl-gamepad:init)

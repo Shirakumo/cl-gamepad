@@ -17,4 +17,8 @@
   :depends-on (:cl-gamepad
                :qtools
                :qtcore
-               :qtgui))
+               :qtgui)
+  :defsystem-depends-on (:qtools)
+  :build-operation "qt-program-op"
+  :build-pathname "gamepad-visualizer"
+  :entry-point "cl-gamepad-visualizer:main")

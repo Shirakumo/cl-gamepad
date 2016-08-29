@@ -12,8 +12,8 @@
 
 (define-foreign-library libstem-gamepad
   (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so"
-                #+X86 "mac32-libstem_gamepad.so"
-                #+X86-64 "mac64-libstem_gamepad.so"))
+                #+X86 "mac32-libstem_gamepad.dylib"
+                #+X86-64 "mac64-libstem_gamepad.dylib"))
   (:unix (:or "libstem_gamepad.so"
               #+X86 "lin32-libstem_gamepad.so"
               #+X86-64 "lin64-libstem_gamepad.so"))

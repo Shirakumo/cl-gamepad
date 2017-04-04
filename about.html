@@ -6,38 +6,41 @@
           font-size: 14pt;
           padding: 5px;
       }
-
       body>header{
           display:flex;
           align-items: center;
           justify-content: center;
           flex-direction: column;
           max-width: 100%;
+          text-align: center;
       }
-
+      body>header img{
+          max-width: 50%;
+      }
       img{
           max-width: 100%;
           max-height: 100%;
       }
-
       code{
           font-family: Consolas, Inconsolata, monospace;
       }
-
       a{
           text-decoration: none;
           color: #0055AA;
       }
-
+      a img{
+          border: none;
+      }
       #documentation{
           text-align: justify;
       }
-
       #documentation pre{
           margin-left: 20px;
           overflow: auto;
       }
-
+      #documentation img{
+          margin: 5px;
+      }
       #symbol-index>ul{
           list-style: none;
           padding: 0;
@@ -68,14 +71,13 @@
           white-space: pre-wrap;
           font-size: 12pt;
       }
-
       @media (max-width: 800px){
           body{font-size: 12pt;}
       } </style> </head> <body> <header> <h1>cl-gamepad</h1> <span class="version">1.0.0</span> <p class="description">Bindings to libstem_gamepad, allowing the handling of gamepad input.</p> </header> <main> <article id="documentation">  <div><h2>About cl-gamepad</h2> <p>This is a small wrapper library around <a href="https://github.com/Shirakumo/libstem_gamepad">libstem_gamepad</a>, providing independent gamepad input support.</p> <h2>How To</h2> <p>Precompiled versions of the library are already provided in the repository for most major platforms. However, you may build your own version from the above repository if you so please.</p> <p>Simply load cl-gamepad with ASDF or Quicklisp</p> <pre><code>(ql:quickload :cl-gamepad)
-</code></pre> <p>Before you can handle any devices, you must call <code><a href="#CL-GAMEPAD:INIT">init</a></code> in order to set the environment up and prepare everything. If you would like to use a notification based mechanism, you should also define overrides for the <code><a href="#CL-GAMEPAD:DEVICE-ATTACHED">device-attached</a></code>, <code><a href="#CL-GAMEPAD:DEVICE-REMOVED">device-removed</a></code>, <code><a href="#CL-GAMEPAD:BUTTON-PRESSED">button-pressed</a></code>, <code><a href="#CL-GAMEPAD:BUTTON-RELEASED">button-released</a></code>, and <code><a href="#CL-GAMEPAD:AXIS-MOVED">axis-moved</a></code> functions. For illustrative purposes we will do so just for two of those here:</p> <pre><code>(<a href="http://l1sp.org/cl/defun">defun</a> cl-gamepad:device-attached (<a href="#CL-GAMEPAD:DEVICE">device</a>)
+</code></pre> <p>Before you can handle any devices, you must call <code><a href="#CL-GAMEPAD:INIT">init</a></code> in order to set the environment up and prepare everything. If you would like to use a notification based mechanism, you should also define overrides for the <code><a href="#CL-GAMEPAD-CFFI:DEVICE-ATTACHED">device-attached</a></code>, <code><a href="#CL-GAMEPAD-CFFI:DEVICE-REMOVED">device-removed</a></code>, <code><a href="#CL-GAMEPAD-CFFI:BUTTON-PRESSED">button-pressed</a></code>, <code><a href="#CL-GAMEPAD-CFFI:BUTTON-RELEASED">button-released</a></code>, and <code><a href="#CL-GAMEPAD-CFFI:AXIS-MOVED">axis-moved</a></code> functions. For illustrative purposes we will do so just for two of those here:</p> <pre><code>(<a href="http://l1sp.org/cl/defun">defun</a> cl-gamepad:device-attached (<a href="#CL-GAMEPAD-CFFI:DEVICE">device</a>)
   (<a href="http://l1sp.org/cl/format">format</a> T &quot;~&amp;Found new device: ~a&quot; device))
 
-(<a href="http://l1sp.org/cl/defun">defun</a> cl-gamepad:device-removed (<a href="#CL-GAMEPAD:DEVICE">device</a>)
+(<a href="http://l1sp.org/cl/defun">defun</a> cl-gamepad:device-removed (<a href="#CL-GAMEPAD-CFFI:DEVICE">device</a>)
   (<a href="http://l1sp.org/cl/format">format</a> T &quot;~&amp;Device removed: ~a&quot; device))
 
 (<a href="#CL-GAMEPAD:INIT">cl-gamepad:init</a>)
@@ -86,7 +88,7 @@
 </code></pre> <p>During shut down of your application --or whenever you no longer want to receive input-- you should call <code><a href="#CL-GAMEPAD:SHUTDOWN">shutdown</a></code> to clean everything up.</p> <pre><code>(<a href="#CL-GAMEPAD:SHUTDOWN">cl-gamepad:shutdown</a>)
 </code></pre> <h2>Visualizer</h2> <p>Cl-gamepad includes a little visualizer Qt application that lets you view the complete controller state graphically. You can use this to test the library, your controller, or figure out the ID mapping of the buttons and axis.</p> <pre><code>(ql:quickload :cl-gamepad-visualizer)
 (cl-gamepad-visualizer:main)
-</code></pre> </div>  </article> <article id="copyright">  <h2>Copyright</h2> <span>cl-gamepad</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=Artistic">Artistic</a></span> license.  © <span>Nicolas Hafner &lt;shinmera@tymoon.eu&gt;</span> .  This library can be obtained on <a href="https://github.com/Shirakumo/cl-gamepad">https://github.com/Shirakumo/cl-gamepad</a>.  </article>  <article id="symbol-index"> <h2>Package Index</h2> <ul><li class="package"> <h3> <a name="CL-GAMEPAD" href="#CL-GAMEPAD">CL-GAMEPAD</a> <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD)</span> </h3> <ul><li> <a name="CL-GAMEPAD:DEVICE"> </a> <article> <header class="class"> <span class="type">class</span>  <h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE">DEVICE</a></code></h4>  </header> <pre class="docstring">C struct that contains all relevant information about a gamepad device.
+</code></pre> </div>  </article> <article id="copyright">  <h2>Copyright</h2> <span>cl-gamepad</span> is licensed under the <span><a href="https://tldrlegal.com/search?q=Artistic">Artistic</a></span> license.  © <span>Nicolas Hafner &lt;shinmera@tymoon.eu&gt;</span> .  This library can be obtained on <a href="https://github.com/Shirakumo/cl-gamepad">https://github.com/Shirakumo/cl-gamepad</a>.  </article>  <article id="symbol-index"> <h2>Package Index</h2> <ul><li class="package"> <h3> <a name="CL-GAMEPAD-CFFI" href="#CL-GAMEPAD-CFFI">CL-GAMEPAD-CFFI</a> <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD.CFFI)</span> </h3> <ul><li> <a name="CL-GAMEPAD-CFFI:DEVICE"> </a> <article> <header class="class"> <span class="type">class</span>  <h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></code></h4>  </header> <div class="docstring"><pre>C struct that contains all relevant information about a gamepad device.
 
 You should never SETF any of its fields unless you really 
 know what you're doing. Passing a pointer to this struct
@@ -95,44 +97,62 @@ cause undefined behaviour and even lead as far as crashing
 your program. If you need to pass it around, you should use
 DEVICE-PLIST to serialise it.
 
-See ID
-See VENDOR
-See PRODUCT
-See DESCRIPTION
-See AXIS-COUNT
-See AXIS
-See AXES
-See BUTTON-COUNT
-See BUTTON
-See BUTTONS
-See DEVICE-PLIST
+See <a href="#CL-GAMEPAD:ID">ID</a>
+See <a href="#CL-GAMEPAD:VENDOR">VENDOR</a>
+See <a href="#CL-GAMEPAD:PRODUCT">PRODUCT</a>
+See <a href="#CL-GAMEPAD:DESCRIPTION">DESCRIPTION</a>
+See <a href="#CL-GAMEPAD:AXIS-COUNT">AXIS-COUNT</a>
+See <a href="#CL-GAMEPAD:AXIS">AXIS</a>
+See <a href="#CL-GAMEPAD:AXES">AXES</a>
+See <a href="#CL-GAMEPAD:BUTTON-COUNT">BUTTON-COUNT</a>
+See <a href="#CL-GAMEPAD:BUTTON">BUTTON</a>
+See <a href="#CL-GAMEPAD:BUTTONS">BUTTONS</a>
+See <a href="#CL-GAMEPAD:DEVICE-PLIST">DEVICE-PLIST</a>
 
-See DEVICE-ID
-See DEVICE-VENDOR
-See DEVICE-PRODUCT
-See DEVICE-DESCRIPTION
-See DEVICE-AXIS-COUNT
-See DEVICE-AXIS-STATES
-See DEVICE-BUTTON-COUNT
-See DEVICE-BUTTON-STATES
-See DEVICE-PRIVATE-DATA
-See DETECT-DEVICES</pre> </article> </li><li> <a name="CL-GAMEPAD:INDEX-OUT-OF-RANGE"> </a> <article> <header class="condition"> <span class="type">condition</span>  <h4 class="name"><code><a href="#CL-GAMEPAD:INDEX-OUT-OF-RANGE">INDEX-OUT-OF-RANGE</a></code></h4>  </header> <pre class="docstring">Condition signalled when an index is out of its allowed range.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-ID">DEVICE-ID</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-VENDOR">DEVICE-VENDOR</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-PRODUCT">DEVICE-PRODUCT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION">DEVICE-DESCRIPTION</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT">DEVICE-AXIS-COUNT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES">DEVICE-AXIS-STATES</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT">DEVICE-BUTTON-COUNT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES">DEVICE-BUTTON-STATES</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA">DEVICE-PRIVATE-DATA</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT">DEVICE-AXIS-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the number of axes the controller seems to have.
 
-See INDEX
-See RANGE</pre> </article> </li><li> <a name="CL-GAMEPAD:AXES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXES">AXES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns a vector of the state of each axis on the gamepad device.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES">DEVICE-AXIS-STATES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the pointer to the float array that describes the state of the various axes.
 
-See DEVICE
-See AXIS</pre> </article> </li><li> <a name="CL-GAMEPAD:AXIS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS">AXIS</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE AXIS</code><code>)</code>  </header> <pre class="docstring">Return the current state of a particular axis on the gamepad device.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="NIL">DEVICE-AXIS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT">DEVICE-BUTTON-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the number of buttons the controller seems to have.
 
-The axis should be a number from 0 below DEVICE-AXIS-COUNT.
-If an invalid axis id is passed, an INDEX-OUT-OF-RANGE error is
-signalled.
-Returned is a float in the range [-1 1].
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES">DEVICE-BUTTON-STATES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the pointer to the bool array that describes the state of the various buttons.
+Note that the bools are not strict in the sense that anything greater than 0
+should be taken as TRUE.
 
-See DEVICE
-See AXIS-COUNT</pre> </article> </li><li> <a name="CL-GAMEPAD:AXIS-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS-COUNT">AXIS-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the number of axes the controller seems to have.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="NIL">DEVICE-BUTTON</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION">DEVICE-DESCRIPTION</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the description string for the gamepad device.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:AXIS-MOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS-MOVED">AXIS-MOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">AXIS LAST-VALUE VALUE TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever an axis is moved.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-ID"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-ID">DEVICE-ID</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the unique identifier for the gamepad device.
+
+Starts at 0 and increases for each new gamepad that is detected.
+If a particular gamepad is disconnected and later reconnected,
+it will receive a different id.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA">DEVICE-PRIVATE-DATA</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the pointer to the private data of the gamepad device struct.
+
+You should never need this.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-PRODUCT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-PRODUCT">DEVICE-PRODUCT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the product ID for the gamepad device.
+
+This along with DEVICE-VENDOR may be useful to detect default
+behaviour for a particular controller.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-VENDOR"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-VENDOR">DEVICE-VENDOR</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Accesses the vendor ID for the gamepad device.
+
+This along with DEVICE-PRODUCT may be useful to detect default
+behaviour for a particular controller.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:AXIS-MOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:AXIS-MOVED">AXIS-MOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">AXIS LAST-VALUE VALUE TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever an axis is moved.
 
 AXIS is an integer identifying the axis on the controller.
 LAST-VALUE is a float representing the value of this axis at
@@ -150,19 +170,9 @@ This function is called in the same thread as the DETECT-DEVICES
 or PROCESS-EVENTS call occurs that triggers it and may thus block
 it.
 
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD:BUTTON"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON">BUTTON</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE BUTTON</code><code>)</code>  </header> <pre class="docstring">Return the current state of a particular button on the gamepad device.
-
-The button should be a number from 0 below DEVICE-BUTTON-COUNT.
-If an invalid button id is passed, an INDEX-OUT-OF-RANGE error is
-signalled.
-Returned is T for pressed and NIL for released.
-
-See DEVICE
-See DEVICE-BUTTON-COUNT</pre> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-COUNT">BUTTON-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the number of buttons the controller seems to have.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-PRESSED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-PRESSED">BUTTON-PRESSED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a button is pressed.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:BUTTON-PRESSED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:BUTTON-PRESSED">BUTTON-PRESSED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a button is pressed.
 
 BUTTON is an integer identifying the button on the controller.
 TIME is a float representing the time at which the movement
@@ -175,9 +185,9 @@ This function is called in the same thread as the DETECT-DEVICES
 or PROCESS-EVENTS call occurs that triggers it and may thus block
 it.
 
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-RELEASED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-RELEASED">BUTTON-RELEASED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a button is released.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:BUTTON-RELEASED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:BUTTON-RELEASED">BUTTON-RELEASED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a button is released.
 
 BUTTON is an integer identifying the button on the controller.
 TIME is a float representing the time at which the movement
@@ -190,26 +200,15 @@ This function is called in the same thread as the DETECT-DEVICES
 or PROCESS-EVENTS call occurs that triggers it and may thus block
 it.
 
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD:BUTTONS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTONS">BUTTONS</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns a vector of the state of each button on the gamepad device.
-
-See DEVICE
-See BUTTON</pre> </article> </li><li> <a name="CL-GAMEPAD:DESCRIPTION"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DESCRIPTION">DESCRIPTION</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the description string for the gamepad device.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:DETECT-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Polls for new devices.
-
-May call DEVICE-ATTACHED BUTTON-PRESSED BUTTON-RELEASED AXIS-MOVED
-
-New devices will not be noticed unless and until you call this
-function. As such you should call it at any time it is appropriate
-for new controllers to be introduced to your program.</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE">DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">INDEX</code><code>)</code>  </header> <pre class="docstring">Returns the device at the specified index.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">INDEX</code><code>)</code>  </header> <div class="docstring"><pre>Returns the device at the specified index.
 
 The index should be a number from 0 below DEVICE-COUNT.
 Passing an invalid number results in undefined behaviour, going
 as far as potentially crashing your program.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-ATTACHED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-ATTACHED">DEVICE-ATTACHED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a new device is attached.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-ATTACHED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-ATTACHED">DEVICE-ATTACHED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a new device is attached.
 
 You should override this function if you want to use a
 notification mechanism. By default this function does nothing.
@@ -217,8 +216,149 @@ notification mechanism. By default this function does nothing.
 This function is called in the same thread as the DETECT-DEVICES
 call occurs that triggers it and may thus block it.
 
-See DEVICE
-See DETECT-DEVICES</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-COUNT">DEVICE-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Returns an integer of how many devices we know of right now.</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-PLIST"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-PLIST">DEVICE-PLIST</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Constructs a plist from the device's values.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-REMOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-REMOVED">DEVICE-REMOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a device is removed.
+
+You should override this function if you want to use a 
+notification mechanism. By default this function does nothing.
+
+This function is called in the same thread as the PROCESS-EVENTS
+call occurs that triggers it and may thus block it.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-AXIS-MOVE-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-AXIS-MOVE-FUNC">GAMEPAD-AXIS-MOVE-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_axisMoveFunc C function, registering the callback function.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-DOWN-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-DOWN-FUNC">GAMEPAD-BUTTON-DOWN-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_buttonDownFunc C function, registering the callback function.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-UP-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-UP-FUNC">GAMEPAD-BUTTON-UP-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_buttonUpFunc C function, registering the callback function.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DETECT-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DETECT-DEVICES">GAMEPAD-DETECT-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_detectDevices C function, leading to new devices being recognised.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-AT-INDEX"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-AT-INDEX">GAMEPAD-DEVICE-AT-INDEX</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE-INDEX</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_deviceAtIndex C function, returning a device pointer corresponding to the index.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-ATTACH-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-ATTACH-FUNC">GAMEPAD-DEVICE-ATTACH-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_deviceAttachFunc C function, registering the callback function.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-REMOVE-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-REMOVE-FUNC">GAMEPAD-DEVICE-REMOVE-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_deviceRemoveFunc C function, registering the callback function.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-INIT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-INIT">GAMEPAD-INIT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_init C function to initialize the library.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-NUM-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-NUM-DEVICES">GAMEPAD-NUM-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_numDevices C function, returning the number of devices currently known to the library.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-PROCESS-EVENTS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-PROCESS-EVENTS">GAMEPAD-PROCESS-EVENTS</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_processEvents C function, leading to input events being captured and the callbacks being invoked.</pre></div> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-SHUTDOWN"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-SHUTDOWN">GAMEPAD-SHUTDOWN</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Calls the Gamepad_shutdown C function to clean up the library.</pre></div> </article> </li></ul> </li><li class="package"> <h3> <a name="CL-GAMEPAD" href="#CL-GAMEPAD">CL-GAMEPAD</a> <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD)</span> </h3> <ul><li> <a name="CL-GAMEPAD:DEVICE"> </a> <article> <header class="class"> <span class="type">class</span>  <h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE">DEVICE</a></code></h4>  </header> <div class="docstring"><pre>C struct that contains all relevant information about a gamepad device.
+
+You should never SETF any of its fields unless you really 
+know what you're doing. Passing a pointer to this struct
+outside of the dynamic-extent in which it was provided will
+cause undefined behaviour and even lead as far as crashing
+your program. If you need to pass it around, you should use
+DEVICE-PLIST to serialise it.
+
+See <a href="#CL-GAMEPAD:ID">ID</a>
+See <a href="#CL-GAMEPAD:VENDOR">VENDOR</a>
+See <a href="#CL-GAMEPAD:PRODUCT">PRODUCT</a>
+See <a href="#CL-GAMEPAD:DESCRIPTION">DESCRIPTION</a>
+See <a href="#CL-GAMEPAD:AXIS-COUNT">AXIS-COUNT</a>
+See <a href="#CL-GAMEPAD:AXIS">AXIS</a>
+See <a href="#CL-GAMEPAD:AXES">AXES</a>
+See <a href="#CL-GAMEPAD:BUTTON-COUNT">BUTTON-COUNT</a>
+See <a href="#CL-GAMEPAD:BUTTON">BUTTON</a>
+See <a href="#CL-GAMEPAD:BUTTONS">BUTTONS</a>
+See <a href="#CL-GAMEPAD:DEVICE-PLIST">DEVICE-PLIST</a>
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-ID">DEVICE-ID</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-VENDOR">DEVICE-VENDOR</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-PRODUCT">DEVICE-PRODUCT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION">DEVICE-DESCRIPTION</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT">DEVICE-AXIS-COUNT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES">DEVICE-AXIS-STATES</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT">DEVICE-BUTTON-COUNT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES">DEVICE-BUTTON-STATES</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA">DEVICE-PRIVATE-DATA</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:INDEX-OUT-OF-RANGE"> </a> <article> <header class="condition"> <span class="type">condition</span>  <h4 class="name"><code><a href="#CL-GAMEPAD:INDEX-OUT-OF-RANGE">INDEX-OUT-OF-RANGE</a></code></h4>  </header> <div class="docstring"><pre>Condition signalled when an index is out of its allowed range.
+
+See <a href="#CL-GAMEPAD:INDEX">INDEX</a>
+See <a href="#CL-GAMEPAD:RANGE">RANGE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:AXES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXES">AXES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns a vector of the state of each axis on the gamepad device.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:AXIS">AXIS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:AXIS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS">AXIS</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE AXIS</code><code>)</code>  </header> <div class="docstring"><pre>Return the current state of a particular axis on the gamepad device.
+
+The axis should be a number from 0 below DEVICE-AXIS-COUNT.
+If an invalid axis id is passed, an INDEX-OUT-OF-RANGE error is
+signalled.
+Returned is a float in the range [-1 1].
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:AXIS-COUNT">AXIS-COUNT</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:AXIS-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS-COUNT">AXIS-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the number of axes the controller seems to have.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:AXIS-MOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:AXIS-MOVED">AXIS-MOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">AXIS LAST-VALUE VALUE TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever an axis is moved.
+
+AXIS is an integer identifying the axis on the controller.
+LAST-VALUE is a float representing the value of this axis at
+the previous time AXIS-MOVED was called.
+VALUE is a float representing the current value of this axis.
+TIME is a float representing the time at which the movement
+occurred precisely.
+
+LAST-VALUE and VALUE are in the range of [-1 1].
+
+You should override this function if you want to use a 
+notification mechanism. By default this function does nothing.
+
+This function is called in the same thread as the DETECT-DEVICES
+or PROCESS-EVENTS call occurs that triggers it and may thus block
+it.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:BUTTON"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON">BUTTON</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE BUTTON</code><code>)</code>  </header> <div class="docstring"><pre>Return the current state of a particular button on the gamepad device.
+
+The button should be a number from 0 below DEVICE-BUTTON-COUNT.
+If an invalid button id is passed, an INDEX-OUT-OF-RANGE error is
+signalled.
+Returned is T for pressed and NIL for released.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT">DEVICE-BUTTON-COUNT</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-COUNT">BUTTON-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the number of buttons the controller seems to have.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-PRESSED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-PRESSED">BUTTON-PRESSED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a button is pressed.
+
+BUTTON is an integer identifying the button on the controller.
+TIME is a float representing the time at which the movement
+occurred precisely.
+
+You should override this function if you want to use a 
+notification mechanism. By default this function does nothing.
+
+This function is called in the same thread as the DETECT-DEVICES
+or PROCESS-EVENTS call occurs that triggers it and may thus block
+it.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:BUTTON-RELEASED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTON-RELEASED">BUTTON-RELEASED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a button is released.
+
+BUTTON is an integer identifying the button on the controller.
+TIME is a float representing the time at which the movement
+occurred precisely.
+
+You should override this function if you want to use a 
+notification mechanism. By default this function does nothing.
+
+This function is called in the same thread as the DETECT-DEVICES
+or PROCESS-EVENTS call occurs that triggers it and may thus block
+it.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:BUTTONS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:BUTTONS">BUTTONS</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns a vector of the state of each button on the gamepad device.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:BUTTON">BUTTON</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DESCRIPTION"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DESCRIPTION">DESCRIPTION</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the description string for the gamepad device.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DETECT-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Polls for new devices.
+
+May call DEVICE-ATTACHED BUTTON-PRESSED BUTTON-RELEASED AXIS-MOVED
+
+New devices will not be noticed unless and until you call this
+function. As such you should call it at any time it is appropriate
+for new controllers to be introduced to your program.</pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE">DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">INDEX</code><code>)</code>  </header> <div class="docstring"><pre>Returns the device at the specified index.
+
+The index should be a number from 0 below DEVICE-COUNT.
+Passing an invalid number results in undefined behaviour, going
+as far as potentially crashing your program.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-ATTACHED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-ATTACHED">DEVICE-ATTACHED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a new device is attached.
+
+You should override this function if you want to use a
+notification mechanism. By default this function does nothing.
+
+This function is called in the same thread as the DETECT-DEVICES
+call occurs that triggers it and may thus block it.
+
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-COUNT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-COUNT">DEVICE-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Returns an integer of how many devices we know of right now.</pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-PLIST"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-PLIST">DEVICE-PLIST</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Constructs a plist from the device's values.
 
 Returned is:
 (:ID id
@@ -228,13 +368,13 @@ Returned is:
  :AXES axes
  :BUTTONS buttons)
 
-See ID
-See VENDOR
-See PRODUCT
-See DESCRIPTION
-See AXES
-See BUTTONS
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-REMOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-REMOVED">DEVICE-REMOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a device is removed.
+See <a href="#CL-GAMEPAD:ID">ID</a>
+See <a href="#CL-GAMEPAD:VENDOR">VENDOR</a>
+See <a href="#CL-GAMEPAD:PRODUCT">PRODUCT</a>
+See <a href="#CL-GAMEPAD:DESCRIPTION">DESCRIPTION</a>
+See <a href="#CL-GAMEPAD:AXES">AXES</a>
+See <a href="#CL-GAMEPAD:BUTTONS">BUTTONS</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICE-REMOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICE-REMOVED">DEVICE-REMOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>This function is called whenever a device is removed.
 
 You should override this function if you want to use a 
 notification mechanism. By default this function does nothing.
@@ -242,27 +382,27 @@ notification mechanism. By default this function does nothing.
 This function is called in the same thread as the PROCESS-EVENTS
 call occurs that triggers it and may thus block it.
 
-See DEVICE
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD:DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICES">DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Returns a list of all known devices.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a>
+See <a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:DEVICES">DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Returns a list of all known devices.
 
-See DEVICE-COUNT
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:ID"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:ID">ID</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the unique identifier for the gamepad device.
+See <a href="#CL-GAMEPAD:DEVICE-COUNT">DEVICE-COUNT</a>
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:ID"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:ID">ID</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the unique identifier for the gamepad device.
 
 Starts at 0 and increases for each new gamepad that is detected.
 If a particular gamepad is disconnected and later reconnected,
 it will receive a different id.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:INIT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:INIT">INIT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Sets everything up and prepares the library to process input events.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:INIT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:INIT">INIT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Sets everything up and prepares the library to process input events.
 
 This function should only ever be called once until a matching
 SHUTDOWN call has occurred. This function must be called before
 any of the other functions are called.
 
-See SHUTDOWN</pre> </article> </li><li> <a name="CL-GAMEPAD:PRINT-DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PRINT-DEVICE">PRINT-DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE STREAM</code><code>)</code>  </header> <pre class="docstring">Prints an unreadable representation of DEVICE to STREAM.
+See <a href="#CL-GAMEPAD:SHUTDOWN">SHUTDOWN</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:PRINT-DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PRINT-DEVICE">PRINT-DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE STREAM</code><code>)</code>  </header> <div class="docstring"><pre>Prints an unreadable representation of DEVICE to STREAM.
 
 Useful for debugging prints.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:PROCESS-EVENTS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Processes input events from all known controllers.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:PROCESS-EVENTS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PROCESS-EVENTS">PROCESS-EVENTS</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Processes input events from all known controllers.
 
 May call DEVICE-REMOVED BUTTON-PRESSED BUTTON-RELEASED AXIS-MOVED
 
@@ -271,162 +411,24 @@ this function is called. The corresponding DEVICE-REMOVED function
 is then called. If a new device is plugged in, events for it will
 not be processed until it is registered through DETECT-DEVICES.
 
-See DETECT-DEVICES</pre> </article> </li><li> <a name="CL-GAMEPAD:PRODUCT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PRODUCT">PRODUCT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the product ID for the gamepad device.
+See <a href="#CL-GAMEPAD:DETECT-DEVICES">DETECT-DEVICES</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:PRODUCT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:PRODUCT">PRODUCT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the product ID for the gamepad device.
 
 This along with DEVICE-VENDOR may be useful to detect default
 behaviour for a particular controller.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:SHUTDOWN"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:SHUTDOWN">SHUTDOWN</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Cleans everything up so that it's back to being tidy and neat.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:SHUTDOWN"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:SHUTDOWN">SHUTDOWN</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <div class="docstring"><pre>Cleans everything up so that it's back to being tidy and neat.
 
 This function should only ever be called once and only after a
 matching INIT call has occurred. No other functions but INIT
 should ever be called after this function has been called.
 
-See INIT</pre> </article> </li><li> <a name="CL-GAMEPAD:VENDOR"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:VENDOR">VENDOR</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">Returns the vendor ID for the gamepad device.
+See <a href="#CL-GAMEPAD:INIT">INIT</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:VENDOR"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:VENDOR">VENDOR</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <div class="docstring"><pre>Returns the vendor ID for the gamepad device.
 
 This along with DEVICE-PRODUCT may be useful to detect default
 behaviour for a particular controller.
 
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD:INDEX"> </a> <article> <header class="generic"> <span class="type">generic</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:INDEX">INDEX</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CONDITION</code><code>)</code>  </header> <pre class="docstring">Reader to the index that the condition happened on.
+See <a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:INDEX"> </a> <article> <header class="generic"> <span class="type">generic</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:INDEX">INDEX</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CONDITION</code><code>)</code>  </header> <div class="docstring"><pre>Reader to the index that the condition happened on.
 
-See INDEX-OUT-OF-RANGE</pre> </article> </li><li> <a name="CL-GAMEPAD:RANGE"> </a> <article> <header class="generic"> <span class="type">generic</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:RANGE">RANGE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CONDITION</code><code>)</code>  </header> <pre class="docstring">Reader to the range that the condition happened on.
+See <a href="#CL-GAMEPAD:INDEX-OUT-OF-RANGE">INDEX-OUT-OF-RANGE</a></pre></div> </article> </li><li> <a name="CL-GAMEPAD:RANGE"> </a> <article> <header class="generic"> <span class="type">generic</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD:RANGE">RANGE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CONDITION</code><code>)</code>  </header> <div class="docstring"><pre>Reader to the range that the condition happened on.
 
-See INDEX-OUT-OF-RANGE</pre> </article> </li></ul> </li><li class="package"> <h3> <a name="CL-GAMEPAD-CFFI" href="#CL-GAMEPAD-CFFI">CL-GAMEPAD-CFFI</a> <span class="nicknames">(ORG.SHIRAKUMO.FRAF.GAMEPAD.CFFI)</span> </h3> <ul><li> <a name="CL-GAMEPAD-CFFI:DEVICE"> </a> <article> <header class="class"> <span class="type">class</span>  <h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></code></h4>  </header> <pre class="docstring">C struct that contains all relevant information about a gamepad device.
-
-You should never SETF any of its fields unless you really 
-know what you're doing. Passing a pointer to this struct
-outside of the dynamic-extent in which it was provided will
-cause undefined behaviour and even lead as far as crashing
-your program. If you need to pass it around, you should use
-DEVICE-PLIST to serialise it.
-
-See ID
-See VENDOR
-See PRODUCT
-See DESCRIPTION
-See AXIS-COUNT
-See AXIS
-See AXES
-See BUTTON-COUNT
-See BUTTON
-See BUTTONS
-See DEVICE-PLIST
-
-See DEVICE-ID
-See DEVICE-VENDOR
-See DEVICE-PRODUCT
-See DEVICE-DESCRIPTION
-See DEVICE-AXIS-COUNT
-See DEVICE-AXIS-STATES
-See DEVICE-BUTTON-COUNT
-See DEVICE-BUTTON-STATES
-See DEVICE-PRIVATE-DATA
-See DETECT-DEVICES</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-COUNT">DEVICE-AXIS-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the number of axes the controller seems to have.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-AXIS-STATES">DEVICE-AXIS-STATES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the pointer to the float array that describes the state of the various axes.
-
-See DEVICE
-See DEVICE-AXIS</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-COUNT">DEVICE-BUTTON-COUNT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the number of buttons the controller seems to have.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-BUTTON-STATES">DEVICE-BUTTON-STATES</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the pointer to the bool array that describes the state of the various buttons.
-Note that the bools are not strict in the sense that anything greater than 0
-should be taken as TRUE.
-
-See DEVICE
-See DEVICE-BUTTON</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-DESCRIPTION">DEVICE-DESCRIPTION</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the description string for the gamepad device.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-ID"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-ID">DEVICE-ID</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the unique identifier for the gamepad device.
-
-Starts at 0 and increases for each new gamepad that is detected.
-If a particular gamepad is disconnected and later reconnected,
-it will receive a different id.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-PRIVATE-DATA">DEVICE-PRIVATE-DATA</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the pointer to the private data of the gamepad device struct.
-
-You should never need this.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-PRODUCT"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-PRODUCT">DEVICE-PRODUCT</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the product ID for the gamepad device.
-
-This along with DEVICE-VENDOR may be useful to detect default
-behaviour for a particular controller.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-VENDOR"> </a> <article> <header class="accessor"> <span class="type">accessor</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-VENDOR">DEVICE-VENDOR</a></code></h4> <code class="qualifiers"></code> <code class="arguments">POINTER-TO-DEVICE</code><code>)</code>  </header> <pre class="docstring">Accesses the vendor ID for the gamepad device.
-
-This along with DEVICE-PRODUCT may be useful to detect default
-behaviour for a particular controller.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:AXIS-MOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:AXIS-MOVED">AXIS-MOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">AXIS LAST-VALUE VALUE TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever an axis is moved.
-
-AXIS is an integer identifying the axis on the controller.
-LAST-VALUE is a float representing the value of this axis at
-the previous time AXIS-MOVED was called.
-VALUE is a float representing the current value of this axis.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-LAST-VALUE and VALUE are in the range of [-1 1].
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:BUTTON-PRESSED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:BUTTON-PRESSED">BUTTON-PRESSED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a button is pressed.
-
-BUTTON is an integer identifying the button on the controller.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:BUTTON-RELEASED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:BUTTON-RELEASED">BUTTON-RELEASED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">BUTTON TIME DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a button is released.
-
-BUTTON is an integer identifying the button on the controller.
-TIME is a float representing the time at which the movement
-occurred precisely.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-or PROCESS-EVENTS call occurs that triggers it and may thus block
-it.
-
-See DEVICE
-See DETECT-DEVICES
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE">DEVICE</a></code></h4> <code class="qualifiers"></code> <code class="arguments">INDEX</code><code>)</code>  </header> <pre class="docstring">Returns the device at the specified index.
-
-The index should be a number from 0 below DEVICE-COUNT.
-Passing an invalid number results in undefined behaviour, going
-as far as potentially crashing your program.
-
-See DEVICE</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-ATTACHED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-ATTACHED">DEVICE-ATTACHED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a new device is attached.
-
-You should override this function if you want to use a
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the DETECT-DEVICES
-call occurs that triggers it and may thus block it.
-
-See DEVICE
-See DETECT-DEVICES</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:DEVICE-REMOVED"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:DEVICE-REMOVED">DEVICE-REMOVED</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE</code><code>)</code>  </header> <pre class="docstring">This function is called whenever a device is removed.
-
-You should override this function if you want to use a 
-notification mechanism. By default this function does nothing.
-
-This function is called in the same thread as the PROCESS-EVENTS
-call occurs that triggers it and may thus block it.
-
-See DEVICE
-See PROCESS-EVENTS</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-AXIS-MOVE-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-AXIS-MOVE-FUNC">GAMEPAD-AXIS-MOVE-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_axisMoveFunc C function, registering the callback function.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-DOWN-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-DOWN-FUNC">GAMEPAD-BUTTON-DOWN-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_buttonDownFunc C function, registering the callback function.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-UP-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-BUTTON-UP-FUNC">GAMEPAD-BUTTON-UP-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_buttonUpFunc C function, registering the callback function.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DETECT-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DETECT-DEVICES">GAMEPAD-DETECT-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_detectDevices C function, leading to new devices being recognised.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-AT-INDEX"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-AT-INDEX">GAMEPAD-DEVICE-AT-INDEX</a></code></h4> <code class="qualifiers"></code> <code class="arguments">DEVICE-INDEX</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_deviceAtIndex C function, returning a device pointer corresponding to the index.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-ATTACH-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-ATTACH-FUNC">GAMEPAD-DEVICE-ATTACH-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_deviceAttachFunc C function, registering the callback function.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-REMOVE-FUNC"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-DEVICE-REMOVE-FUNC">GAMEPAD-DEVICE-REMOVE-FUNC</a></code></h4> <code class="qualifiers"></code> <code class="arguments">CALLBACK CONTEXT</code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_deviceRemoveFunc C function, registering the callback function.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-INIT"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-INIT">GAMEPAD-INIT</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_init C function to initialize the library.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-NUM-DEVICES"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-NUM-DEVICES">GAMEPAD-NUM-DEVICES</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_numDevices C function, returning the number of devices currently known to the library.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-PROCESS-EVENTS"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-PROCESS-EVENTS">GAMEPAD-PROCESS-EVENTS</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_processEvents C function, leading to input events being captured and the callbacks being invoked.</pre> </article> </li><li> <a name="CL-GAMEPAD-CFFI:GAMEPAD-SHUTDOWN"> </a> <article> <header class="function"> <span class="type">function</span>  <code>(</code><h4 class="name"><code><a href="#CL-GAMEPAD-CFFI:GAMEPAD-SHUTDOWN">GAMEPAD-SHUTDOWN</a></code></h4> <code class="qualifiers"></code> <code class="arguments"></code><code>)</code>  </header> <pre class="docstring">Calls the Gamepad_shutdown C function to clean up the library.</pre> </article> </li></ul> </li></ul> </article>  </main> </body> </html> 
+See <a href="#CL-GAMEPAD:INDEX-OUT-OF-RANGE">INDEX-OUT-OF-RANGE</a></pre></div> </article> </li></ul> </li></ul> </article>  </main> </body> </html> 

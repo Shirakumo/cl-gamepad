@@ -127,9 +127,6 @@
     (setf (q+:color (q+:pen painter)) white)
     (draw-text-centered painter name *field-width* *field-height*)))
 
-(qtools:define-user-libs (libstem-gamepad cl-gamepad-cffi::*static*)
-  (cl-gamepad-cffi:libstem-gamepad))
-
 (defun main ()
   (cl-gamepad:init)
   (unwind-protect

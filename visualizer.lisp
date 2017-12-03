@@ -29,7 +29,7 @@
      (q+:restore ,painter)))
 
 (defun cl-gamepad:device-attached (device)
-  (format NIL "~&> Device attached: ~a" (cl-gamepad:print-device device NIL))
+  (format T "~&> Device attached: ~a~%" (cl-gamepad:print-device device NIL))
   (when *main*
     (let ((gamepads (gamepads *main*)))
       (unless (find device gamepads :key #'device :test #'cffi:pointer-eq)
@@ -38,15 +38,16 @@
           (vector-push-extend gamepad gamepads))))))
 
 (defun cl-gamepad:device-removed (device)
-  (format NIL "~&> Device detached: ~a" (cl-gamepad:print-device device NIL))
+  (format T "~&> Device detached: ~a~%" (cl-gamepad:print-device device NIL))
   (when *main*
     (let* ((gamepads (gamepads *main*))
            (pos (position device gamepads :key #'device :test #'cffi:pointer-eq)))
-      (q+:remove-item (slot-value *main* 'layout) (q+:item-at (slot-value *main* 'layout) pos))
-      (finalize (aref gamepads pos))
-      (loop for i from pos below (1- (length gamepads))
-            do (setf (aref gamepads i) (aref gamepads (1+ i))))
-      (decf (fill-pointer gamepads)))))
+      (when pos
+        (q+:remove-item (slot-value *main* 'layout) (q+:item-at (slot-value *main* 'layout) pos))
+        (finalize (aref gamepads pos))
+        (loop for i from pos below (1- (length gamepads))
+              do (setf (aref gamepads i) (aref gamepads (1+ i))))
+        (decf (fill-pointer gamepads))))))
 
 (define-widget main (QMainWindow)
   ((gamepads :initform (make-array 0 :adjustable T :fill-pointer T) :accessor gamepads)))
@@ -57,7 +58,7 @@
   (setf (q+:fixed-size main) (values 600 500)))
 
 (define-finalizer (main teardown)
-  (makunbound '*main*))
+  (setf *main* NIL))
 
 (define-subwidget (main timer) (q+:make-qtimer main)
   (setf (q+:single-shot timer) NIL)

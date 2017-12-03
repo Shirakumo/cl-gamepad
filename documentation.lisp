@@ -144,14 +144,23 @@ See DEVICE-MAP-MAX
 See BUTTON
 See AXIS
 See DEVICE-MAP-BUTTON-MAP
+See DEVICE-MAP-BUTTONS
 See DEVICE-MAP-AXIS-MAP
-See DEVICE-MAP-AXIS-MULTIPLIER")
+See DEVICE-MAP-AXES
+See DEVICE-MAP-AXIS-MULTIPLIER
+See DEVICE-MAP-AXIS-MULTIPLIERS")
 
   (function device-map-button-map
     "Accessor to the first button mapping of the device-map.
 
 The button map is an in-struct array, so you'll probably want to
-use foreign-slot-pointer and mem-aref instead.
+use DEVICE-MAP-BUTTONS instead.
+
+See DEVICE-MAP
+See DEVICE-MAP-BUTTONS")
+
+  (function device-map-buttons
+    "Accessor to the C array of the button mappings.
 
 See DEVICE-MAP")
 
@@ -159,7 +168,13 @@ See DEVICE-MAP")
     "Accessor to the first axis mapping of the device-map.
 
 The axis map is an in-struct array, so you'll probably want to
-use foreign-slot-pointer and mem-aref instead.
+use DEVICE-MAP-AXES instead.
+
+See DEVICE-MAP
+See DEVICE-MAP-AXES")
+
+  (function device-map-axes
+    "Accessor to the C array of the axis mappings.
 
 See DEVICE-MAP")
 
@@ -167,7 +182,13 @@ See DEVICE-MAP")
     "Accessor to the first axis multiplier of the device-map.
 
 The multiplier map is an in-struct array, so you'll probably want to
-use foreign-slot-pointer and mem-aref instead.
+use DEVICE-MAP-AXIS-MULTIPLIERS instead.
+
+See DEVICE-MAP
+See DEVICE-MAP-AXIS-MULTIPLIERS")
+
+  (function device-map-axis-multipliers
+    "Accessor to the C array of the axis multipliers.
 
 See DEVICE-MAP")
 
@@ -501,18 +522,20 @@ See PROCESS-EVENTS")
   (function init
     "Sets everything up and prepares the library to process input events.
 
-This function should only ever be called once until a matching
-SHUTDOWN call has occurred. This function must be called before
-any of the other functions are called.
+This function must be called before any of the other functions
+are called. It is safe to call this function any number of times
+in sequence, but only one \"actual\" init is performed before
+another SHUTDOWN.
 
 See SHUTDOWN")
   
   (function shutdown
     "Cleans everything up so that it's back to being tidy and neat.
 
-This function should only ever be called once and only after a
-matching INIT call has occurred. No other functions but INIT
-should ever be called after this function has been called.
+No other functions but INIT should ever be called after this
+function has been called. It is safe to call this function any
+number of times in sequence, but only one \"actual\" shutdown
+is performed before another INIT.
 
 See INIT")
   

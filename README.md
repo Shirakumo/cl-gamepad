@@ -45,6 +45,8 @@ You can view and set the complete mapping for a given controller via `device-map
        ( 0 :dpad-h)
        ( 1 :dpad-v)))
 
+For a listing of existing device mappings, see the [database-lin](https://github.com/Shirakumo/cl-gamepad/blob/master/database-lin.lisp), [database-mac](https://github.com/Shirakumo/cl-gamepad/blob/master/database-mac.lisp), [database-win](https://github.com/Shirakumo/cl-gamepad/blob/master/database-win.lisp) files.
+
 Finally, during shut down of your application -- or whenever you no longer want to receive input -- you should call `shutdown` to clean everything up.
 
     (cl-gamepad:shutdown)

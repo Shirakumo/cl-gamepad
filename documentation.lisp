@@ -479,6 +479,10 @@ occurred precisely.
 
 LAST-VALUE and VALUE are in the range of [-1 1].
 
+Note that the values are NOT multiplied by the axis-multiplier
+defined in the corresponding device map. You are responsible for
+normalising the direction yourself.
+
 You should override this function if you want to use a 
 notification mechanism. By default this function does nothing.
 

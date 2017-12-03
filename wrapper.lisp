@@ -6,6 +6,8 @@
 
 (in-package #:org.shirakumo.fraf.gamepad)
 
+(defvar *init* NIL)
+
 (define-condition index-out-of-range (error)
   ((index :initarg :index :reader index)
    (range :initarg :range :reader range))
@@ -28,7 +30,6 @@
 (define-alias (description device-description) (device))
 (define-alias (axis-count device-axis-count) (device))
 (define-alias (button-count device-button-count) (device))
-(define-alias (shutdown gamepad-shutdown) ())
 (define-alias (device-count gamepad-num-devices) ())
 (define-alias (detect-devices gamepad-detect-devices) ())
 (define-alias (process-events gamepad-process-events) ())
@@ -38,7 +39,16 @@
   (let ((count (1- (axis-count device))))
     (unless (<= 0 axis count)
       (error 'index-out-of-range :index axis :range (cons 0 count))))
-  (cffi:mem-aref (device-axis-states device) :float axis))
+  (* (cffi:mem-aref (device-axis-states device) :float axis)
+     (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)))
+
+(defun axis-label (device axis)
+  (check-type axis (integer 0 32))
+  (cffi:mem-aref (device-map-axes (device-device-map device)) 'axis axis))
+
+(defun axis-multiplier (device axis)
+  (check-type axis (integer 0 32))
+  (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis))
 
 (defun axes (device)
   (let* ((size (device-axis-count device))
@@ -53,6 +63,10 @@
     (unless (<= 0 button count)
       (error 'index-out-of-range :index button :range (cons 0 count))))
   (< 0 (cffi:mem-aref (device-button-states device) :uint button)))
+
+(defun button-label (device button)
+  (check-type button (integer 0 32))
+  (cffi:mem-aref (device-map-buttons (device-device-map device)) 'button button))
 
 (defun buttons (device)
   (let* ((size (device-button-count device))
@@ -70,12 +84,19 @@
     :button-states ,(buttons device)))
 
 (defun init ()
-  (gamepad-device-attach-func (cffi:callback device-attach-func) (cffi:null-pointer))
-  (gamepad-device-remove-func (cffi:callback device-remove-func) (cffi:null-pointer))
-  (gamepad-button-down-func (cffi:callback button-down-func) (cffi:null-pointer))
-  (gamepad-button-up-func (cffi:callback button-up-func) (cffi:null-pointer))
-  (gamepad-axis-move-func (cffi:callback axis-move-func) (cffi:null-pointer))
-  (gamepad-init))
+  (unless *init*
+    (gamepad-device-attach-func (cffi:callback device-attach-func) (cffi:null-pointer))
+    (gamepad-device-remove-func (cffi:callback device-remove-func) (cffi:null-pointer))
+    (gamepad-button-down-func (cffi:callback button-down-func) (cffi:null-pointer))
+    (gamepad-button-up-func (cffi:callback button-up-func) (cffi:null-pointer))
+    (gamepad-axis-move-func (cffi:callback axis-move-func) (cffi:null-pointer))
+    (gamepad-init)
+    (setf *init* T)))
+
+(defun shutdown ()
+  (when *init*
+    (gamepad-shutdown)
+    (setf *init* NIL)))
 
 (defun device (index)
   (check-type index integer)
@@ -98,3 +119,75 @@
       ((eql NIL) (with-output-to-string (stream)
                    (actually-print stream)))
       (stream (actually-print stream)))))
+
+(defun device-map (vendor product)
+  (let* ((map (gamepad-device-map vendor product))
+         (buttons (device-map-buttons map))
+         (axes (device-map-axes map))
+         (mult (device-map-axis-multipliers map)))
+    (list (list* :buttons
+                 (loop for i from 0 below 32
+                       for button = (cffi:mem-aref buttons 'button i)
+                       unless (eql button :unknown) collect (list i button)))
+          (list* :axes
+                 (loop for i from 0 below 32
+                       for axis = (cffi:mem-aref axes 'axis i)
+                       for mul = (cffi:mem-aref mult :char i)
+                       unless (eql axis :unknown) collect (list i axis mul))))))
+
+(defun (setf device-map) (map vendor product)
+  (cffi:with-foreign-object (dmap '(:struct device-map))
+    (let ((buttons (device-map-buttons dmap))
+          (axes (device-map-axes dmap))
+          (mult (device-map-axis-multipliers dmap)))
+      (loop for i from 0 below 32
+            for button = (second (assoc i (cdr (assoc :buttons map))))
+            for (axis mul) = (cdr (assoc i (cdr (assoc :axes map))))
+            do (setf (cffi:mem-aref buttons 'button i) (or button :unknown))
+               (setf (cffi:mem-aref axes 'axis i) (or axis :unknown))
+               (setf (cffi:mem-aref mult :char i) (or mul 1)))
+      (gamepad-set-device-map vendor product dmap)
+      map)))
+
+(defun merge-maps (map defaults)
+  (list (list* :buttons
+               (loop for i from 0 below 32
+                     for button = (or (assoc i (cdr (assoc :buttons map)))
+                                      (assoc i (cdr (assoc :buttons defaults))))
+                     when button collect button))
+        (list* :axes
+               (loop for i from 0 below 32
+                     for axis = (or (assoc i (cdr (assoc :axes map)))
+                                    (assoc i (cdr (assoc :axes defaults))))
+                     when axis collect axis))))
+
+(defun update-device-map (vendor product update)
+  (setf (device-map vendor product) (merge-maps update (device-map vendor product))))
+
+(defvar *vendor-product-names* (make-hash-table :test 'eql))
+
+(defmacro define-gamepad (name (vendor product &key inherit) &body map)
+  `(progn
+     (setf (gethash ',name *vendor-product-names*) (list ,vendor ,product))
+     (setf (device-map ,vendor ,product)
+           ,(if inherit
+                `(merge-maps ',map (apply #'device-map (gethash ',inherit *vendor-product-names*)))
+                `',map))))
+
+(defun device-name (device)
+  (with-output-to-string (o)
+    (loop for char across (cl-gamepad:description device)
+          do (cond ((eql char #\ ) (write-char #\- o))
+                   ((find char "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+                    (write-char (char-downcase char) o))))))
+
+(defun gamepad-definition (device)
+  (with-output-to-string (o)
+    (format o "~&(define-gamepad ~a (~a ~a)"
+            (device-name device) (cl-gamepad:vendor device) (cl-gamepad:product device))
+    (loop for (thing . mappings) in (cl-gamepad:device-map (cl-gamepad:vendor device) (cl-gamepad:product device))
+          do (format o "~&  (~(~s~)" thing)
+             (loop for (id label mod) in mappings
+                   do (format o "~&   (~2d ~(~s~)~@[ ~a~])" id label mod))
+             (format o ")"))
+    (format o ")")))

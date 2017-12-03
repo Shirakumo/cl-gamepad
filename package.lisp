@@ -11,6 +11,9 @@
   ;; low-level.lisp
   (:export
    #:libstem-gamepad
+
+   #:button
+   #:axis
    
    #:device
    #:device-id
@@ -21,7 +24,16 @@
    #:device-button-count
    #:device-axis-states
    #:device-button-states
+   #:device-device-map
    #:device-private-data
+
+   #:device-map
+   #:device-map-button-map
+   #:device-map-axis-map
+   #:device-map-axis-multiplier
+   #:device-map-buttons
+   #:device-map-axes
+   #:device-map-axis-multipliers
    
    #:device-attached
    #:device-removed
@@ -38,6 +50,8 @@
    #:gamepad-shutdown
    #:gamepad-num-devices
    #:gamepad-device-at-index
+   #:gamepad-device-map
+   #:gamepad-set-device-map
    #:gamepad-detect-devices
    #:gamepad-process-events
    #:gamepad-device-attach-func
@@ -62,8 +76,11 @@
    #:axis-count
    #:button-count
    #:axis
+   #:axis-label
+   #:axis-multiplier
    #:axes
    #:button
+   #:button-label
    #:buttons
    #:device-plist   
    
@@ -80,4 +97,8 @@
    #:devices
    #:detect-devices
    #:process-events
-   #:print-device))
+   #:print-device
+   #:device-map
+   #:update-device-map
+   #:define-gamepad
+   #:gamepad-definition))

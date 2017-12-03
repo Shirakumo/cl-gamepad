@@ -30,11 +30,16 @@ See PRODUCT
 See DESCRIPTION
 See AXIS-COUNT
 See AXIS
+See AXIS-LABEL
+See AXIS-MULTIPLIER
 See AXES
 See BUTTON-COUNT
 See BUTTON
+See BUTTON-LABEL
 See BUTTONS
 See DEVICE-PLIST
+See DEVICE-MAP
+See UPDATE-DEVICE-MAP
 
 See DEVICE-ID
 See DEVICE-VENDOR
@@ -44,6 +49,7 @@ See DEVICE-AXIS-COUNT
 See DEVICE-AXIS-STATES
 See DEVICE-BUTTON-COUNT
 See DEVICE-BUTTON-STATES
+See DEVICE-DEVICE-MAP
 See DEVICE-PRIVATE-DATA
 See DETECT-DEVICES")
   
@@ -100,6 +106,12 @@ should be taken as TRUE.
 
 See DEVICE
 See DEVICE-BUTTON")
+
+  (function device-device-map
+    "Accesses the pointer to the device map that describes the button and axis layout.
+
+See DEVICE
+See DEVICE-MAP")
   
   (function device-private-data
     "Accesses the pointer to the private data of the gamepad device struct.
@@ -107,6 +119,53 @@ See DEVICE-BUTTON")
 You should never need this.
 
 See DEVICE")
+
+  (type device-map
+    "Contains information to map physical buttons and axes to standardised labels relating to their function.
+
+The map contains three particular mappings, limited to at most
+a physical ID of 31:
+
+  button map       --- Each slot maps to a BUTTON enum value that
+                       describes the button's function.
+  axis map         --- Each slot maps to an AXIS enum value that
+                       describes the axis' function.
+  axis multiplier  --- Each slot maps  to a char of either 1 or -1
+                       representing a multiplier to standardise the
+                       axis' direction.
+
+Note that the functionality of the buttons and axes should be
+normalised based on the layout of an XBOX 360 controller.
+
+See BUTTON
+See AXIS
+See DEVICE-MAP-BUTTON-MAP
+See DEVICE-MAP-AXIS-MAP
+See DEVICE-MAP-AXIS-MULTIPLIER")
+
+  (function device-map-button-map
+    "Accessor to the first button mapping of the device-map.
+
+The button map is an in-struct array, so you'll probably want to
+use foreign-slot-pointer and mem-aref instead.
+
+See DEVICE-MAP")
+
+  (function device-map-axis-map
+    "Accessor to the first axis mapping of the device-map.
+
+The axis map is an in-struct array, so you'll probably want to
+use foreign-slot-pointer and mem-aref instead.
+
+See DEVICE-MAP")
+
+  (function device-map-axis-multiplier
+    "Accessor to the first axis multiplier of the device-map.
+
+The multiplier map is an in-struct array, so you'll probably want to
+use foreign-slot-pointer and mem-aref instead.
+
+See DEVICE-MAP")
 
   (function gamepad-init
     "Calls the Gamepad_init C function to initialize the library.")
@@ -120,6 +179,12 @@ See DEVICE")
   (function gamepad-device-at-index
     "Calls the Gamepad_deviceAtIndex C function, returning a device pointer corresponding to the index.")
 
+  (function gamepad-device-map
+    "Retrieves the device map for the given vendor and product. If no specific map is known, a generic one is returned.")
+
+  (function gamepad-set-device-map
+    "Set the device map for a given vendor and product. The struct's contents are copied, and you should free the one you pass in yourself.")
+  
   (function gamepad-detect-devices
     "Calls the Gamepad_detectDevices C function, leading to new devices being recognised.")
   
@@ -206,9 +271,64 @@ The axis should be a number from 0 below DEVICE-AXIS-COUNT.
 If an invalid axis id is passed, an INDEX-OUT-OF-RANGE error is
 signalled.
 Returned is a float in the range [-1 1].
+The axis direction is normalised per the axis multiplier in the
+corresponding device map.
 
 See DEVICE
 See AXIS-COUNT")
+
+  (function axis-label
+    "Return the label for the given physical axis on the gamepad device.
+
+The axis should be a number from 0 below DEVICE-AXIS-COUNT.
+If an invalid axis id is passed, an INDEX-OUT-OF-RANGE error is
+signalled.
+Returned is a keyword out of the following set:
+
+  :unknown     --- An unknown axis. The default.
+  :l-h         --- The horizontal movement of the left analog stick.
+  :l-v         --- The vertical movement of the right analog stick.
+  :r-h         --- The horizontal movement of the right analog stick.
+  :r-v         --- The vertical movement of the right analog stick-
+  :dpad-h      --- The horizontal movement of the dpad.
+  :dpad-v      --- The vertical movement of the dpad.
+  :button-x    --- The amount the X (left)  button is pressed.
+  :button-y    --- The amount the Y (up)    button is pressed.
+  :button-z    --- The amount the Z         button is pressed.
+  :button-a    --- The amount the A (down)  button is pressed.
+  :button-b    --- The amount the B (right) button is pressed.
+  :button-c    --- The amount the C         button is pressed.
+  :l1          --- The amount the left upper trigger is pressed.
+  :l2          --- The amount the left lower trigger is pressed.
+  :r1          --- The amount the right upper trigger is pressed.
+  :r2          --- The amount the right lower trigger is pressed.
+  :tilt-x      --- The tilting of the controller in X direction.
+  :tilt-y      --- The tilting of the controller in Y direction.
+  :tilt-z      --- The tilting of the controller in Z direction.
+  :move-x      --- The acceleration in X direction.
+  :move-y      --- The acceleration in Y direction.
+  :move-z      --- The acceleration in Z direction.
+  :wheel       --- The turning of the wheel.
+  :accelerator --- The amount the accelerator is pressed.
+  :brake       --- The amount the brake is pressed.
+  :x           --- The movement of the joystick in X direction.
+  :y           --- The movement of the joystick in Y direction.
+  :z           --- The rotation of the joystick in Z direction.
+  :throttle    --- The value of the throttle.
+
+The button map is mostly modelled after the XBOX360 controller.
+
+See DEVICE
+See DEVICE-MAP")
+
+  (function axis-multiplier
+    "Return the multiplier for the axis value.
+
+Returns either 1 or -1 depending on whether the value of the
+axis should be inverted or not.
+
+See DEVICE
+See DEVICE-MAP")
 
   (function axes
     "Returns a vector of the state of each axis on the gamepad device.
@@ -226,6 +346,41 @@ Returned is T for pressed and NIL for released.
 
 See DEVICE
 See DEVICE-BUTTON-COUNT")
+
+  (function button-label
+            "Return the label for the given physical button on the gamepad device.
+
+The button should be a number from 0 below DEVICE-BUTTON-COUNT.
+If an invalid button id is passed, an INDEX-OUT-OF-RANGE error is
+signalled.
+Returned is a keyword out of the following set:
+
+  :unknown --- An unknown button. This is the default.
+  :x       --- The X (left)  button.
+  :y       --- The Y (up)    button.
+  :z       --- The Z         button.
+  :a       --- The A (down)  button.
+  :b       --- The B (right) button.
+  :c       --- The C         button.
+  :l1      --- The left upper trigger.
+  :l2      --- The left lower trigger.
+  :r1      --- The right upper trigger.
+  :r2      --- The right lower trigger.
+  :l       --- Whether the left analog stick is pressed in.
+  :r       --- Whether the right analog stick is pressed in.
+  :dpad-l  --- The left direction of the dpad.
+  :dpad-r  --- The right direction of the dpad.
+  :dpad-u  --- The up direction of the dpad.
+  :dpad-d  --- The down direction of the dpad.
+  :select  --- The select (left) button.
+  :home    --- The home (center) button.
+  :start   --- The start (right) button.
+  :trigger --- The trigger button.
+
+The button map is mostly modelled after the XBOX360 controller.
+
+See DEVICE
+See DEVICE-MAP")
 
   (function buttons
     "Returns a vector of the state of each button on the gamepad device.
@@ -397,4 +552,80 @@ See DETECT-DEVICES")
 
 Useful for debugging prints.
 
-See DEVICE"))
+See DEVICE")
+
+  (function device-map
+    "Accessor to the device map for the given vendor and product.
+
+The device map assigns labels to the buttons and axes and normalises
+the axes' direction if necessary. The map is a list of the following
+structure:
+
+   DEVICE-MAP ::= (BUTTON-MAP AXIS-MAP)
+   BUTTON-MAP ::= (:buttons BUTTON*)
+   BUTTON     ::= (ID LABEL)
+   AXIS-MAP   ::= (:axes AXIS*)
+   AXIS       ::= (ID LABEL MULTIPLIER)
+   ID         --- A numerical ID of a button or axis
+   LABEL      --- The keyword label for the button or axis' functionality.
+   MULTIPLIER --- Either 1 or -1 to potentially reverse the axis' direction.
+
+See AXIS-LABEL and BUTTON-LABEL for the available labels and their
+intended usage. A sample map for the Xbox360 controller as recognised
+on Linux platforms follows.
+
+   ((:axes
+     ( 0 :l-h)
+     ( 1 :l-v)
+     ( 2 :l2)
+     ( 3 :r-h)
+     ( 4 :r-v)
+     ( 5 :r2)
+     ( 6 :dpad-h)
+     ( 7 :dpad-v))
+    (:buttons
+     ( 0 :a)
+     ( 1 :b)
+     ( 2 :x)
+     ( 3 :y)
+     ( 4 :l1)
+     ( 5 :r1)
+     ( 6 :select)
+     ( 7 :start)
+     ( 8 :home)
+     ( 9 :l)
+     (10 :r)))
+
+Note that the IDs for each button and axis are unfortunately very
+much platform-dependent and a mapping for each platform must be
+created individually.")
+
+  (function update-device-map
+    "Update the device map for a select few records.
+
+Unlike (SETF DEVICE-MAP) this does not clear out the mappings that
+are not explicitly given, and instead leaves those to their default
+values.
+
+See DEVICE-MAP")
+
+  (function define-gamepad
+    "Define the mapping for a particular gamepad device.
+
+The MAP should follow the same schema as the one defined in the
+DEVICE-MAP docstring. if the INHERIT option is passed, the defined
+mappings are merged together with those of the inherited gamepad
+mapping definition. This allows you to easily define gamepads that
+are otherwise very similar.
+
+See DEVICE-MAP
+See GAMEPAD-DEFINITION")
+
+  (function gamepad-definition
+    "Returns a string representation of a valid mapping definition for the given device.
+
+This function is useful if you want to extract the available device
+mapping information to turn it into a static gamepad definition as
+used by DEFINE-GAMEPAD.
+
+See DEFINE-GAMEPAD"))

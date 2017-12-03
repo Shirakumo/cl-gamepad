@@ -5,7 +5,7 @@
 |#
 
 (asdf:defsystem cl-gamepad
-  :version "1.0.0"
+  :version "2.0.0"
   :license "Artistic"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
@@ -15,7 +15,8 @@
   :components ((:file "package")
                (:file "low-level")
                (:file "wrapper")
-               (:file "documentation"))
+               (:file "documentation")
+               (:file "database"))
   :depends-on (:cffi
                :trivial-features
                :documentation-utils))

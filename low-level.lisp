@@ -24,6 +24,65 @@
 
 (use-foreign-library libstem-gamepad)
 
+(defcenum button
+  :unknown
+  :x
+  :y
+  :z
+  :a
+  :b
+  :c
+  :l1
+  :l2
+  :r1
+  :r2
+  :l
+  :r
+  :dpad-l
+  :dpad-r
+  :dpad-u
+  :dpad-d
+  :select
+  :home
+  :start
+  :trigger)
+
+(defcenum axis
+  :unknown
+  :l-h
+  :l-v
+  :r-h
+  :r-v
+  :dpad-h
+  :dpad-v
+  :dpad-l
+  :dpad-r
+  :dpad-u
+  :dpad-d
+  :button-x
+  :button-y
+  :button-z
+  :button-a
+  :button-b
+  :button-c
+  :l1
+  :l2
+  :r1
+  :r2
+  :tilt-x
+  :tilt-y
+  :tilt-z
+  :move-x
+  :move-y
+  :move-z
+  :wheel
+  :accelerator
+  :brake
+  :x
+  :y
+  :z
+  :throttle)
+
 (defcstruct (device :class device :conc-name device-)
   (id :uint)
   (description :string)
@@ -33,7 +92,23 @@
   (button-count :uint)
   (axis-states (:pointer :float))
   (button-states (:pointer :uint))
+  (device-map :pointer)
   (private-data :pointer))
+
+(defcstruct (device-map :class device-map :conc-name device-map)
+  (button-map button :count 32)
+  (axis-map axis :count 32)
+  (axis-multipliers :char :count 32))
+
+(declaim (inline device-map-buttons device-map-axes device-map-axis-multipliers))
+(defun device-map-buttons (device-map)
+  (cffi:foreign-slot-pointer device-map '(:struct device-map) 'button-map))
+
+(defun device-map-axes (device-map)
+  (cffi:foreign-slot-pointer device-map '(:struct device-map) 'axis-map))
+
+(defun device-map-axis-multipliers (device-map)
+  (cffi:foreign-slot-pointer device-map '(:struct device-map) 'axis-multipliers))
 
 (defmacro with-callback-handling (() &body body)
   `(ignore-errors
@@ -80,6 +155,15 @@
 
 (defcfun (gamepad-device-at-index "Gamepad_deviceAtIndex") (:pointer (:struct device))
   (device-index :uint))
+
+(defcfun (gamepad-device-map "Gamepad_deviceMap") (:pointer (:struct device-map))
+  (vendor-id :int)
+  (product-id :int))
+
+(defcfun (gamepad-set-device-map "Gamepad_setDeviceMap") :char
+  (vendor-id :int)
+  (product-id :int)
+  (map :pointer))
 
 (defcfun (gamepad-detect-devices "Gamepad_detectDevices") :void)
 

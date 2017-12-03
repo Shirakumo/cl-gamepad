@@ -29,6 +29,9 @@
 (use-foreign-library vcruntime140)
 (use-foreign-library libstem-gamepad)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defconstant DEVICE-MAP-MAX 64))
+
 (defcenum button
   :unknown
   :x
@@ -101,9 +104,9 @@
   (private-data :pointer))
 
 (defcstruct (device-map :class device-map :conc-name device-map)
-  (button-map button :count 32)
-  (axis-map axis :count 32)
-  (axis-multipliers :char :count 32))
+  (button-map button :count #.DEVICE-MAP-MAX)
+  (axis-map axis :count #.DEVICE-MAP-MAX)
+  (axis-multipliers :char :count #.DEVICE-MAP-MAX))
 
 (declaim (inline device-map-buttons device-map-axes device-map-axis-multipliers))
 (defun device-map-buttons (device-map)

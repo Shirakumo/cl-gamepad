@@ -12,6 +12,8 @@
   (:export
    #:libstem-gamepad
 
+   #:DEVICE-MAP-MAX
+
    #:button
    #:axis
    

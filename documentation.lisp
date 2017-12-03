@@ -14,6 +14,9 @@
   (variable *static*
     "Variable containing a pathname to the static directory.")
 
+  (variable DEVICE-MAP-MAX
+    "Returns the maximum ID that can be referenced from a device-map.")
+
   (type device
     "C struct that contains all relevant information about a gamepad device.
 
@@ -124,7 +127,7 @@ See DEVICE")
     "Contains information to map physical buttons and axes to standardised labels relating to their function.
 
 The map contains three particular mappings, limited to at most
-a physical ID of 31:
+a physical ID of DEVICE-MAP-MAX minus one.
 
   button map       --- Each slot maps to a BUTTON enum value that
                        describes the button's function.
@@ -137,6 +140,7 @@ a physical ID of 31:
 Note that the functionality of the buttons and axes should be
 normalised based on the layout of an XBOX 360 controller.
 
+See DEVICE-MAP-MAX
 See BUTTON
 See AXIS
 See DEVICE-MAP-BUTTON-MAP
@@ -281,8 +285,7 @@ See AXIS-COUNT")
     "Return the label for the given physical axis on the gamepad device.
 
 The axis should be a number from 0 below DEVICE-AXIS-COUNT.
-If an invalid axis id is passed, an INDEX-OUT-OF-RANGE error is
-signalled.
+If an invalid axis id is passed, :UNKNOWN is returned.
 Returned is a keyword out of the following set:
 
   :unknown     --- An unknown axis. The default.
@@ -326,6 +329,8 @@ See DEVICE-MAP")
 
 Returns either 1 or -1 depending on whether the value of the
 axis should be inverted or not.
+The axis should be a number from 0 below DEVICE-AXIS-COUNT.
+If an invalid axis id is passed, 1 is returned.
 
 See DEVICE
 See DEVICE-MAP")
@@ -351,8 +356,7 @@ See DEVICE-BUTTON-COUNT")
             "Return the label for the given physical button on the gamepad device.
 
 The button should be a number from 0 below DEVICE-BUTTON-COUNT.
-If an invalid button id is passed, an INDEX-OUT-OF-RANGE error is
-signalled.
+If an invalid button id is passed, :UNKNOWN is returned.
 Returned is a keyword out of the following set:
 
   :unknown --- An unknown button. This is the default.

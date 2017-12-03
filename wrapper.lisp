@@ -43,12 +43,14 @@
      (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)))
 
 (defun axis-label (device axis)
-  (check-type axis (integer 0 32))
-  (cffi:mem-aref (device-map-axes (device-device-map device)) 'axis axis))
+  (if (< -1 axis DEVICE-MAP-MAX)
+      (cffi:mem-aref (device-map-axes (device-device-map device)) 'axis axis)
+      :unknown))
 
 (defun axis-multiplier (device axis)
-  (check-type axis (integer 0 32))
-  (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis))
+  (if (< -1 axis DEVICE-MAP-MAX)
+      (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)
+      1))
 
 (defun axes (device)
   (let* ((size (device-axis-count device))
@@ -65,8 +67,9 @@
   (< 0 (cffi:mem-aref (device-button-states device) :uint button)))
 
 (defun button-label (device button)
-  (check-type button (integer 0 32))
-  (cffi:mem-aref (device-map-buttons (device-device-map device)) 'button button))
+  (if (< -1 button DEVICE-MAP-MAX)
+      (cffi:mem-aref (device-map-buttons (device-device-map device)) 'button button)
+      :unknown))
 
 (defun buttons (device)
   (let* ((size (device-button-count device))
@@ -126,11 +129,11 @@
          (axes (device-map-axes map))
          (mult (device-map-axis-multipliers map)))
     (list (list* :buttons
-                 (loop for i from 0 below 32
+                 (loop for i from 0 below DEVICE-MAP-MAX
                        for button = (cffi:mem-aref buttons 'button i)
                        unless (eql button :unknown) collect (list i button)))
           (list* :axes
-                 (loop for i from 0 below 32
+                 (loop for i from 0 below DEVICE-MAP-MAX
                        for axis = (cffi:mem-aref axes 'axis i)
                        for mul = (cffi:mem-aref mult :char i)
                        unless (eql axis :unknown) collect (list i axis mul))))))
@@ -140,7 +143,7 @@
     (let ((buttons (device-map-buttons dmap))
           (axes (device-map-axes dmap))
           (mult (device-map-axis-multipliers dmap)))
-      (loop for i from 0 below 32
+      (loop for i from 0 below DEVICE-MAP-MAX
             for button = (second (assoc i (cdr (assoc :buttons map))))
             for (axis mul) = (cdr (assoc i (cdr (assoc :axes map))))
             do (setf (cffi:mem-aref buttons 'button i) (or button :unknown))
@@ -151,12 +154,12 @@
 
 (defun merge-maps (map defaults)
   (list (list* :buttons
-               (loop for i from 0 below 32
+               (loop for i from 0 below DEVICE-MAP-MAX
                      for button = (or (assoc i (cdr (assoc :buttons map)))
                                       (assoc i (cdr (assoc :buttons defaults))))
                      when button collect button))
         (list* :axes
-               (loop for i from 0 below 32
+               (loop for i from 0 below DEVICE-MAP-MAX
                      for axis = (or (assoc i (cdr (assoc :axes map)))
                                     (assoc i (cdr (assoc :axes defaults))))
                      when axis collect axis))))

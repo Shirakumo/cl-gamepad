@@ -316,6 +316,10 @@ Returned is a keyword out of the following set:
   :r-v         --- The vertical movement of the right analog stick-
   :dpad-h      --- The horizontal movement of the dpad.
   :dpad-v      --- The vertical movement of the dpad.
+  :dpad-l      --- The movement of the left dpad button.
+  :dpad-r      --- The movement of the right dpad button.
+  :dpad-u      --- The movement of the up dpad button.
+  :dpad-d      --- The movement of the down dpad button.
   :button-x    --- The amount the X (left)  button is pressed.
   :button-y    --- The amount the Y (up)    button is pressed.
   :button-z    --- The amount the Z         button is pressed.

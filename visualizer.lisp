@@ -116,7 +116,7 @@
   (q+:add-widget layout buttons-label)
   (let ((buttons (q+:make-qgridlayout)))
     (setf (q+:margin buttons) 0)
-    (dotimes (i (cl-gamepad:axis-count device))
+    (dotimes (i (cl-gamepad:button-count device))
       (q+:add-widget buttons (make-instance 'button :device device :i i)
                      (floor i 5) (mod i 5)))
     (q+:add-layout layout buttons))

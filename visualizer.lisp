@@ -29,6 +29,7 @@
      (q+:restore ,painter)))
 
 (defun cl-gamepad:device-attached (device)
+  (format NIL "~&> Device attached: ~a" (cl-gamepad:print-device device NIL))
   (when *main*
     (let ((gamepads (gamepads *main*)))
       (unless (find device gamepads :key #'device :test #'cffi:pointer-eq)
@@ -37,6 +38,7 @@
           (vector-push-extend gamepad gamepads))))))
 
 (defun cl-gamepad:device-removed (device)
+  (format NIL "~&> Device detached: ~a" (cl-gamepad:print-device device NIL))
   (when *main*
     (let* ((gamepads (gamepads *main*))
            (pos (position device gamepads :key #'device :test #'cffi:pointer-eq)))

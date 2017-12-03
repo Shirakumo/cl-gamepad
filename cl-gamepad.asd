@@ -16,7 +16,9 @@
                (:file "low-level")
                (:file "wrapper")
                (:file "documentation")
-               (:file "database"))
+               #+linux (:file "database-lin")
+               #+darwin (:file "database-mac")
+               #+windows (:file "database-win"))
   :depends-on (:cffi
                :trivial-features
                :documentation-utils))

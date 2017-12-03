@@ -29,6 +29,30 @@
    ( 6 :dpad-h)
    ( 7 :dpad-v)))
 
+;; same as "xbox-360", all buttons where right in the visualizer
+(define-gamepad microsoft-xbox-360-pad (1118 654)
+  (:buttons
+   ( 0 :a)
+   ( 1 :b)
+   ( 2 :x)
+   ( 3 :y)
+   ( 4 :l1)
+   ( 5 :r1)
+   ( 6 :select)
+   ( 7 :start)
+   ( 8 :home)
+   ( 9 :l)
+   (10 :r))
+  (:axes
+   ( 0 :l-h 1)
+   ( 1 :l-v 1)
+   ( 2 :l2 1)
+   ( 3 :r-h 1)
+   ( 4 :r-v 1)
+   ( 5 :r2 1)
+   ( 6 :dpad-h 1)
+   ( 7 :dpad-v 1)))
+
 (define-gamepad logitech-f310 (1133 49693 :inherit xbox-360)
   (:buttons)
   (:axes))
@@ -116,3 +140,18 @@
   (:axes
    ( 0 :dpad-h)
    ( 1 :dpad-v)))
+
+;; "iBUFFALO Classic USB Gamepad" (snes USB controller)
+(define-gamepad usb2axis-8button-gamepad-- (1411 8288)
+  (:buttons
+   ( 0 :a)
+   ( 1 :b)
+   ( 2 :x)
+   ( 3 :y)
+   ( 4 :l1)
+   ( 5 :r1)
+   ( 6 :select)
+   ( 7 :start))
+  (:axes
+   ( 0 :dpad-h 1)
+   ( 1 :dpad-v 1)))

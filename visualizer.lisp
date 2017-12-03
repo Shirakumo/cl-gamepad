@@ -30,10 +30,11 @@
 
 (defun cl-gamepad:device-attached (device)
   (when *main*
-    (let ((gamepads (gamepads *main*))
-          (gamepad (make-instance 'gamepad :device device)))
-      (q+:insert-widget (slot-value *main* 'layout) (length gamepads) gamepad)
-      (vector-push-extend gamepad gamepads))))
+    (let ((gamepads (gamepads *main*)))
+      (unless (find device gamepads :key #'device :test #'cffi:pointer-eq)
+        (let ((gamepad (make-instance 'gamepad :device device)))
+          (q+:insert-widget (slot-value *main* 'layout) (length gamepads) gamepad)
+          (vector-push-extend gamepad gamepads))))))
 
 (defun cl-gamepad:device-removed (device)
   (when *main*
@@ -69,9 +70,7 @@
   (dotimes (i (cl-gamepad:device-count))
     (let ((device (cl-gamepad:device i)))
       (when device
-        (let ((gamepad (make-instance 'gamepad :device device)))
-          (q+:add-widget layout gamepad)
-          (vector-push-extend gamepad gamepads)))))
+        (cl-gamepad:device-attached device))))
   (q+:add-stretch layout))
 
 (define-slot (main update) ()

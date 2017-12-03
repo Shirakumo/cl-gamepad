@@ -10,6 +10,10 @@
 (defvar *static* (make-pathname :name NIL :type NIL :defaults (merge-pathnames "static/" *here*)))
 (pushnew *static* cffi:*foreign-library-directories*)
 
+(define-foreign-library vcruntime140
+  (:windows (:or "vcruntime140.dll"
+                 "vcruntime140d.dll")))
+
 (define-foreign-library libstem-gamepad
   (:darwin (:or "libstem_gamepad.dylib" "libstem_gamepad.so"
                 #+X86 "mac32-libstem_gamepad.dylib"
@@ -22,6 +26,7 @@
                  #+X86-64 "win64-libstem_gamepad.dll"))
   (t (:default "stem_gamepad")))
 
+(use-foreign-library vcruntime140)
 (use-foreign-library libstem-gamepad)
 
 (defcenum button

@@ -52,7 +52,7 @@
 (define-widget main (QMainWindow)
   ((gamepads :initform (make-array 0 :adjustable T :fill-pointer T) :accessor gamepads)))
 
-(define-initializer (main setup)
+(define-initializer (main setup 100)
   (setf *main* main)
   (setf (q+:window-title main) "Gamepad Visualizer")
   (setf (q+:fixed-size main) (values 600 500)))

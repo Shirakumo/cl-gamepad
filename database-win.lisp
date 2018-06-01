@@ -39,6 +39,20 @@
   (:buttons)
   (:axes))
 
+(define-gamepad buffalo-bsgp301 (1411 8288)
+  (:buttons
+   ( 0 :b)
+   ( 1 :a)
+   ( 2 :y)
+   ( 3 :x)
+   ( 4 :l1)
+   ( 5 :r1)
+   ( 6 :select)
+   ( 7 :start))
+  (:axes
+   ( 0 :dpad-v 1)
+   ( 1 :dpad-h 1)))
+
 (define-gamepad dualshock-3 (1356 616)
   (:buttons
    ( 0 :y)
@@ -90,17 +104,3 @@
    ( 5 :dpad-v 1)
    ( 6 :r2 1)
    ( 7 :l2 1)))
-
-(define-gamepad buffalo-bsgp301 (1411 8288)
-  (:buttons
-   ( 0 :b)
-   ( 1 :a)
-   ( 2 :y)
-   ( 3 :x)
-   ( 4 :l1)
-   ( 5 :r1)
-   ( 6 :select)
-   ( 7 :start))
-  (:axes
-   ( 0 :dpad-v 1)
-   ( 1 :dpad-h 1)))

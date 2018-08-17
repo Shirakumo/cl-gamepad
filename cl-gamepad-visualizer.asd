@@ -10,7 +10,9 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Gamepad visualizer to help figure out the proper IDs and test the library."
-  :homepage "https://github.com/Shirakumo/cl-gamepad"
+  :homepage "https://Shirakumo.github.io/cl-gamepad/"
+  :bug-tracker "https://github.com/Shirakumo/cl-gamepad/issues"
+  :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
   :serial T
   :components ((:file "visualizer"))
   :depends-on (:cl-gamepad

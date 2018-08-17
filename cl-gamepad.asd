@@ -10,7 +10,9 @@
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Bindings to libstem_gamepad, allowing the handling of gamepad input."
-  :homepage "https://github.com/Shirakumo/cl-gamepad"
+  :homepage "https://Shirakumo.github.io/cl-gamepad/"
+  :bug-tracker "https://github.com/Shirakumo/cl-gamepad/issues"
+  :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
   :serial T
   :components ((:file "package")
                (:file "low-level")

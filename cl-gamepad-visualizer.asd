@@ -6,7 +6,7 @@
 
 (asdf:defsystem cl-gamepad-visualizer
   :version "1.0.0"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Gamepad visualizer to help figure out the proper IDs and test the library."

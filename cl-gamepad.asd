@@ -6,7 +6,7 @@
 
 (asdf:defsystem cl-gamepad
   :version "2.0.0"
-  :license "Artistic"
+  :license "zlib"
   :author "Nicolas Hafner <shinmera@tymoon.eu>"
   :maintainer "Nicolas Hafner <shinmera@tymoon.eu>"
   :description "Bindings to libstem_gamepad, allowing the handling of gamepad input."

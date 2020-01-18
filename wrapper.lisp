@@ -35,12 +35,17 @@
 (define-alias (process-events gamepad-process-events) ())
 
 (defun axis (device axis)
-  (check-type axis integer)
-  (let ((count (1- (axis-count device))))
-    (unless (<= 0 axis count)
-      (error 'index-out-of-range :index axis :range (cons 0 count))))
-  (* (cffi:mem-aref (device-axis-states device) :float axis)
-     (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)))
+  (let* ((count (1- (axis-count device)))
+         (axis (etypecase axis
+                 (integer
+                  (unless (<= 0 axis count)
+                    (error 'index-out-of-range :index axis :range (cons 0 count)))
+                  axis)
+                 (symbol
+                  (or (label-axis device axis)
+                      (error "No such axis ~a" axis))))))
+    (* (cffi:mem-aref (device-axis-states device) :float axis)
+       (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis))))
 
 (defun axis-label (device axis)
   (if (< -1 axis DEVICE-MAP-MAX)
@@ -54,9 +59,18 @@
                (return i)))))
 
 (defun axis-multiplier (device axis)
-  (if (< -1 axis DEVICE-MAP-MAX)
-      (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)
-      1))
+  (let* ((count (1- (axis-count device)))
+         (axis (etypecase axis
+                 (integer
+                  (unless (<= 0 axis count)
+                    (error 'index-out-of-range :index axis :range (cons 0 count)))
+                  axis)
+                 (symbol
+                  (or (label-axis device axis)
+                      (error "No such axis ~a" axis))))))
+    (if (< -1 axis DEVICE-MAP-MAX)
+        (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)
+        1)))
 
 (defun axes (device)
   (let* ((size (device-axis-count device))
@@ -66,11 +80,16 @@
       (setf (aref array i) (cffi:mem-aref p :float i)))))
 
 (defun button (device button)
-  (check-type button integer)
-  (let ((count (1- (button-count device))))
-    (unless (<= 0 button count)
-      (error 'index-out-of-range :index button :range (cons 0 count))))
-  (< 0 (cffi:mem-aref (device-button-states device) :uint button)))
+  (let* ((count (1- (button-count device)))
+         (button (etypecase button
+                   (integer
+                    (unless (<= 0 button count)
+                      (error 'index-out-of-range :index button :range (cons 0 count)))
+                    button)
+                   (symbol
+                    (or (label-button device button)
+                        (error "No such button ~a" button))))))
+    (< 0 (cffi:mem-aref (device-button-states device) :uint button))))
 
 (defun button-label (device button)
   (if (< -1 button DEVICE-MAP-MAX)

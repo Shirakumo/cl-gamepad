@@ -79,10 +79,12 @@
    #:button-count
    #:axis
    #:axis-label
+   #:label-axis
    #:axis-multiplier
    #:axes
    #:button
    #:button-label
+   #:label-button
    #:buttons
    #:device-plist   
    

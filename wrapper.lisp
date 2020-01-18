@@ -47,6 +47,12 @@
       (cffi:mem-aref (device-map-axes (device-device-map device)) 'axis axis)
       :unknown))
 
+(defun label-axis (device label)
+  (let ((map (device-map-axes (device-device-map device))))
+    (loop for i from 0 below (device-axis-count device)
+          do (when (eq label (cffi:mem-aref map 'axis i))
+               (return i)))))
+
 (defun axis-multiplier (device axis)
   (if (< -1 axis DEVICE-MAP-MAX)
       (cffi:mem-aref (device-map-axis-multipliers (device-device-map device)) :char axis)
@@ -70,6 +76,12 @@
   (if (< -1 button DEVICE-MAP-MAX)
       (cffi:mem-aref (device-map-buttons (device-device-map device)) 'button button)
       :unknown))
+
+(defun label-button (device label)
+  (let ((map (device-map-buttons (device-device-map device))))
+    (loop for i from 0 below (device-button-count device)
+          do (when (eq label (cffi:mem-aref map 'button i))
+               (return i)))))
 
 (defun buttons (device)
   (let* ((size (device-button-count device))

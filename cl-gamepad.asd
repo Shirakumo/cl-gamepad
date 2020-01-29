@@ -15,6 +15,8 @@
   :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
   :serial T
   :components ((:file "package")
+               (:file "protocol")
+               (:file "linux-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux))
   :depends-on (:cffi
                :trivial-features

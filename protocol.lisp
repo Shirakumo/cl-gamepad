@@ -18,6 +18,22 @@
                    :move-x :move-y :move-z
                    :wheel :gas :brake :throttle :rudder))
 
+(defstruct event
+  (device NIL :type device)
+  (time 0 :type (unsigned-byte 64))
+  (code 0 :type (unsigned-byte 32))
+  (label NIL :type symbol))
+
+(defstruct (button-down (:include event)
+                        (:constructor make-button-down (device time code label))))
+
+(defstruct (button-up (:include event)
+                      (:constructor make-button-up (device time code label))))
+
+(defstruct (axis-move (:include event)
+                      (:constructor make-axis-move (device time label code value)))
+  (value 0f0 :type single-float))
+
 (defclass device ()
   ((name :initarg :name :initform NIL :reader name)
    (vendor :initarg :vendor :initform NIL :reader vendor)
@@ -51,7 +67,9 @@
       `(load-time-value (position ,label (load-time-value *labels*)))
       whole))
 
-;; process-devices
-;; poll-devices
-;; process-events
-;; poll-events
+;; (defun init ())
+;; (defun shutdown ())
+;; (defun list-devices ())
+;; (defun poll-devices (&key timeout))
+;; (defun poll-events (device function &key timeout))
+;; (defun rumble (device &key)) ; TBD

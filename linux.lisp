@@ -4,179 +4,25 @@
  Author: Nicolas Hafner <shinmera@tymoon.eu>
 |#
 
-
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
-(cffi:define-foreign-library evdev
-  (T (:default "libevdev")))
-
-(cffi:defctype fd :int)
-(cffi:defctype errno :int64)
-
-(cffi:defbitfield open-flag
-  (:read          #o0000000)
-  (:write         #o0000002)
-  (:create        #o0000100)
-  (:ensure-create #o0000200)
-  (:dont-claim-tty#o0000400)
-  (:truncate      #o0001000)
-  (:non-block     #o0004000)
-  (:data-sync     #o0010000)
-  (:async         #o0020000)
-  (:direct        #o0040000)
-  (:large-file    #o0100000)
-  (:directory     #o0200000)
-  (:no-follow     #o0400000)
-  (:file-sync     #o4010000))
-
-(cffi:defcenum read-flag
-  (:sync       1)
-  (:normal     2)
-  (:force-sync 4)
-  (:blocking   8))
-
-(cffi:defcenum property
-  (:pointer        #x0)
-  (:direct         #x1)
-  (:button-pad     #x2)
-  (:sim-mt         #x3)
-  (:top-button-pad #x4)
-  (:pointing-stick #x5)
-  (:accelerometer  #x6))
-
-(cffi:defcenum event-type
-  (:synchronization #x00)
-  (:key             #x01)
-  (:relative-axis   #x02)
-  (:absolute-axis   #x03)
-  (:miscellaneous   #x04)
-  (:switch          #x05)
-  (:led             #x11)
-  (:sound           #x12)
-  (:repeat          #x14)
-  (:force-feedback  #x15)
-  (:power           #x16)
-  (:force-feedback-status #x17))
-
-(cffi:defbitfield (poll-event :short)
-  (:in  #x001)
-  (:pri #x002)
-  (:out #x004))
-
-(cffi:defbitfield (inotify-event :uint32)
-  (:create #x00000100)
-  (:delete #x00000200))
-
-(cffi:defbitfield inotify-flag
-  (:nonblock #o0004000)
-  (:cloexec  #o2000000))
-
-(cffi:defcstruct (axis-info :conc-name axis-info-)
-  (value :int32)
-  (minimum :int32)
-  (maximum :int32)
-  (fuzz :int32)
-  (flat :int32)
-  (resolution :int32))
-
-(cffi:defcstruct (event :conc-name event)
-  (sec :uint32)
-  (usec :uint32)
-  (type event-type)
-  (code :uint16)
-  (value :int32))
-
-(cffi:defcstruct (pollfd :conc-name pollfd-)
-  (fd fd)
-  (events poll-event)
-  (revents poll-event))
-
-(cffi:defcstruct (inotify :conc-name inotify-)
-  (wd :int)
-  (mask inotify-event)
-  (cookie :uint32)
-  (length :uint32)
-  (name :char :count 0))
-
-(cffi:defcfun (u-open "open") fd
-  (pathname :string)
-  (mode open-flag))
-
-(cffi:defcfun (u-close "close") :int
-  (fd fd))
-
-(cffi:defcfun (u-read "read") :int
-  (fd fd)
-  (buffer :pointer)
-  (length :int))
-
-(cffi:defcfun (poll "poll") :int
-  (pollfds :pointer)
-  (n :int)
-  (timeout :int))
-
-(cffi:defcfun (new-inotify "inotify_init1") fd
-  (flags inotify-flag))
-
-(cffi:defcfun (add-watch "inotify_add_watch") errno
-  (fd fd)
-  (path :string)
-  (mask inotify-event))
-
-(cffi:defcfun (new-from-fd "libevdev_new_from_fd") errno
-  (fd fd)
-  (device :pointer))
-
-(cffi:defcfun (free-device "libevdev_free") :void
-  (device :pointer))
-
-(cffi:defcfun (get-name "libevdev_get_name") :string
-  (device :pointer))
-
-(cffi:defcfun (get-uniq "libevdev_get_uniq") :string
-  (device :pointer))
-
-(cffi:defcfun (get-id-bustype "libevdev_get_id_bustype") :int
-  (device :pointer))
-
-(cffi:defcfun (get-id-vendor "libevdev_get_id_vendor") :int
-  (device :pointer))
-
-(cffi:defcfun (get-id-product "libevdev_get_id_product") :int
-  (device :pointer))
-
-(cffi:defcfun (get-id-version "libevdev_get_id_version") :int
-  (device :pointer))
-
-(cffi:defcfun (get-driver-version "libevdev_get_driver_version") :int
-  (device :pointer))
-
-(cffi:defcfun (has-event-code "libevdev_has_event_code") :boolean
-  (device :pointer)
-  (type event-type)
-  (code :uint))
-
-(cffi:defcfun (has-event-type "libevdev_has_event_type") :boolean
-  (device :pointer)
-  (type event-type))
-
-(cffi:defcfun (has-property "libevdev_has_property") :boolean
-  (device :pointer)
-  (property property))
-
-(cffi:defcfun (get-axis-info "libevdev_get_abs_info") :pointer
-  (device :pointer)
-  (code :uint))
-
-(cffi:defcfun (has-event-pending "libevdev_has_event_pending") errno
-  (device :pointer))
-
-(cffi:defcfun (next-event "libevdev_next_event") errno
-  (device :pointer)
-  (flag read-flag)
-  (event :pointer))
-
 (defvar *device-table* (make-hash-table :test 'eql))
+(defvar *device-notify* NIL)
+
+(defun dev-gamepad-p (dev)
+  ;; KLUDGE: Heuristics
+  (and (has-event-type dev :key)
+       ;; Check if it at least has A / B
+       (has-event-code dev :key #x130)
+       (has-event-code dev :key #x131)
+       ;; Check if it at least has a digital or analog DPAD
+       (or (and (has-event-code dev :key #x222)
+                (has-event-code dev :key #x223)
+                (has-event-code dev :key #x220)
+                (has-event-code dev :key #x221))
+           (and (has-event-type dev :absolute-axis)
+                (has-event-code dev :absolute-axis #x10)
+                (has-event-code dev :absolute-axis #x11)))))
 
 (defclass device (gamepad::device)
   ((id :initarg :id :reader id)
@@ -201,8 +47,8 @@
     (loop for label across gamepad::*labels*
           for id across #(NIL NIL NIL
                           NIL NIL NIL
-                          #x13 #x15 NIL
-                          #x12 #x14 NIL
+                          #x13 (#x15 #x02) NIL
+                          #x12 (#x14 #x05) NIL
                           NIL NIL NIL NIL
                           NIL NIL NIL
                           #x00 #x01 #x03 #x04
@@ -210,8 +56,9 @@
                           #x1A #x1B NIL
                           NIL NIL NIL
                           #x08 #x09 #x0A #x06 #x07)
-          do (when (and id (has-event-code dev :absolute-axis id))
-               (setf (gethash id map) label)))
+          do (dolist (id (if (listp id) id (list id)))
+               (when (and id (has-event-code dev :absolute-axis id))
+                 (setf (gethash id map) label))))
     map))
 
 (defun make-device-from-path (path)
@@ -248,63 +95,125 @@
          (device (gethash id *device-table*)))
     (unless device
       (setf device (make-device-from-path path))
-      (setf (gethash id *device-table*) device))
+      (when (dev-gamepad-p (dev device))
+        (setf (gethash id *device-table*) device)))
     device))
 
-(defmacro with-protection ((binding value &optional check) cleanup &body body)
-  `(let ((,binding ,value))
-     ,@(when check `((assert ,check)))
-     (unwind-protect
-          (progn ,@body)
-       ,cleanup)))
+(defun init ()
+  (unless *device-notify*
+    (cffi:use-foreign-library evdev)
+    (let ((inotify (new-inotify :nonblock)))
+      (assert (<= 0 inotify))
+      (add-watch inotify "/dev/input" '(:create :delete))
+      (setf *device-notify* inotify))
+    (refresh-devices)))
 
-(defun dev-gamepad-p (device)
-  (and (has-event-type device :key)
-       (has-event-type device :absolute-axis)
-       (has-event-code device :absolute-axis #x00)
-       (has-event-code device :absolute-axis #x01)
-       (or
-        (has-event-code device :key #x120)
-        (has-event-code device :key #x130)
-        (has-event-code device :key #x101))))
+(defun shutdown ()
+  (when *device-notify*
+    (u-close *device-notify*)
+    (setf *device-notify* NIL)
+    (mapc #'close-device (list-devices))))
 
-(defun list-gamepads ()
+(defun list-devices ()
   (loop for device being the hash-values of *device-table*
         collect device))
 
-(defun refresh-gamepads ()
-  (mapcar #'close-device (list-gamepads))
-  (dolist (path (directory "/dev/input/event*") (list-gamepads))
-    (let ((device (make-device-from-path (namestring path))))
-      (if (dev-gamepad-p (dev device))
-          (setf (gethash (id device) *device-table*) device)
-          (close-device device)))))
+(defun refresh-devices ()
+  (let ((to-delete (list-devices)))
+    (loop for path in (directory "/dev/input/event*")
+          for device = (ensure-device path)
+          do (setf to-delete (delete device to-delete)))
+    (mapc #'close-device to-delete)))
 
 (defun prefix-p (prefix string)
   (and (<= (length prefix) (length string))
        (string= prefix string :end2 (length prefix))))
 
-(defun call-with-device-updates (function &key (timeout 1))
-  (with-protection (inotify (new-inotify :nonblock) (<= 0 inotify))
-                   (u-close inotify)
-    (add-watch inotify "/dev/input" '(:create :delete))
-    (cffi:with-foreign-objects ((buffer '(:struct inotify) 1024)
-                                (pollfd '(:struct pollfd)))
-      (setf (pollfd-fd pollfd) inotify)
-      (setf (pollfd-events pollfd) '(:in :pri))
+(defun call-with-polling (function fd &key timeout)
+  (let ((tsec (etypecase timeout
+                ((eql T) 1)
+                ((eql NIL) 0)
+                ((integer 0) timeout))))
+    (cffi:with-foreign-objects ((pollfd '(:struct pollfd)))
+      (setf (pollfd-fd pollfd) fd)
+      (setf (pollfd-events pollfd) :in)
       (setf (pollfd-revents pollfd) 0)
-      (loop for poll = (poll pollfd 1 (floor (* timeout 1000)))
-            for read = (case poll
-                         (1 (u-read inotify buffer (* 1024 (cffi:foreign-type-size '(:struct inotify)))))
-                         (0 0)
-                         (T (error "Poll failed.")))
-            do (when (< 0 read)
-                 (loop with i = 0
-                       while (< i read)
-                       do (let* ((struct (cffi:inc-pointer buffer i))
-                                 (action (first (inotify-mask struct)))
-                                 (path (cffi:foreign-string-to-lisp (cffi:foreign-slot-pointer struct '(:struct inotify) 'name)
-                                                                    :max-chars (inotify-length struct))))
-                            (incf i (+ (inotify-length struct) (cffi:foreign-type-size '(:struct inotify))))
-                            (when (prefix-p "event" path)
-                              (funcall function (format NIL "/dev/input/~a" path) action)))))))))
+      ;; Even if timeout is T we do not want to block indefinitely,
+      ;; or we would lose the ability to interrupt the thread at all.
+      (loop for poll = (poll pollfd 1 (floor (* 1000 tsec)))
+            do (cond ((< 0 poll)
+                      (funcall function))
+                     ((< poll 0)
+                      (error "Poll failed"))
+                     ((not (eql T timeout))
+                      (return)))))))
+
+(defun process-connect-events ()
+  (cffi:with-foreign-objects ((buffer '(:struct inotify) 32))
+    (loop for read = (u-read *device-notify* buffer (* 1024 (cffi:foreign-type-size '(:struct inotify))))
+          while (< 0 read)
+          do (loop with i = 0
+                   while (< i read)
+                   do (let* ((struct (cffi:inc-pointer buffer i))
+                             (path (cffi:foreign-string-to-lisp (cffi:foreign-slot-pointer struct '(:struct inotify) 'name)
+                                                                :max-chars (inotify-length struct))))
+                        (incf i (+ (inotify-length struct) (cffi:foreign-type-size '(:struct inotify))))
+                        (when (prefix-p "event" path)
+                          (cond ((find :create (inotify-mask struct))
+                                 (ensure-device (format NIL "/dev/input/~a" path)))
+                                ((find :delete (inotify-mask struct))
+                                 (let* ((id (parse-integer (subseq path (length "event"))))
+                                        (device (gethash id *device-table*)))
+                                   (when device (close-device device)))))))))))
+
+(defun poll-devices (&key timeout)
+  (call-with-polling #'process-connect-events *device-notify* :timeout timeout))
+
+(defun translate-event (event device)
+  ;; TODO: Don't create new structs, keep struct and modify every time.
+  ;; TODO: Could probably make axis normalisation much faster based on AOT compilation.
+  (let ((time (logand (+ (* 1000 (event-sec event))
+                         (floor (event-usec event) 1000))
+                      (1- (ash 1 64)))))
+    (case (event-type event)
+      (#.(cffi:foreign-enum-value 'event-type :key)
+       (let* ((code (event-code event))
+              (label (gethash code (gamepad::button-map device))))
+         (case (event-value event)
+           (0 (gamepad::make-button-up device time code label))
+           (1 (gamepad::make-button-down device time code label)))))
+      (#.(cffi:foreign-enum-value 'event-type :absolute-axis)
+       (let* ((code (event-code event))
+              (label (gethash code (gamepad::axis-map device)))
+              (value (event-value event))
+              (info (get-axis-info (dev device) code))
+              (min (axis-info-minimum info))
+              (max (axis-info-maximum info))
+              (range (- max min))
+              (float-value (case label
+                             ((:l2 :r2) (/ (- value min) range))
+                             ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
+                             (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
+         (gamepad::make-axis-move device time label code float-value)))
+      (T :other))))
+
+(defun call-with-device-events (function device)
+  (let ((dev (dev device)))
+    (cffi:with-foreign-object (event '(:struct event))
+      (flet ((handle-event ()
+               (let ((object (translate-event event device)))
+                 (when object
+                   (funcall function object)))))
+        (case (next-event dev :normal event)
+          (:success
+           (handle-event))
+          (:sync
+           (handle-event)
+           (loop for next = (next-event dev :sync event)
+                 until (eq next :again)
+                 do (handle-event)))
+          (:again)
+          (T (error "Poll failed")))))))
+
+(defun poll-events (device function &key timeout)
+  (call-with-polling (lambda () (call-with-device-events function device)) (fd device) :timeout timeout))

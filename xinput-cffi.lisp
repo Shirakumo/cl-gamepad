@@ -11,6 +11,7 @@
 
 (cffi:defctype dword :uint32)
 (cffi:defctype word :uint16)
+(cffi:defctype long :int32)
 (cffi:defctype short :int16)
 (cffi:defctype byte :uint8)
 

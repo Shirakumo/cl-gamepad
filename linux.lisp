@@ -123,7 +123,8 @@
     (loop for path in (directory "/dev/input/event*")
           for device = (ensure-device path)
           do (setf to-delete (delete device to-delete)))
-    (mapc #'close-device to-delete)))
+    (mapc #'close-device to-delete)
+    (list-devices)))
 
 (defun prefix-p (prefix string)
   (and (<= (length prefix) (length string))

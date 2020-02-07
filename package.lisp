@@ -12,5 +12,6 @@
 
 (defpackage #:org.shirakumo.fraf.gamepad.impl
   (:use #:cl)
+  (:shadow #:byte)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

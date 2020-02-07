@@ -17,7 +17,10 @@
   :components ((:file "package")
                (:file "protocol")
                (:file "linux-cffi" :if-feature :linux)
-               (:file "linux" :if-feature :linux))
+               (:file "linux" :if-feature :linux)
+               (:file "xinput-cffi" :if-feature :win32)
+               (:file "dinput-cffi" :if-feature :win32)
+               (:file "windows" :if-feature :win32))
   :depends-on (:cffi
                :trivial-features
                :documentation-utils))

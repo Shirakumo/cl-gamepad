@@ -30,8 +30,6 @@
            ,value
            (error 'win32-error :code ,value :function-name ',(first value-form))))))
 
-(cffi:defctype tchar :uint8)
-
 (cffi:defcenum coinit
   (:apartment-threaded #x2)
   (:multi-threaded #x0)
@@ -212,10 +210,12 @@
                collect `(define-comfun (,name ,method) ,return
                           ,@args)))))
 
+(defvar GUID-DEVINTERFACE-HID (make-guid #x4D1E55B2 #xF16F #x11CF #x88 #xCB #x00 #x11 #x11 #x00 #x00 #x30))
 (defvar IID-IDIRECTINPUT8 (make-guid #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00))
 (defvar DIPROP-GRANULARITY (cffi:make-pointer 3))
 (defvar DIPROP-RANGE (cffi:make-pointer 4))
 (defvar DIPROP-DEADZONE (cffi:make-pointer 5))
+(defvar HWND-MESSAGE (cffi:make-pointer (- (ash 1 #+64-bit 64 #-64-bit 32) 3)))
 
 (cffi:defcenum (device-type dword)
   (:all 0)
@@ -253,6 +253,28 @@
   (:background   #x08)
   (:no-win-key   #x10))
 
+(cffi:defbitfield (wait-flags dword)
+  (:normal #x0)
+  (:wait-all #x1)
+  (:alertable #x2)
+  (:input-available #x4))
+
+(cffi:defbitfield (wake-flags dword)
+  (:all-events 1215)
+  (:all-input 1279)
+  (:all-post-message 256)
+  (:hotkey 128)
+  (:input 1031)
+  (:key 1)
+  (:mouse 6)
+  (:mouse-button 4)
+  (:mouse-move 2)
+  (:paint 32)
+  (:post-message 8)
+  (:raw-input 1024)
+  (:send-message 64)
+  (:timer 16))
+
 (cffi:defcenum (enumerate-flag word)
   (:stop 0)
   (:continue 1))
@@ -262,6 +284,30 @@
   (:by-offset 1)
   (:by-id 2)
   (:by-usage 3))
+
+(cffi:defcenum (win-device-type dword)
+  (:oem              #x00000000)
+  (:device-node      #x00000001)
+  (:volume           #x00000002)
+  (:port             #x00000003)
+  (:net              #x00000004)
+  (:device-interface #x00000005)
+  (:handle           #x00000006))
+
+(cffi:defcenum (wparam #+64-bit :uint64 #-64-bit :unsigned-long)
+  (:no-disk-space              #x0047)
+  (:low-disk-space             #x0048)
+  (:config-message-private     #x7fff)
+  (:device-arrival             #x8000)
+  (:device-query-remove        #x8001)
+  (:device-query-remove-failed #x8002)
+  (:device-remove-pending      #x8003)
+  (:device-remove-complete     #x8004)
+  (:device-type-specific       #x8005)
+  (:custom-event               #x8006))
+
+(cffi:defcenum (window-message :uint)
+  (:device-change #x0219))
 
 (cffi:defcstruct (device-instance :conc-name device-instance-)
   (size dword)
@@ -359,6 +405,40 @@
   (exponent word)
   (reserved word))
 
+(cffi:defcstruct (window-class :conc-name window-class-)
+  (size :uint)
+  (style :uint)
+  (procedure :pointer)
+  (class-extra :int)
+  (window-extra :int)
+  (instance :pointer)
+  (icon :pointer)
+  (cursor :pointer)
+  (background :pointer)
+  (menu-name :pointer)
+  (class-name :pointer)
+  (small-icon :pointer))
+
+(cffi:defcstruct (broadcast-device-interface :conc-name broadcast-device-interface-)
+  (size dword)
+  (device-type win-device-type)
+  (reserved dword)
+  (guid (:struct guid))
+  (name wchar))
+
+(cffi:defcstruct (point :conc-name point-)
+  (x long)
+  (y long))
+
+(cffi:defcstruct (message :conc-name message-)
+  (window :pointer)
+  (message window-message)
+  (wparam wparam)
+  (lparam :pointer)
+  (time dword)
+  (point (:struct point))
+  (private dword))
+
 (cffi:defcfun (get-module-handle "GetModuleHandleW") :pointer
   (module-name :pointer))
 
@@ -368,6 +448,70 @@
   (refiid :pointer)
   (interface :pointer)
   (aggregation :pointer))
+
+(cffi:defcfun (register-class "RegisterClassExW") word
+  (class :pointer))
+
+(cffi:defcfun (unregister-class "UnregisterClass") :void
+  (class-name :pointer)
+  (handle :pointer))
+
+(cffi:defcfun (create-window "CreateWindowExW") :pointer
+  (ex-style dword)
+  (class-name :pointer)
+  (window-name :pointer)
+  (style dword)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (parent :pointer)
+  (menu :pointer)
+  (instance :pointer)
+  (param :pointer))
+
+(cffi:defcfun (destroy-window "DestroyWindow") :void
+  (window :pointer))
+
+(cffi:defcfun (register-device-notification "RegisterDeviceNotificationW") :pointer
+  (recipient :pointer)
+  (filter :pointer)
+  (flags dword))
+
+(cffi:defcfun (unregister-device-notification "UnregisterDeviceNotification") :void
+  (notification :pointer))
+
+(cffi:defcfun (default-window-handler "DefWindowProcW") :pointer
+  (window :pointer)
+  (message window-message)
+  (wparam wparam)
+  (lparam :pointer))
+
+(cffi:defcfun (wait-for-multiple-objects "MsgWaitForMultipleObjectsEx") dword
+  (count dword)
+  (handles :pointer)
+  (milliseconds dword)
+  (wake-mask wake-flags)
+  (flags wait-flags))
+
+(cffi:defcfun (peek-message "PeekMessageW") :bool
+  (message :pointer)
+  (window :pointer)
+  (filter-min :uint)
+  (filter-max :uint)
+  (remove-msg :uint))
+
+(cffi:defcfun (get-message "GetMessage") :bool
+  (message :pointer)
+  (window :pointer)
+  (filter-min :uint)
+  (filter-max :uint))
+
+(cffi:defcfun (translate-message "TranslateMessage") :bool
+  (message :pointer))
+
+(cffi:defcfun (dispatch-message "DispatchMessage") :pointer
+  (message :pointer))
 
 (define-comstruct directinput
   (create-device hresult (guid :pointer) (device :pointer) (outer :pointer))

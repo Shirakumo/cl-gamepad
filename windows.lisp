@@ -6,8 +6,27 @@
 
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
+(defvar *devices-need-refreshing* T)
 (defvar *device-table* (make-hash-table :test 'eql))
 (defvar *directinput*)
+(defvar *device-notifier*)
+
+(defstruct (device-notifier
+            (:constructor make-device-notifier (class window notification))
+            (:copier NIL)
+            (:predicate NIL))
+  (notification)
+  (window)
+  (class))
+
+(cffi:defcallback device-change :pointer ((window :pointer) (message :uint) (wparam wparam) (lparam :pointer))
+  (case message
+    (:device-change
+     (when (and (or (eql :device-arrival wparam)
+                    (eql :device-remove-complete wparam))
+                (eql :device-interface (broadcast-device-interface-device-type lparam)))
+       (setf *devices-need-refreshing* T))))
+  (default-window-handler window message wparam lparam))
 
 (cffi:defcallback enum-devices enumerate-flag ((device :pointer) (user :pointer))
   (print (cffi:mem-ref device '(:struct device-instance)))
@@ -98,6 +117,7 @@
             for device = (ensure-device (cffi:mem-aptr devices '(:struct guid) i))
             do (setf to-delete (delete device to-delete)))
       (mapc #'close-device to-delete)
+      (setf *devices-need-refreshing* NIL)
       (list-devices))))
 
 (defun init ()
@@ -107,18 +127,76 @@
     (cffi:use-foreign-library dinput)
     (check-return
      (co-initialize (cffi:null-pointer) :multi-threaded))
-    (cffi:with-foreign-object (directinput :pointer)
-      (check-return
-       (create-direct-input (get-module-handle (cffi:null-pointer)) DINPUT-VERSION IID-IDIRECTINPUT8
-                            directinput (cffi:null-pointer)))
-      (setf *directinput* (cffi:mem-ref directinput :pointer))
-      (refresh-devices))))
+    (setf *directinput* (init-dinput))
+    (setf *device-notifier* (init-device-notifications))
+    (refresh-devices)))
+
+(defun init-dinput ()
+  (cffi:with-foreign-object (directinput :pointer)
+    (check-return
+     (create-direct-input (get-module-handle (cffi:null-pointer)) DINPUT-VERSION IID-IDIRECTINPUT8
+                          directinput (cffi:null-pointer)))
+    (cffi:mem-ref directinput :pointer)))
+
+(defun init-device-notifications ()
+  (cffi:with-foreign-objects ((window '(:struct window-class))
+                              (broadcast '(:struct broadcast-device-interface)))
+    (setf (window-class-size window) (cffi:foreign-type-size '(:struct window-class)))
+    (setf (window-class-instance window) (get-module-handle (cffi:null-pointer)))
+    (setf (window-class-class-name window) (string->wstring "ClGamepadMessages"))
+    (setf (window-class-procedure window) (cffi:callback device-change))   
+    (setf (broadcast-device-interface-size broadcast) (cffi:foreign-type-size '(:struct broadcast-device-interface)))
+    (setf (broadcast-device-interface-device-type broadcast) :device-interface)
+    (setf (broadcast-device-interface-guid broadcast) GUID-DEVINTERFACE-HID)
+    
+    (let ((class (cffi:make-pointer (register-class window))))
+      (when (cffi:null-pointer-p class)
+        (error "Failed to register window class."))
+      (let ((window (create-window 0 (window-class-class-name window) (cffi:null-pointer)
+                                   0 0 0 0 0 HWND-MESSAGE (cffi:null-pointer) (cffi:null-pointer) (cffi:null-pointer))))
+        (when (cffi:null-pointer-p window)
+          (unregister-class class (get-module-handle (cffi:null-pointer)))
+          (error "Failed to create window."))
+        (let ((notify (register-device-notification window broadcast 0)))
+          (when (cffi:null-pointer-p notify)
+            (destroy-window window)
+            (unregister-class class (get-module-handle (cffi:null-pointer)))
+            (error "Failed to register device notification."))
+          (make-device-notifier class window notify))))))
+
+(defun process-window-events (notifier)
+  (cffi:with-foreign-object (message '(:struct message))
+    (loop with window = (device-notifier-window notifier)
+          while (peek-message message window 0 0 0)
+          do (when (get-message message window 0 0)
+               (translate-message message)
+               (dispatch-message message)))))
 
 (defun shutdown ()
   (when (boundp '*directinput*)
     (mapc #'close-device (list-devices))
     (com-release *directinput*)
+    (makunbound '*directinput*))
+  (when (boundp '*device-notifier*)
+    (unregister-device-notification (device-notifier-notification *device-notifier*))
+    (destroy-window (device-notifier-window *device-notifier*))
+    (unregister-class (device-notifier-class *device-notifier*) (get-module-handle (cffi:null-pointer)))
+    (makunbound '*directinput*)
     (co-uninitialize)))
 
-(defun poll-devices (&key timeout))
-(defun poll-events (device function &key timeout))
+(defun poll-devices (&key timeout)
+  (let ((ms (etypecase timeout
+              ((eql T) 1000)
+              ((eql NIL) 0)
+              ((integer 0) (floor (* 1000 timeout))))))
+    (cffi:with-foreign-object (array :pointer)
+      (setf (cffi:mem-ref array :pointer) (device-notifier-window *device-notifier*))
+      (tagbody wait
+         (when (and (= 258 (wait-for-multiple-objects 1 array ms '(:post-message :send-message) :alertable))
+                    (eql T timeout))
+           (go wait))
+         (when *devices-need-refreshing*
+           (refresh-devices))))))
+
+(defun poll-events (device function &key timeout)
+  )

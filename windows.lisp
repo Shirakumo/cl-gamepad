@@ -10,6 +10,7 @@
 (defvar *device-table* (make-hash-table :test 'eql))
 (defvar *directinput*)
 (defvar *device-notifier*)
+(defvar *poll-event*)
 
 (defstruct (device-notifier
             (:constructor make-device-notifier (class window notification))
@@ -64,16 +65,6 @@
      (device-set-property device DIPROP-DEADZONE dword)))
   :continue)
 
-(defun prepare-dinput-device (dev)
-  (check-return
-   (device-set-cooperative-level dev (get-module-handle (cffi:null-pointer)) '(:background :exclusive)))
-  (check-return
-   (device-set-data-format dev data-format-joystick))
-  (check-return
-   (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
-  (check-return
-   (device-acquire dev)))
-
 (defclass device (gamepad::device)
   ((dev :initarg :dev :reader dev)))
 
@@ -83,7 +74,16 @@
   (slot-makunbound device 'dev))
 
 (defun make-device-from-dev (dev)
-  (prepare-dinput-device dev)
+  (check-return
+   (device-set-cooperative-level dev (get-module-handle (cffi:null-pointer)) '(:background :exclusive)))
+  (check-return
+   (device-set-data-format dev data-format-joystick))
+  (check-return
+   (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
+  (check-return
+   (device-acquire dev))
+  (check-return
+   (device-set-event-notification dev *poll-event*))
   (make-instance 'device
                  :dev dev
                  :name TODO
@@ -129,7 +129,23 @@
      (co-initialize (cffi:null-pointer) :multi-threaded))
     (setf *directinput* (init-dinput))
     (setf *device-notifier* (init-device-notifications))
+    (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (string->wstring "ClGamepadPollEvent")))
     (refresh-devices)))
+
+(defun shutdown ()
+  (when (boundp '*directinput*)
+    (mapc #'close-device (list-devices))
+    (com-release *directinput*)
+    (makunbound '*directinput*))
+  (when (boundp '*device-notifier*)
+    (unregister-device-notification (device-notifier-notification *device-notifier*))
+    (destroy-window (device-notifier-window *device-notifier*))
+    (unregister-class (device-notifier-class *device-notifier*) (get-module-handle (cffi:null-pointer)))
+    (makunbound '*directinput*)
+    (co-uninitialize))
+  (when (boundp '*poll-event*)
+    (close-handle *poll-event*)
+    (makunbound '*poll-event*)))
 
 (defun init-dinput ()
   (cffi:with-foreign-object (directinput :pointer)
@@ -172,18 +188,6 @@
                (translate-message message)
                (dispatch-message message)))))
 
-(defun shutdown ()
-  (when (boundp '*directinput*)
-    (mapc #'close-device (list-devices))
-    (com-release *directinput*)
-    (makunbound '*directinput*))
-  (when (boundp '*device-notifier*)
-    (unregister-device-notification (device-notifier-notification *device-notifier*))
-    (destroy-window (device-notifier-window *device-notifier*))
-    (unregister-class (device-notifier-class *device-notifier*) (get-module-handle (cffi:null-pointer)))
-    (makunbound '*directinput*)
-    (co-uninitialize)))
-
 (defun poll-devices (&key timeout)
   (let ((ms (etypecase timeout
               ((eql T) 1000)
@@ -199,4 +203,15 @@
            (refresh-devices))))))
 
 (defun poll-events (device function &key timeout)
-  )
+  (let ((dev (dev device)))
+    (check-return (device-poll dev) :ok :no-effect)
+    (cffi:with-foreign-objects ((state '(:struct joystate))
+                                (array :pointer))
+      (setf (cffi:mem-ref array :pointer) *poll-event*)
+      (tagbody wait
+         (when (and (= 258 (wait-for-multiple-objects 1 array ms '(:post-message :send-message) :alertable))
+                    (eql T timeout))
+           (go wait))
+         (check-return
+          (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state))
+         (...)))))

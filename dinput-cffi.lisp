@@ -513,6 +513,15 @@
 (cffi:defcfun (dispatch-message "DispatchMessage") :pointer
   (message :pointer))
 
+(cffi:defcfun (create-event "CreateEventW") :pointer
+  (attributes :pointer)
+  (manual-reset :bool)
+  (initial-state :bool)
+  (name :pointer))
+
+(cffi:defcfun (close-handle "CloseHandle") :void
+  (handle :pointer))
+
 (define-comstruct directinput
   (create-device hresult (guid :pointer) (device :pointer) (outer :pointer))
   (enum-devices hresult (type device-type) (callback :pointer) (user :pointer) (flags device-flags))

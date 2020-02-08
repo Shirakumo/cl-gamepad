@@ -9,14 +9,6 @@
 (cffi:define-foreign-library xinput
   (T (:or "XInput9_1_0.dll" "XInput1_4.dll" "XInput1_3.dll")))
 
-(cffi:defctype dword :uint32)
-(cffi:defctype word :uint16)
-(cffi:defctype long :int32)
-(cffi:defctype short :int16)
-(cffi:defctype byte :uint8)
-(cffi:defctype tchar :uint8)
-(cffi:defctype wchar :uint16)
-
 (cffi:defbitfield buttons
   (:dpad-u #x0001)
   (:dpad-d #x0002)

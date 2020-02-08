@@ -11,6 +11,7 @@
 (defvar *directinput*)
 (defvar *device-notifier*)
 (defvar *poll-event*)
+(defconstant EVENT-BUFFER-COUNT 32)
 
 (defstruct (device-notifier
             (:constructor make-device-notifier (class window notification))
@@ -66,7 +67,9 @@
   :continue)
 
 (defclass device (gamepad::device)
-  ((dev :initarg :dev :reader dev)))
+  ((dev :initarg :dev :reader dev)
+   (xinput :initarg :xinput :initform NIL :reader xinput)
+   (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)))
 
 (defun close-device (device)
   (device-unacquire (dev device))
@@ -82,15 +85,32 @@
    (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
   (check-return
    (device-acquire dev))
-  (check-return
-   (device-set-event-notification dev *poll-event*))
-  (make-instance 'device
-                 :dev dev
-                 :name TODO
-                 :vendor TODO
-                 :product TODO
-                 :version TODO
-                 :driver-version TODO))
+  (let ((poll-device (eq :polled-device
+                         (check-return
+                          (device-set-event-notification dev *poll-event*) :ok :polled-device))))
+    (unless poll-device
+      ;; Allow receiving buffered events
+      (cffi:with-foreign-object (dword '(:struct property-dword))
+        (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
+        (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
+        (setf (property-dword-how dword) :device)
+        (setf (property-dword-type dword) 0)
+        (setf (property-dword-data dword) EVENT-BUFFER-COUNT)
+        (check-return
+         (device-set-property dev DIPROP-BUFFERSIZE dword))))
+    (cffi:with-foreign-object (instance '(:struct device-instance))
+      (check-return
+       (device-get-device-info dev instance))
+      (let ((guid (guid-integer (device-instance-product instance))))
+        ;; FIXME: try to compare the GUID to whatever linux reports and dissect it.
+        (make-instance 'device
+                       :dev dev
+                       :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
+                       :vendor guid
+                       :product guid
+                       :version guid
+                       :driver-version guid
+                       :poll-device poll-device)))))
 
 (defun ensure-device (guid)
   (or (gethash (guid-integer guid) *device-table*)
@@ -193,25 +213,32 @@
               ((eql T) 1000)
               ((eql NIL) 0)
               ((integer 0) (floor (* 1000 timeout))))))
-    (cffi:with-foreign-object (array :pointer)
-      (setf (cffi:mem-ref array :pointer) (device-notifier-window *device-notifier*))
-      (tagbody wait
-         (when (and (= 258 (wait-for-multiple-objects 1 array ms '(:post-message :send-message) :alertable))
-                    (eql T timeout))
-           (go wait))
-         (when *devices-need-refreshing*
-           (refresh-devices))))))
+    (tagbody wait
+       (when (and (= 258 (wait-for-single-object (device-notifier-window *device-notifier*) ms T))
+                  (eql T timeout))
+         (go wait))
+       (when *devices-need-refreshing*
+         (refresh-devices)))))
 
 (defun poll-events (device function &key timeout)
-  (let ((dev (dev device)))
-    (check-return (device-poll dev) :ok :no-effect)
-    (cffi:with-foreign-objects ((state '(:struct joystate))
-                                (array :pointer))
-      (setf (cffi:mem-ref array :pointer) *poll-event*)
-      (tagbody wait
-         (when (and (= 258 (wait-for-multiple-objects 1 array ms '(:post-message :send-message) :alertable))
-                    (eql T timeout))
-           (go wait))
-         (check-return
-          (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state))
-         (...)))))
+  (let ((dev (dev device))
+        (ms (etypecase timeout
+              ((eql T) 1000)
+              ((eql NIL) 0)
+              ((integer 0) (floor (* 1000 timeout))))))
+    (cffi:with-foreign-objects ((state '(:struct joystate) EVENT-BUFFER-COUNT)
+                                (count 'dword))
+      (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
+      (cond ((poll-device-p device)
+             (check-return (device-poll dev))
+             (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state)
+             (process-delta-state state device function))
+            (T
+             (loop while (and (= 258 (wait-for-single-object *poll-event* ms T))
+                              (eql T timeout)))
+             (check-return (device-get-device-data dev (cffi:foreign-type-size '(:struct joystate)) state count 0))
+             (loop for i from 0 below (cffi:mem-ref count 'dword)
+                   do (process-delta-state (cffi:mem-aptr state '(:struct joystate) i) device function)))))))
+
+(defun process-delta-state (state device function)
+  NIL)

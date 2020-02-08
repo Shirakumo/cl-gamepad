@@ -6,42 +6,45 @@
 
 (in-package #:org.shirakumo.fraf.gamepad)
 
-(defvar *labels* #(:a :b :c
-                   :x :y :z
-                   :l1 :l2 :l3
-                   :r1 :r2 :r3
-                   :dpad-l :dpad-r :dpad-u :dpad-d
-                   :select :home :start
-                   :l-h :l-v :r-h :r-v
-                   :dpad-h :dpad-v
-                   :tilt-x :tilt-y :tilt-z
-                   :move-x :move-y :move-z
-                   :wheel :gas :brake :throttle :rudder))
+(defmacro define-global (name value)
+  #+sbcl `(sb-ext:defglobal ,name ,value)
+  #-sbcl `(defvar ,name ,value))
 
-(defstruct event
-  (device NIL :type device)
-  (time 0 :type (unsigned-byte 64))
-  (code 0 :type (unsigned-byte 32))
-  (label NIL :type symbol))
+(define-global +labels+ #(:a :b :c
+                          :x :y :z
+                          :l1 :l2 :l3
+                          :r1 :r2 :r3
+                          :dpad-l :dpad-r :dpad-u :dpad-d
+                          :select :home :start
+                          :l-h :l-v :r-h :r-v
+                          :dpad-h :dpad-v
+                          :tilt-x :tilt-y :tilt-z
+                          :move-x :move-y :move-z
+                          :wheel :gas :brake :throttle :rudder))
 
-(defstruct (button-down (:include event)
-                        (:constructor make-button-down (device time code label))))
+;;; Allow relaying events to the user without allocating fresh event instances
+(define-global +button-down-event+ (make-button-down NIL 0 0 NIL))
+(define-global +button-up-event+ (make-button-up NIL 0 0 NIL))
+(define-global +axis-move-event+ (make-axis-move NIL 0 0 NIL 0f0))
 
-(defstruct (button-up (:include event)
-                      (:constructor make-button-up (device time code label))))
+(defmacro %with-updated-event ((event) &body body)
+  `(let ((event ,event))
+     (setf (event-device event) device)
+     (setf (event-time event) time)
+     (setf (event-code event) code)
+     (setf (event-label event) label)
+     ,@body
+     (funcall function event)))
 
-(defstruct (axis-move (:include event)
-                      (:constructor make-axis-move (device time label code value)))
-  (value 0f0 :type single-float))
+(defun signal-button-down (function device time code label)
+  (%with-updated-event +button-down-event+))
 
-(defclass device ()
-  ((name :initarg :name :initform NIL :reader name)
-   (vendor :initarg :vendor :initform NIL :reader vendor)
-   (product :initarg :product :initform NIL :reader product)
-   (version :initarg :version :initform NIL :reader version)
-   (driver-version :initarg :driver-version :initform NIL :reader driver-version)
-   (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :reader button-map)
-   (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :reader axis-map)))
+(defun signal-button-up (function device time code label)
+  (%with-updated-event +button-up-event+))
+
+(defun signal-axis-move (function device time code label value)
+  (%with-updated-event +axis-move-event+
+    (setf (event-value event) value)))
 
 (defmethod initialize-instance :after ((device device) &key vendor product version)
   ;; TODO: look up maps in database
@@ -52,19 +55,19 @@
     (format stream "~a" (name device))))
 
 (defun id-label (id)
-  (svref (load-time-value *labels*) id))
+  (svref (load-time-value +labels+) id))
 
 (define-compiler-macro id-label (&whole whole id &environment env)
   (if (constantp id env)
-      `(load-time-value (svref (load-time-value *labels*) id))
+      `(load-time-value (svref (load-time-value +labels+) id))
       whole))
 
 (defun label-id (label)
-  (position label (load-time-value *labels*)))
+  (position label (load-time-value +labels+)))
 
 (define-compiler-macro label-id (&whole whole label &environment env)
   (if (constantp label env)
-      `(load-time-value (position ,label (load-time-value *labels*)))
+      `(load-time-value (position ,label (load-time-value +labels+)))
       whole))
 
 ;; (defun init ())

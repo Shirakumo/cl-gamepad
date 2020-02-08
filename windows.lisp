@@ -66,10 +66,12 @@
      (device-set-property device DIPROP-DEADZONE dword)))
   :continue)
 
-(defclass device (gamepad::device)
+(defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
    (xinput :initarg :xinput :initform NIL :reader xinput)
-   (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)))
+   (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)
+   (button-state :initform (make-array (length +labels+) :element-type 'bit) :reader button-state)
+   (axis-state :initform (make-array (length +labels+) :element-type 'single-float) :reader axis-state)))
 
 (defun close-device (device)
   (device-unacquire (dev device))
@@ -102,7 +104,8 @@
       (check-return
        (device-get-device-info dev instance))
       (let ((guid (guid-integer (device-instance-product instance))))
-        ;; FIXME: try to compare the GUID to whatever linux reports and dissect it.
+        ;; TODO: dissect GUID into vendor/product/version parts
+        ;; TODO: figure out if device is Xinput
         (make-instance 'device
                        :dev dev
                        :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
@@ -214,7 +217,7 @@
               ((eql NIL) 0)
               ((integer 0) (floor (* 1000 timeout))))))
     (tagbody wait
-       (when (and (= 258 (wait-for-single-object (device-notifier-window *device-notifier*) ms T))
+       (when (and (eql :ok (wait-for-single-object (device-notifier-window *device-notifier*) ms T))
                   (eql T timeout))
          (go wait))
        (when *devices-need-refreshing*
@@ -222,23 +225,62 @@
 
 (defun poll-events (device function &key timeout)
   (let ((dev (dev device))
+        (xinput (xinput device))
         (ms (etypecase timeout
               ((eql T) 1000)
               ((eql NIL) 0)
               ((integer 0) (floor (* 1000 timeout))))))
-    (cffi:with-foreign-objects ((state '(:struct joystate) EVENT-BUFFER-COUNT)
-                                (count 'dword))
-      (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
-      (cond ((poll-device-p device)
+    (cond (xinput
+           (cffi:with-foreign-objects ((state '(:struct xstate)))
+             (loop while (and (eql :ok (wait-for-single-object *poll-event* ms T))
+                              (eql T timeout)))
+             (check-return (get-xstate xinput state))
+             (loop while (/= packet (xstate-packet state))
+                   do (setf packet (xstate-packet state))
+                      (process-xinput-state (xstate-gamepad state) device function))))
+          ((poll-device-p device)
+           (cffi:with-foreign-objects ((state '(:struct joystate)))
              (check-return (device-poll dev))
              (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state)
-             (process-delta-state state device function))
-            (T
-             (loop while (and (= 258 (wait-for-single-object *poll-event* ms T))
+             (process-dinput-state state device function)))
+          (T
+           (cffi:with-foreign-objects ((state '(:struct joystate) EVENT-BUFFER-COUNT)
+                                       (count 'dword))
+             (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
+             (loop while (and (eql :ok (wait-for-single-object *poll-event* ms T))
                               (eql T timeout)))
              (check-return (device-get-device-data dev (cffi:foreign-type-size '(:struct joystate)) state count 0))
              (loop for i from 0 below (cffi:mem-ref count 'dword)
-                   do (process-delta-state (cffi:mem-aptr state '(:struct joystate) i) device function)))))))
+                   do (process-dinput-state (cffi:mem-aptr state '(:struct joystate) i) device function)))))))
 
-(defun process-delta-state (state device function)
-  NIL)
+(defun process-dinput-state (state device function)
+  ;; TODO: dinput state processing
+  )
+
+(defun process-xinput-state (state device function)
+  (let ((button-state (button-state device))
+        (axis-state (axis-state device))
+        (xbutton-state (xstate-buttons state))
+        (time (get-internal-real-time)))
+    (flet ((handle-button (label id new-state)
+             (unless (eql (< 0 (sbit button-state id)) new-state)
+               (setf (sbit button-state id) new-state)
+               (if new-state
+                   (signal-button-down function device time mask label)
+                   (signal-button-up function device time mask label))))
+           (handle-axis (label id new-state)
+             (unless (= new-state (aref axis-state id))
+               (setf (aref axis-state id) new-state)
+               (signal-axis-move device time label id new-state))))
+      (loop for (label id mask) in (load-time-value
+                                    (loop for label in '(:dpad-u :dpad-d :dpad-l :dpad-r :start :back :l3 :r3 :l1 :r1 :a :b :x :y)
+                                          collect (cons label
+                                                        (gamepad:label-id label)
+                                                        (cffi:foreign-bitfield-value 'xbuttons label))))
+            do (handle-button label id (< 0 (logand mask xbutton-state))))
+      (handle-axis :l2 (label-id :l2) (/ (xgamepad-left-trigger state) 255f0))
+      (handle-axis :r2 (label-id :r2) (/ (xgamepad-right-trigger state) 255f0))
+      (handle-axis :l-h (label-id :l-h) (/ (xgamepad-lx state) 32768f0))
+      (handle-axis :l-v (label-id :l-v) (/ (xgamepad-ly state) 32768f0))
+      (handle-axis :r-h (label-id :r-h) (/ (xgamepad-rx state) 32768f0))
+      (handle-axis :r-v (label-id :r-v) (/ (xgamepad-ry state) 32768f0)))))

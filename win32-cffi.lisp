@@ -78,6 +78,13 @@
   (:class-not-registered 2147746132)
   (:no-aggregation 2147746064))
 
+(cffi:defcenum (wait-result dword)
+  (:ok #x00)
+  (:abandoned #x80)
+  (:io-completion #xC0)
+  (:timeout #x102)
+  (:failed #xFFFFFFFF))
+
 (cffi:defcstruct (com :conc-name ||)
   (vtbl :pointer))
 
@@ -310,7 +317,7 @@
   (wparam wparam)
   (lparam :pointer))
 
-(cffi:defcfun (wait-for-single-object "WaitForSingleObjectEx") dword
+(cffi:defcfun (wait-for-single-object "WaitForSingleObjectEx") wait-result
   (handle :pointer)
   (milliseconds dword)
   (alertable :bool))

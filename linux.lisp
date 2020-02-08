@@ -30,8 +30,8 @@
    (dev :initarg :dev :reader dev)))
 
 (defun device-button-map (dev)
-  (let ((map (make-hash-table :test 'eql :size (length gamepad::*labels*))))
-    (loop for label across gamepad::*labels*
+  (let ((map (make-hash-table :test 'eql :size (length +labels+))))
+    (loop for label across +labels+
           for id across #(#x130 #x131 #x132
                           #x133 #x134 #x135
                           #x136 #x137 #x13D
@@ -43,8 +43,8 @@
     map))
 
 (defun device-axis-map (dev)
-  (let ((map (make-hash-table :test 'eql :size (length gamepad::*labels*))))
-    (loop for label across gamepad::*labels*
+  (let ((map (make-hash-table :test 'eql :size (length +labels+))))
+    (loop for label across +labels+
           for id across #(NIL NIL NIL
                           NIL NIL NIL
                           #x13 (#x15 #x02) NIL
@@ -170,8 +170,7 @@
 (defun poll-devices (&key timeout)
   (call-with-polling #'process-connect-events *device-notify* :timeout timeout))
 
-(defun translate-event (event device)
-  ;; TODO: Don't create new structs, keep struct and modify every time.
+(defun translate-event (function event device)
   ;; TODO: Could probably make axis normalisation much faster based on AOT compilation.
   (let ((time (logand (+ (* 1000 (event-sec event))
                          (floor (event-usec event) 1000))
@@ -181,8 +180,8 @@
        (let* ((code (event-code event))
               (label (gethash code (gamepad::button-map device))))
          (case (event-value event)
-           (0 (gamepad::make-button-up device time code label))
-           (1 (gamepad::make-button-down device time code label)))))
+           (0 (signal-button-up function device time code label))
+           (1 (signal-button-down function device time code label)))))
       (#.(cffi:foreign-enum-value 'event-type :absolute-axis)
        (let* ((code (event-code event))
               (label (gethash code (gamepad::axis-map device)))
@@ -195,26 +194,22 @@
                              ((:l2 :r2) (/ (- value min) range))
                              ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
                              (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
-         (gamepad::make-axis-move device time label code float-value)))
+         (signal-axis-move function device time code label float-value)))
       (T :other))))
 
 (defun call-with-device-events (function device)
   (let ((dev (dev device)))
     (cffi:with-foreign-object (event '(:struct event))
-      (flet ((handle-event ()
-               (let ((object (translate-event event device)))
-                 (when object
-                   (funcall function object)))))
-        (case (next-event dev :normal event)
-          (:success
-           (handle-event))
-          (:sync
-           (handle-event)
-           (loop for next = (next-event dev :sync event)
-                 until (eq next :again)
-                 do (handle-event)))
-          (:again)
-          (T (error "Poll failed")))))))
+      (case (next-event dev :normal event)
+        (:success
+         (translate-event function event device))
+        (:sync
+         (translate-event function event device)
+         (loop for next = (next-event dev :sync event)
+               until (eq next :again)
+               do (translate-event function event device)))
+        (:again)
+        (T (error "Poll failed"))))))
 
 (defun poll-events (device function &key timeout)
   (call-with-polling (lambda () (call-with-device-events function device)) (fd device) :timeout timeout))

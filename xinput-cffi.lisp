@@ -9,7 +9,7 @@
 (cffi:define-foreign-library xinput
   (T (:or "XInput9_1_0.dll" "XInput1_4.dll" "XInput1_3.dll")))
 
-(cffi:defbitfield buttons
+(cffi:defbitfield (xbuttons dword)
   (:dpad-u #x0001)
   (:dpad-d #x0002)
   (:dpad-l #x0004)
@@ -26,12 +26,12 @@
   (:y      #x8000))
 
 (cffi:defcenum (errno dword)
-  (:success              #x0000)
+  (:ok                   #x0000)
   (:device-not-connected #x048F)
   (:empty                #x10D2))
 
-(cffi:defcstruct (gamepad :conc-name gamepad-)
-  (buttons buttons)
+(cffi:defcstruct (xgamepad :conc-name xgamepad-)
+  (buttons dword)
   (left-trigger byte)
   (right-trigger byte)
   (thumb-lx short)
@@ -39,35 +39,30 @@
   (thumb-rx short)
   (thumb-ry short))
 
-(cffi:defcstruct (vibration :conc-name vibration)
+(cffi:defcstrut (xstate :conc-name xstate-)
+  (packet dword)
+  (gamepad (:struct xgamepad)))
+
+(cffi:defcstruct (xvibration :conc-name xvibration)
   (left word)
   (right word))
 
-(cffi:defcstruct (capabilities :conc-name capabilities-)
+(cffi:defcstruct (xcapabilities :conc-name xcapabilities-)
   (type byte)
   (subtype byte)
   (flags word)
-  (gamepad (:struct gamepad))
-  (vibration (:struct vibration)))
+  (gamepad (:struct xstate))
+  (vibration (:struct xvibration)))
 
-(cffi:defcfun (get-capabilities "XInputGetCapabilities") errno
+(cffi:defcfun (get-xcapabilities "XInputGetCapabilities") errno
   (user-index dword)
   (flags dword)
   (capabilities :pointer))
 
-(cffi:defcfun (get-state "XInputGetState") errno
+(cffi:defcfun (get-xstate "XInputGetState") errno
   (user-index dword)
   (state :pointer))
 
-(cffi:defcfun (set-state "XInputSetState") errno
+(cffi:defcfun (set-xstate "XInputSetState") errno
   (user-index dword)
   (vibration :pointer))
-
-(cffi:defcfun (get-keystroke "XInputGetKeystroke") errno
-  (user-index dword)
-  (reserved dword)
-  (keystroke :pointer))
-
-
-
-

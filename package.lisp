@@ -8,10 +8,38 @@
 (defpackage #:org.shirakumo.fraf.gamepad
   (:use #:cl)
   (:export
-   #:gamepad))
+   #:event
+   #:event-device
+   #:event-time
+   #:event-code
+   #:event-label
+   #:event-value
+   #:button-down
+   #:button-up
+   #:axis-move
+   #:device
+   #:name
+   #:vendor
+   #:product
+   #:version
+   #:driver-version
+   #:label-id
+   #:id-label
+   #:init
+   #:shutdown
+   #:list-devices
+   #:poll-devices
+   #:poll-events
+   #:rumble))
 
 (defpackage #:org.shirakumo.fraf.gamepad.impl
   (:use #:cl)
   (:shadow #:byte)
+  (:import-from
+   (#:gamepad
+    #:+labels+
+    #:signal-button-down
+    #:signal-button-up
+    #:signal-axis-move))
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

@@ -85,6 +85,16 @@
   (:timeout #x102)
   (:failed #xFFFFFFFF))
 
+(cffi:defcenum (hid-device-type dword)
+  (:mouse 0)
+  (:keyboard 1)
+  (:hid 2))
+
+(cffi:defcenum (hid-device-info-command :uint)
+  (:device-name #x20000007)
+  (:device-info #x2000000b)
+  (:preparsed-data #x20000005))
+
 (cffi:defcstruct (com :conc-name ||)
   (vtbl :pointer))
 
@@ -125,10 +135,10 @@
   (wide-char-str :pointer)
   (wide-char :int))
 
-(defun wstring->string (pointer)
-  (let ((bytes (wide-char-to-multi-byte CP-UTF8 0 pointer -1 (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
+(defun wstring->string (pointer &optional (chars -1))
+  (let ((bytes (wide-char-to-multi-byte CP-UTF8 0 pointer chars (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
     (cffi:with-foreign-object (string :uchar bytes)
-      (wide-char-to-multi-byte CP-UTF8 0 pointer -1 string bytes (cffi:null-pointer) (cffi:null-pointer))
+      (wide-char-to-multi-byte CP-UTF8 0 pointer chars string bytes (cffi:null-pointer) (cffi:null-pointer))
       (cffi:foreign-string-to-lisp string :encoding :utf-8))))
 
 (defun string->wstring (string)
@@ -349,3 +359,32 @@
 
 (cffi:defcfun (close-handle "CloseHandle") :void
   (handle :pointer))
+
+(cffi:defcfun (memcmp "memcmp") :int
+  (a :pointer)
+  (b :pointer)
+  (n :int))
+
+(cffi:defcfun (get-raw-input-device-list "GetRawInputDeviceList") :uint
+  (list :pointer)
+  (num :pointer)
+  (size :uint))
+
+(cffi:defcstruct (raw-input-device-list :conc-name raw-input-device-list-)
+  (device :pointer)
+  (type hid-device-type))
+
+(cffi:defcfun (get-raw-input-device-info "GetRawInputDeviceInfoW") :uint
+  (device :pointer)
+  (command hid-device-info-command)
+  (data :pointer)
+  (size :pointer))
+
+(cffi:defcstruct (hid-device-info :conc-name hid-device-info-)
+  (size dword)
+  (type hid-device-type)
+  (vendor-id dword)
+  (product-id dword)
+  (version-number dword)
+  (usage-page :ushort)
+  (usage :ushort))

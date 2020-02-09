@@ -11,6 +11,7 @@
 (defvar *directinput*)
 (defvar *device-notifier*)
 (defvar *poll-event*)
+(defvar *xinput-taken* #*0000)
 (defconstant EVENT-BUFFER-COUNT 32)
 
 (defstruct (device-notifier
@@ -66,6 +67,37 @@
      (device-set-property device DIPROP-DEADZONE dword)))
   :continue)
 
+(defun guid-vendor (guid)
+  (ldb (byte 16 16) (guid-data1 guid)))
+
+(defun guid-product (guid)
+  (ldb (byte 16  0) (guid-data1 guid)))
+
+(defun guid-version (guid)
+  0)
+
+(defun dev-xinput-p (guid)
+  (or (loop for known in (list IID-VALVE-STREAMING-GAMEPAD
+                               IID-X360-WIRED-GAMEPAD
+                               IID-X360-WIRELESS-GAMEPAD)
+            thereis (= 0 (memcmp known guid 16)))
+      (cffi:with-foreign-object (count :uint)
+        (when (<= 0 (get-raw-input-device-list (cffi:null-pointer) count (cffi:foreign-type-size '(:struct raw-input-device-list))))
+          (cffi:with-foreign-objects ((devices '(:struct raw-input-device-list) (cffi:mem-ref count :uint))
+                                      (info '(:struct hid-device-info))
+                                      (name :uint16 (cffi:foreign-type-size '(:struct hid-device-info)))
+                                      (size :uint))
+            (setf (cffi:mem-ref size :uint) (cffi:foreign-type-size '(:struct hid-device-info)))
+            (when (<= 0 (get-raw-input-device-list devices count (cffi:foreign-type-size '(:struct raw-input-device-list))))
+              (loop for i from 0 below (cffi:mem-ref count :uint)
+                    for device = (cffi:mem-aptr devices '(:struct raw-input-device-list) i)
+                    when (eql :hid (raw-input-device-list-type device))
+                    thereis (and (< 0 (get-raw-input-device-info device :device-info info size))
+                                 (= (hid-device-info-vendor-id info) (guid-vendor guid))
+                                 (= (hid-device-info-product-id info) (guid-product guid))
+                                 (< 0 (get-raw-input-device-info device :device-name name size))
+                                 (string= "IG_" (wstring->string name 3))))))))))
+
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
    (xinput :initarg :xinput :initform NIL :reader xinput)
@@ -74,6 +106,8 @@
    (axis-state :initform (make-array (length +labels+) :element-type 'single-float) :reader axis-state)))
 
 (defun close-device (device)
+  (when (xinput device)
+    (setf (sbit *xinput-taken* (xinput device)) 0))
   (device-unacquire (dev device))
   (com-release (dev device))
   (slot-makunbound device 'dev))
@@ -104,16 +138,19 @@
       (check-return
        (device-get-device-info dev instance))
       (let ((guid (guid-integer (device-instance-product instance))))
-        ;; TODO: dissect GUID into vendor/product/version parts
-        ;; TODO: figure out if device is Xinput
         (make-instance 'device
                        :dev dev
                        :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
-                       :vendor guid
-                       :product guid
-                       :version guid
-                       :driver-version guid
-                       :poll-device poll-device)))))
+                       :vendor (guid-vendor guid)
+                       :product (guid-product guid)
+                       :version (guid-version guid)
+                       :driver-version 0
+                       :poll-device poll-device
+                       :xinput (when (dev-xinput-p)
+                                 ;; Probably not right but the best we can do.
+                                 (loop for i from 0 below 4
+                                       when (= 0 (sbit *xinput-taken* i))
+                                       (return i))))))))
 
 (defun ensure-device (guid)
   (or (gethash (guid-integer guid) *device-table*)

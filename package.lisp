@@ -40,6 +40,8 @@
     #:+labels+
     #:signal-button-down
     #:signal-button-up
-    #:signal-axis-move))
+    #:signal-axis-move
+    #:button-map
+    #:axis-map))
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

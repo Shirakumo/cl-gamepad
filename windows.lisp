@@ -310,7 +310,7 @@
       ;; Axis / Slider
       ((< offset (cffi:foreign-slot-offset '(:struct joystate) 'pov))
        (let* ((code (/ offset (cffi:foreign-type-size 'long)))
-              (label (gethash code (gamepad::axis-map device))))
+              (label (gethash code (axis-map device))))
          (signal-axis-move function device time code label (map-to-float -32768 (object-data-data state) 32767))))
       ;; POV (emulate as two axes)
       ((< offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons))
@@ -322,12 +322,12 @@
            (let ((rad (* PI (/ (- 90 (/ value 100)) 180))))
              (setf x (float (cos rad) 0f0))
              (setf y (float (sin rad) 0f0))))
-         (signal-axis-move function device time code (gethash (+ 0 code) (gamepad::axis-map device)) x)
-         (signal-axis-move function device time code (gethash (+ 1 code) (gamepad::axis-map device)) y)))
+         (signal-axis-move function device time code (gethash (+ 0 code) (axis-map device)) x)
+         (signal-axis-move function device time code (gethash (+ 1 code) (axis-map device)) y)))
       ;; Button
       (T
        (let* ((code (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons)) (cffi:foreign-type-size 'byte)))
-              (label (gethash code (gamepad::button-map device))))
+              (label (gethash code (button-map device))))
          (if (= 1 (ldb (byte 1 7) (object-data-data state)))
              (signal-button-down function device time code label)
              (signal-button-up function device time code label)))))))

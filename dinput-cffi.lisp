@@ -109,6 +109,13 @@
   (pov dword :count 4)
   (buttons byte :count 32))
 
+(cffi:defcstruct (object-data :conc-name object-data-)
+  (offset dword)
+  (data dword)
+  (timestamp dword)
+  (sequence dword)
+  (app-data :pointer))
+
 (cffi:defcvar (data-format-joystick "c_dfDIJoystick") (:struct data-format))
 
 (cffi:defcstruct (device-capabilities :conc-name device-capabilities-)

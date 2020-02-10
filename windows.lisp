@@ -68,10 +68,10 @@
   :continue)
 
 (defun guid-vendor (guid)
-  (ldb (byte 16 16) (guid-data1 guid)))
+  (ldb (cl:byte 16 16) (guid-data1 guid)))
 
 (defun guid-product (guid)
-  (ldb (byte 16  0) (guid-data1 guid)))
+  (ldb (cl:byte 16  0) (guid-data1 guid)))
 
 (defun guid-version (guid)
   0)
@@ -91,8 +91,8 @@
             (when (<= 0 (get-raw-input-device-list devices count (cffi:foreign-type-size '(:struct raw-input-device-list))))
               (loop for i from 0 below (cffi:mem-ref count :uint)
                     for device = (cffi:mem-aptr devices '(:struct raw-input-device-list) i)
-                    when (eql :hid (raw-input-device-list-type device))
-                    thereis (and (< 0 (get-raw-input-device-info device :device-info info size))
+                    thereis (and (eql :hid (raw-input-device-list-type device))
+                                 (< 0 (get-raw-input-device-info device :device-info info size))
                                  (= (hid-device-info-vendor-id info) (guid-vendor guid))
                                  (= (hid-device-info-product-id info) (guid-product guid))
                                  (< 0 (get-raw-input-device-info device :device-name name size))
@@ -146,11 +146,11 @@
                        :version (guid-version guid)
                        :driver-version 0
                        :poll-device poll-device
-                       :xinput (when (dev-xinput-p)
+                       :xinput (when (dev-xinput-p dev)
                                  ;; Probably not right but the best we can do.
                                  (loop for i from 0 below 4
                                        when (= 0 (sbit *xinput-taken* i))
-                                       (return i))))))))
+                                       return i)))))))
 
 (defun ensure-device (guid)
   (or (gethash (guid-integer guid) *device-table*)
@@ -272,7 +272,8 @@
              (loop while (and (eql :ok (wait-for-single-object *poll-event* ms T))
                               (eql T timeout)))
              (check-return (get-xstate xinput state))
-             (loop while (/= packet (xstate-packet state))
+             (loop with packet = 0
+                   while (/= packet (xstate-packet state))
                    do (setf packet (xstate-packet state))
                       (process-xinput-state (xstate-gamepad state) device function))))
           ;; FIXME: Handle reacquisition and error escape more gracefully
@@ -302,9 +303,7 @@
     ))
 
 (defun process-object-data (state device function)
-  (let ((button-state (button-state device))
-        (axis-state (axis-state device))
-        (offset (object-data-offset state))
+  (let ((offset (object-data-offset state))
         (time (object-data-timestamp state)))
     (cond
       ;; Axis / Slider
@@ -328,28 +327,28 @@
       (T
        (let* ((code (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons)) (cffi:foreign-type-size 'byte)))
               (label (gethash code (button-map device))))
-         (if (= 1 (ldb (byte 1 7) (object-data-data state)))
+         (if (= 1 (ldb (cl:byte 1 7) (object-data-data state)))
              (signal-button-down function device time code label)
              (signal-button-up function device time code label)))))))
 
 (defun process-xinput-state (state device function)
   (let ((button-state (button-state device))
         (axis-state (axis-state device))
-        (xbutton-state (xstate-buttons state))
+        (xbutton-state (xgamepad-buttons state))
         (time (get-internal-real-time)))
     (flet ((handle-button (label id new-state)
              (unless (eql (< 0 (sbit button-state id)) new-state)
-               (setf (sbit button-state id) new-state)
+               (setf (sbit button-state id) (if new-state 1 0))
                (if new-state
-                   (signal-button-down function device time mask label)
-                   (signal-button-up function device time mask label))))
+                   (signal-button-down function device time id label)
+                   (signal-button-up function device time id label))))
            (handle-axis (label id new-state)
              (unless (= new-state (aref axis-state id))
                (setf (aref axis-state id) new-state)
-               (signal-axis-move device time label id new-state))))
+               (signal-axis-move function device time label id new-state))))
       (loop for (label id mask) in (load-time-value
                                     (loop for label in '(:dpad-u :dpad-d :dpad-l :dpad-r :start :back :l3 :r3 :l1 :r1 :a :b :x :y)
-                                          collect (cons label
+                                          collect (list label
                                                         (gamepad:label-id label)
                                                         (cffi:foreign-bitfield-value 'xbuttons label))))
             do (handle-button label id (< 0 (logand mask xbutton-state))))

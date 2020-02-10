@@ -7,6 +7,13 @@
 (in-package #:cl-user)
 (defpackage #:org.shirakumo.fraf.gamepad
   (:use #:cl)
+  (:intern
+   #:+labels+
+   #:signal-button-down
+   #:signal-button-up
+   #:signal-axis-move
+   #:button-map
+   #:axis-map)
   (:export
    #:event
    #:event-device
@@ -36,12 +43,20 @@
   (:use #:cl)
   (:shadow #:byte)
   (:import-from
-   (#:gamepad
-    #:+labels+
-    #:signal-button-down
-    #:signal-button-up
-    #:signal-axis-move
-    #:button-map
-    #:axis-map))
+   #:org.shirakumo.fraf.gamepad
+   #:+labels+
+   #:signal-button-down
+   #:signal-button-up
+   #:signal-axis-move
+   #:button-map
+   #:axis-map
+   #:init
+   #:shutdown
+   #:list-devices
+   #:poll-devices
+   #:poll-events
+   #:rumble
+   #:label-id
+   #:id-label)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

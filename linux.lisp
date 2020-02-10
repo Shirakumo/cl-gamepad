@@ -67,20 +67,20 @@
                      (logior (cffi:foreign-enum-value 'open-flag :read)
                              (cffi:foreign-enum-value 'open-flag :write)
                              (cffi:foreign-enum-value 'open-flag :non-block))))))
-    (assert (<= 0 fd))
-    (cffi:with-foreign-object (dev :pointer)
-      (assert (<= 0 (new-from-fd fd dev)))
-      (let ((dev (cffi:mem-ref dev :pointer)))
-        (make-instance 'device :id (parse-integer (subseq path (length "/dev/input/event")))
-                               :fd fd
-                               :dev dev
-                               :name (get-name dev)
-                               :vendor (get-id-vendor dev)
-                               :product (get-id-product dev)
-                               :version (get-id-version dev)
-                               :driver-version (get-driver-version dev)
-                               :button-map (device-button-map dev)
-                               :axis-map (device-axis-map dev))))))
+    (when (<= 0 fd)
+      (cffi:with-foreign-object (dev :pointer)
+        (assert (<= 0 (new-from-fd fd dev)))
+        (let ((dev (cffi:mem-ref dev :pointer)))
+          (make-instance 'device :id (parse-integer (subseq path (length "/dev/input/event")))
+                                 :fd fd
+                                 :dev dev
+                                 :name (get-name dev)
+                                 :vendor (get-id-vendor dev)
+                                 :product (get-id-product dev)
+                                 :version (get-id-version dev)
+                                 :driver-version (get-driver-version dev)
+                                 :button-map (device-button-map dev)
+                                 :axis-map (device-axis-map dev)))))))
 
 (defun close-device (device)
   (free-device (dev device))
@@ -95,7 +95,7 @@
          (device (gethash id *device-table*)))
     (unless device
       (setf device (make-device-from-path path))
-      (when (dev-gamepad-p (dev device))
+      (when (and device (dev-gamepad-p (dev device)))
         (setf (gethash id *device-table*) device)))
     device))
 
@@ -191,7 +191,7 @@
               (max (axis-info-maximum info))
               (range (- max min))
               (float-value (case label
-                             ((:l2 :r2) (/ (- value min) range))
+                             ((:l2 :r2) (float (/ (- value min) range)))
                              ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
                              (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
          (signal-axis-move function device time code label float-value)))

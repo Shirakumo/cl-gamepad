@@ -34,12 +34,12 @@
   (buttons dword)
   (left-trigger byte)
   (right-trigger byte)
-  (thumb-lx short)
-  (thumb-ly short)
-  (thumb-rx short)
-  (thumb-ry short))
+  (lx short)
+  (ly short)
+  (rx short)
+  (ry short))
 
-(cffi:defcstrut (xstate :conc-name xstate-)
+(cffi:defcstruct (xstate :conc-name xstate-)
   (packet dword)
   (gamepad (:struct xgamepad)))
 

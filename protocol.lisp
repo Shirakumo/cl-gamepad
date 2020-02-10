@@ -37,13 +37,13 @@
      (funcall function event)))
 
 (defun signal-button-down (function device time code label)
-  (%with-updated-event +button-down-event+))
+  (%with-updated-event (+button-down-event+)))
 
 (defun signal-button-up (function device time code label)
-  (%with-updated-event +button-up-event+))
+  (%with-updated-event (+button-up-event+)))
 
 (defun signal-axis-move (function device time code label value)
-  (%with-updated-event +axis-move-event+
+  (%with-updated-event (+axis-move-event+)
     (setf (event-value event) value)))
 
 (defmethod initialize-instance :after ((device device) &key vendor product version)

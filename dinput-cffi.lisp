@@ -10,6 +10,9 @@
   (T (:default "dinput8")))
 
 (defconstant DINPUT-VERSION #x0800)
+(defvar DIPROP-BUFFERSIZE (cffi:make-pointer 1))
+(defvar DIPROP-RANGE (cffi:make-pointer 4))
+(defvar DIPROP-DEADZONE (cffi:make-pointer 5))
 (defvar IID-IDIRECTINPUT8
   (make-guid #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00))
 (defvar IID-VALVE-STREAMING-GAMEPAD
@@ -18,9 +21,26 @@
   (make-guid #x045E02A1 #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
 (defvar IID-X360-WIRELESS-GAMEPAD
   (make-guid #x045E028E #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
-(defvar DIPROP-BUFFERSIZE (cffi:make-pointer 1))
-(defvar DIPROP-RANGE (cffi:make-pointer 4))
-(defvar DIPROP-DEADZONE (cffi:make-pointer 5))
+(defvar GUID-XAXIS
+  (make-guid #xA36D02E0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-YAXIS
+  (make-guid #xA36D02E1 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-ZAXIS
+  (make-guid #xA36D02E2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-RXAXIS
+  (make-guid #xA36D02F4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-RYAXIS
+  (make-guid #xA36D02F5 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-RZAXIS
+  (make-guid #xA36D02E3 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-SLIDER
+  (make-guid #xA36D02E4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-BUTTON
+  (make-guid #xA36D02F0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-KEY
+  (make-guid #x55728220 #xD33C #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-POV
+  (make-guid #xA36D02F2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
 
 (cffi:defcenum (device-type dword)
   (:all 0)
@@ -48,8 +68,10 @@
   (:pov           #x00000010)
   (:collection    #x00000040)
   (:nodata        #x00000080)
+  (:any-instance  #x00FFFF00)
   (:ff-actuator   #x01000000)
-  (:ff-trigger    #x02000000))
+  (:ff-trigger    #x02000000)
+  (:optional      #x80000000))
 
 (cffi:defbitfield (cooperation-flags dword)
   (:exclusive    #x01)
@@ -86,7 +108,7 @@
 
 (cffi:defcstruct (object-data-format :conc-name object-data-format-)
   (guid :pointer)
-  (ofs dword)
+  (offset dword)
   (type dword)
   (flags dword))
 
@@ -98,25 +120,12 @@
   (object-count dword)
   (object-data-format :pointer))
 
-(cffi:defcstruct (joystate :conc-name joystate-)
-  (l-x long)
-  (l-y long)
-  (l-z long)
-  (r-x long)
-  (r-y long)
-  (r-z long)
-  (slider long :count 2)
-  (pov dword :count 4)
-  (buttons byte :count 32))
-
 (cffi:defcstruct (object-data :conc-name object-data-)
   (offset dword)
   (data dword)
   (timestamp dword)
   (sequence dword)
   (app-data :pointer))
-
-(cffi:defcvar (data-format-joystick "c_dfDIJoystick") (:struct data-format))
 
 (cffi:defcstruct (device-capabilities :conc-name device-capabilities-)
   (size dword)
@@ -225,3 +234,36 @@
   (bild-action-map hresult (format :pointer) (user-name :pointer) (flags dword))
   (set-action-map hresult (format :pointer) (user-name :pointer) (flags dword))
   (get-image-info hresult (image-info :pointer)))
+
+;;; Construct our own joystate
+(cffi:defcstruct (joystate :conc-name joystate-)
+  (axis long :count 32)
+  (pov dword :count 4)
+  (buttons byte :count 36))
+
+(defvar *joystate-format*
+  (let ((fields (cffi:foreign-alloc '(:struct object-data-format) :count 72))
+        (format (cffi:foreign-alloc '(:struct data-format)))
+        (i 0) (offset 0))
+    (flet ((set-field (guid type size)
+             (let ((ptr (cffi:mem-aptr fields '(:struct object-data-format) i)))
+               (setf (object-data-format-guid ptr) guid
+                     (object-data-format-offset ptr) offset
+                     (object-data-format-type ptr) (cffi:foreign-bitfield-value 'object-flags (list type :optional :any-instance))
+                     (object-data-format-flags ptr) 0)
+               (incf i)
+               (incf offset size))))
+      (dotimes (_ 4)
+        (loop for guid in (list GUID-XAXIS GUID-YAXIS GUID-ZAXIS GUID-RXAXIS GUID-RYAXIS GUID-RZAXIS GUID-SLIDER GUID-SLIDER)
+              do (set-field guid :absolute-axis (cffi:foreign-type-size 'long))))
+      (dotimes (_ 4)
+        (set-field GUID-POV :pov (cffi:foreign-type-size 'dword)))
+      (dotimes (_ 36)
+        (set-field (cffi:null-pointer) :button (cffi:foreign-type-size 'byte))))
+    (setf (data-format-size format) (cffi:foreign-type-size '(:struct data-format))
+          (data-format-object-size format) (cffi:foreign-type-size '(:struct object-data-format))
+          (data-format-flags format) 1
+          (data-format-data-size format) (cffi:foreign-type-size '(:struct joystate))
+          (data-format-object-count format) 72
+          (data-format-object-data-format format) fields)
+    format))

@@ -22,7 +22,7 @@
   (window)
   (class))
 
-(cffi:defcallback device-change :pointer ((window :pointer) (message :uint) (wparam wparam) (lparam :pointer))
+(cffi:defcallback device-change :pointer ((window :pointer) (message window-message) (wparam wparam) (lparam :pointer))
   (case message
     (:device-change
      (when (and (or (eql :device-arrival wparam)
@@ -32,7 +32,6 @@
   (default-window-handler window message wparam lparam))
 
 (cffi:defcallback enum-devices enumerate-flag ((device :pointer) (user :pointer))
-  (print (cffi:mem-ref device '(:struct device-instance)))
   (let* ((idx (enum-user-data-device-count user))
          (source (cffi:foreign-slot-pointer device '(:struct device-instance) 'guid))
          (target (cffi:mem-aptr (enum-user-data-device-array user) '(:struct guid) idx)))
@@ -114,9 +113,9 @@
 
 (defun make-device-from-dev (dev)
   (check-return
-   (device-set-cooperative-level dev (get-module-handle (cffi:null-pointer)) '(:background :exclusive)))
+   (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
   (check-return
-   (device-set-data-format dev data-format-joystick))
+   (device-set-data-format dev *joystate-format*))
   (check-return
    (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
   (check-return
@@ -183,14 +182,17 @@
 (defun init ()
   (unless (boundp '*directinput*)
     (cffi:use-foreign-library ole32)
+    (cffi:use-foreign-library user32)
     (cffi:use-foreign-library xinput)
     (cffi:use-foreign-library dinput)
     (check-return
      (co-initialize (cffi:null-pointer) :multi-threaded))
-    (setf *directinput* (init-dinput))
-    (setf *device-notifier* (init-device-notifications))
-    (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (string->wstring "ClGamepadPollEvent")))
-    (refresh-devices)))
+    (setf *directinput* (init-dinput)))
+  (unless (boundp '*device-notifier*)
+    (setf *device-notifier* (init-device-notifications)))
+  (unless (boundp '*poll-event*)
+    (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (string->wstring "ClGamepadPollEvent"))))
+  (refresh-devices))
 
 (defun shutdown ()
   (when (boundp '*directinput*)
@@ -217,27 +219,26 @@
 (defun init-device-notifications ()
   (cffi:with-foreign-objects ((window '(:struct window-class))
                               (broadcast '(:struct broadcast-device-interface)))
+    (memset window 0 (cffi:foreign-type-size '(:struct window-class)))
     (setf (window-class-size window) (cffi:foreign-type-size '(:struct window-class)))
+    (setf (window-class-procedure window) (cffi:callback device-change))
     (setf (window-class-instance window) (get-module-handle (cffi:null-pointer)))
     (setf (window-class-class-name window) (string->wstring "ClGamepadMessages"))
-    (setf (window-class-procedure window) (cffi:callback device-change))   
+    (memset broadcast 0 (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-size broadcast) (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-device-type broadcast) :device-interface)
     (setf (broadcast-device-interface-guid broadcast) GUID-DEVINTERFACE-HID)
     
     (let ((class (cffi:make-pointer (register-class window))))
-      (when (cffi:null-pointer-p class)
-        (error "Failed to register window class."))
+      (check-errno (not (cffi:null-pointer-p class)))
       (let ((window (create-window 0 (window-class-class-name window) (cffi:null-pointer)
                                    0 0 0 0 0 HWND-MESSAGE (cffi:null-pointer) (cffi:null-pointer) (cffi:null-pointer))))
-        (when (cffi:null-pointer-p window)
-          (unregister-class class (get-module-handle (cffi:null-pointer)))
-          (error "Failed to create window."))
+        (check-errno (not (cffi:null-pointer-p window))
+          (unregister-class class (get-module-handle (cffi:null-pointer))))
         (let ((notify (register-device-notification window broadcast 0)))
-          (when (cffi:null-pointer-p notify)
+          (check-errno (not (cffi:null-pointer-p notify))
             (destroy-window window)
-            (unregister-class class (get-module-handle (cffi:null-pointer)))
-            (error "Failed to register device notification."))
+            (unregister-class class (get-module-handle (cffi:null-pointer))))
           (make-device-notifier class window notify))))))
 
 (defun process-window-events (notifier)
@@ -299,8 +300,10 @@
 (defun process-joystate (state device function)
   ;; TODO: dinput state processing
   (let ((button-state (button-state device))
-        (axis-state (axis-state device)))
-    ))
+        (axis-state (axis-state device))
+        (time (get-internal-real-time)))
+    (loop for i from 0 below 32
+          do )))
 
 (defun process-object-data (state device function)
   (let ((offset (object-data-offset state))

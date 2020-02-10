@@ -50,10 +50,6 @@
   ;; TODO: look up maps in database
   )
 
-(defmethod print-object ((device device) stream)
-  (print-unreadable-object (device stream :type T)
-    (format stream "~a" (name device))))
-
 (defun id-label (id)
   (svref (load-time-value +labels+) id))
 

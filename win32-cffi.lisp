@@ -9,10 +9,38 @@
 (cffi:define-foreign-library ole32
   (T (:default "Ole32")))
 
+(cffi:define-foreign-library user32
+  (T (:default "User32")))
+
 (defconstant CP-UTF8 65001)
 (defconstant CLSCTX-ALL 23)
 (defconstant MAX-PATH 260)
+(defconstant FORMAT-MESSAGE-FROM-SYSTEM 4096)
+(defconstant FORMAT-MESSAGE-IGNORE-INSERTS 512)
 (defvar HWND-MESSAGE (cffi:make-pointer (- (ash 1 #+64-bit 64 #-64-bit 32) 3)))
+
+;;; Weak enums do not signal errors when translating from unknown integers,
+;;; instead just returning the integer. This is useful if we are only interested
+;;; in a subset of enum values
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defclass weak-foreign-enum (cffi::foreign-enum)
+    ())
+
+  (defmethod cffi:translate-from-foreign (value (type weak-foreign-enum))
+    (or (cffi::%foreign-enum-keyword type value :errorp NIL)
+        value))
+  
+  (defun make-weak-foreign-enum (type-name base-type values)
+    (multiple-value-bind (base-type keyword-values value-keywords)
+        (cffi::parse-foreign-enum-like type-name base-type values)
+      (make-instance 'weak-foreign-enum
+                     :name type-name
+                     :actual-type (cffi::parse-type base-type)
+                     :keyword-values keyword-values
+                     :value-keywords value-keywords))))
+
+(defmacro defcenum* (name-and-options &body enum-list)
+  (cffi::%defcenum-like name-and-options enum-list 'make-weak-foreign-enum))
 
 (cffi:defctype dword :uint32)
 (cffi:defctype word :uint16)
@@ -22,26 +50,13 @@
 (cffi:defctype tchar :uint8)
 (cffi:defctype wchar :uint16)
 
-(define-condition win32-error (error)
-  ((function-name :initarg :function-name :reader function-name)
-   (code :initarg :code :reader code))
-  (:report (lambda (c s) (format s "File select operation failed!~%The call to~%  ~a~%returned with unexpected result code ~a."
-                                 (function-name c) (code c)))))
-
-(defmacro check-return (value-form &rest expected)
-  (let ((value (gensym "VALUE")))
-    `(let ((,value ,value-form))
-       (if (find ,value ',(or expected '(:ok)))
-           ,value
-           (error 'win32-error :code ,value :function-name ',(first value-form))))))
-
 (cffi:defcenum coinit
   (:apartment-threaded #x2)
   (:multi-threaded #x0)
   (:disable-ole1dde #x4)
   (:speed-over-memory #x8))
 
-(cffi:defcenum hresult
+(defcenum* hresult
   (:ok #x00000000)
   (:polled-device #x00000002)
   (:abort #x80004004)
@@ -95,6 +110,30 @@
   (:device-info #x2000000b)
   (:preparsed-data #x20000005))
 
+(cffi:defcenum (win-device-type dword)
+  (:oem              #x00000000)
+  (:device-node      #x00000001)
+  (:volume           #x00000002)
+  (:port             #x00000003)
+  (:net              #x00000004)
+  (:device-interface #x00000005)
+  (:handle           #x00000006))
+
+(defcenum* (wparam #+64-bit :uint64 #-64-bit :unsigned-long)
+  (:no-disk-space              #x0047)
+  (:low-disk-space             #x0048)
+  (:config-message-private     #x7fff)
+  (:device-arrival             #x8000)
+  (:device-query-remove        #x8001)
+  (:device-query-remove-failed #x8002)
+  (:device-remove-pending      #x8003)
+  (:device-remove-complete     #x8004)
+  (:device-type-specific       #x8005)
+  (:custom-event               #x8006))
+
+(defcenum* (window-message :uint)
+  (:device-change #x0219))
+
 (cffi:defcstruct (com :conc-name ||)
   (vtbl :pointer))
 
@@ -103,6 +142,46 @@
   (data2 word)
   (data3 word)
   (data4 :uint8 :count 8))
+
+(cffi:defcstruct (window-class :conc-name window-class-)
+  (size :uint)
+  (style :uint)
+  (procedure :pointer)
+  (class-extra :int)
+  (window-extra :int)
+  (instance :pointer)
+  (icon :pointer)
+  (cursor :pointer)
+  (background :pointer)
+  (menu-name :pointer)
+  (class-name :pointer)
+  (small-icon :pointer))
+
+(cffi:defcstruct (point :conc-name point-)
+  (x long)
+  (y long))
+
+(cffi:defcstruct (message :conc-name message-)
+  (window :pointer)
+  (message window-message)
+  (wparam wparam)
+  (lparam :pointer)
+  (time dword)
+  (point (:struct point))
+  (private dword))
+
+(cffi:defcstruct (raw-input-device-list :conc-name raw-input-device-list-)
+  (device :pointer)
+  (type hid-device-type))
+
+(cffi:defcstruct (hid-device-info :conc-name hid-device-info-)
+  (size dword)
+  (type hid-device-type)
+  (vendor-id dword)
+  (product-id dword)
+  (version-number dword)
+  (usage-page :ushort)
+  (usage :ushort))
 
 (cffi:defcfun (co-initialize "CoInitializeEx") hresult
   (nullable :pointer)
@@ -135,6 +214,115 @@
   (wide-char-str :pointer)
   (wide-char :int))
 
+(cffi:defcfun (get-module-handle "GetModuleHandleW") :pointer
+  (module-name :pointer))
+
+(cffi:defcfun (get-active-window "GetActiveWindow") :pointer)
+
+(cffi:defcfun (register-class "RegisterClassExW") word
+  (class :pointer))
+
+(cffi:defcfun (unregister-class "UnregisterClass") :void
+  (class-name :pointer)
+  (handle :pointer))
+
+(cffi:defcfun (create-window "CreateWindowExW") :pointer
+  (ex-style dword)
+  (class-name :pointer)
+  (window-name :pointer)
+  (style dword)
+  (x :int)
+  (y :int)
+  (w :int)
+  (h :int)
+  (parent :pointer)
+  (menu :pointer)
+  (instance :pointer)
+  (param :pointer))
+
+(cffi:defcfun (destroy-window "DestroyWindow") :void
+  (window :pointer))
+
+(cffi:defcfun (register-device-notification "RegisterDeviceNotificationW") :pointer
+  (recipient :pointer)
+  (filter :pointer)
+  (flags dword))
+
+(cffi:defcfun (unregister-device-notification "UnregisterDeviceNotification") :void
+  (notification :pointer))
+
+(cffi:defcfun (default-window-handler "DefWindowProcW") :pointer
+  (window :pointer)
+  (message window-message)
+  (wparam wparam)
+  (lparam :pointer))
+
+(cffi:defcfun (wait-for-single-object "WaitForSingleObjectEx") wait-result
+  (handle :pointer)
+  (milliseconds dword)
+  (alertable :bool))
+
+(cffi:defcfun (peek-message "PeekMessageW") :bool
+  (message :pointer)
+  (window :pointer)
+  (filter-min :uint)
+  (filter-max :uint)
+  (remove-msg :uint))
+
+(cffi:defcfun (get-message "GetMessage") :bool
+  (message :pointer)
+  (window :pointer)
+  (filter-min :uint)
+  (filter-max :uint))
+
+(cffi:defcfun (translate-message "TranslateMessage") :bool
+  (message :pointer))
+
+(cffi:defcfun (dispatch-message "DispatchMessage") :pointer
+  (message :pointer))
+
+(cffi:defcfun (create-event "CreateEventW") :pointer
+  (attributes :pointer)
+  (manual-reset :bool)
+  (initial-state :bool)
+  (name :pointer))
+
+(cffi:defcfun (close-handle "CloseHandle") :void
+  (handle :pointer))
+
+(cffi:defcfun (memcmp "memcmp") :int
+  (a :pointer)
+  (b :pointer)
+  (n :uint))
+
+(cffi:defcfun (memset "memset") :pointer
+  (pointer :pointer)
+  (fill :int)
+  (n :uint))
+
+(cffi:defcfun (get-raw-input-device-list "GetRawInputDeviceList") :uint
+  (list :pointer)
+  (num :pointer)
+  (size :uint))
+
+(cffi:defcfun (get-raw-input-device-info "GetRawInputDeviceInfoW") :uint
+  (device :pointer)
+  (command hid-device-info-command)
+  (data :pointer)
+  (size :pointer))
+
+(cffi:defcfun (get-last-error "GetLastError") dword)
+
+(cffi:defcfun (format-message "FormatMessageW") dword
+  (flags dword)
+  (source :pointer)
+  (message-id dword)
+  (language-id dword)
+  (buffer :pointer)
+  (size dword)
+  (arguments :pointer))
+
+
 (defun wstring->string (pointer &optional (chars -1))
   (let ((bytes (wide-char-to-multi-byte CP-UTF8 0 pointer chars (cffi:null-pointer) 0 (cffi:null-pointer) (cffi:null-pointer))))
     (cffi:with-foreign-object (string :uchar bytes)
@@ -147,6 +335,33 @@
            (pointer (cffi:foreign-alloc :uint16 :count chars)))
       (multi-byte-to-wide-char CP-UTF8 0 string -1 pointer chars)
       pointer)))
+
+(defun error-message (&optional (errno (get-last-error)))
+  (cffi:with-foreign-object (string 'wchar 256)
+    (format-message (logior format-message-from-system format-message-ignore-inserts)
+                    (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
+    (wstring->string string)))
+
+(define-condition win32-error (error)
+  ((function-name :initarg :function-name :initform NIL :reader function-name)
+   (code :initarg :code :reader code)
+   (message :initarg :message :initform NIL :reader message))
+  (:report (lambda (c s) (format s "The call ~@[to~%  ~a~%~]returned with unexpected result code ~a.~@[~%  ~a~]"
+                                 (function-name c) (code c) (message c)))))
+
+(defmacro check-errno (predicate &body cleanup)
+  `(unless ,predicate
+     ,@cleanup
+     (let ((errno (get-last-error)))
+       (error 'win32-error
+              :code errno :message (error-message errno)))))
+
+(defmacro check-return (value-form &rest expected)
+  (let ((value (gensym "VALUE")))
+    `(let ((,value ,value-form))
+       (if (find ,value ',(or expected '(:ok)))
+           ,value
+           (error 'win32-error :code ,value :function-name ',(first value-form))))))
 
 (defun com-release (pointer)
   (cffi:foreign-funcall-pointer
@@ -234,157 +449,3 @@
                           ,@args)))))
 
 (defvar GUID-DEVINTERFACE-HID (make-guid #x4D1E55B2 #xF16F #x11CF #x88 #xCB #x00 #x11 #x11 #x00 #x00 #x30))
-
-(cffi:defcenum (win-device-type dword)
-  (:oem              #x00000000)
-  (:device-node      #x00000001)
-  (:volume           #x00000002)
-  (:port             #x00000003)
-  (:net              #x00000004)
-  (:device-interface #x00000005)
-  (:handle           #x00000006))
-
-(cffi:defcenum (wparam #+64-bit :uint64 #-64-bit :unsigned-long)
-  (:no-disk-space              #x0047)
-  (:low-disk-space             #x0048)
-  (:config-message-private     #x7fff)
-  (:device-arrival             #x8000)
-  (:device-query-remove        #x8001)
-  (:device-query-remove-failed #x8002)
-  (:device-remove-pending      #x8003)
-  (:device-remove-complete     #x8004)
-  (:device-type-specific       #x8005)
-  (:custom-event               #x8006))
-
-(cffi:defcenum (window-message :uint)
-  (:device-change #x0219))
-
-(cffi:defcstruct (window-class :conc-name window-class-)
-  (size :uint)
-  (style :uint)
-  (procedure :pointer)
-  (class-extra :int)
-  (window-extra :int)
-  (instance :pointer)
-  (icon :pointer)
-  (cursor :pointer)
-  (background :pointer)
-  (menu-name :pointer)
-  (class-name :pointer)
-  (small-icon :pointer))
-
-(cffi:defcstruct (point :conc-name point-)
-  (x long)
-  (y long))
-
-(cffi:defcstruct (message :conc-name message-)
-  (window :pointer)
-  (message window-message)
-  (wparam wparam)
-  (lparam :pointer)
-  (time dword)
-  (point (:struct point))
-  (private dword))
-
-(cffi:defcfun (get-module-handle "GetModuleHandleW") :pointer
-  (module-name :pointer))
-
-(cffi:defcfun (register-class "RegisterClassExW") word
-  (class :pointer))
-
-(cffi:defcfun (unregister-class "UnregisterClass") :void
-  (class-name :pointer)
-  (handle :pointer))
-
-(cffi:defcfun (create-window "CreateWindowExW") :pointer
-  (ex-style dword)
-  (class-name :pointer)
-  (window-name :pointer)
-  (style dword)
-  (x :int)
-  (y :int)
-  (w :int)
-  (h :int)
-  (parent :pointer)
-  (menu :pointer)
-  (instance :pointer)
-  (param :pointer))
-
-(cffi:defcfun (destroy-window "DestroyWindow") :void
-  (window :pointer))
-
-(cffi:defcfun (register-device-notification "RegisterDeviceNotificationW") :pointer
-  (recipient :pointer)
-  (filter :pointer)
-  (flags dword))
-
-(cffi:defcfun (unregister-device-notification "UnregisterDeviceNotification") :void
-  (notification :pointer))
-
-(cffi:defcfun (default-window-handler "DefWindowProcW") :pointer
-  (window :pointer)
-  (message window-message)
-  (wparam wparam)
-  (lparam :pointer))
-
-(cffi:defcfun (wait-for-single-object "WaitForSingleObjectEx") wait-result
-  (handle :pointer)
-  (milliseconds dword)
-  (alertable :bool))
-
-(cffi:defcfun (peek-message "PeekMessageW") :bool
-  (message :pointer)
-  (window :pointer)
-  (filter-min :uint)
-  (filter-max :uint)
-  (remove-msg :uint))
-
-(cffi:defcfun (get-message "GetMessage") :bool
-  (message :pointer)
-  (window :pointer)
-  (filter-min :uint)
-  (filter-max :uint))
-
-(cffi:defcfun (translate-message "TranslateMessage") :bool
-  (message :pointer))
-
-(cffi:defcfun (dispatch-message "DispatchMessage") :pointer
-  (message :pointer))
-
-(cffi:defcfun (create-event "CreateEventW") :pointer
-  (attributes :pointer)
-  (manual-reset :bool)
-  (initial-state :bool)
-  (name :pointer))
-
-(cffi:defcfun (close-handle "CloseHandle") :void
-  (handle :pointer))
-
-(cffi:defcfun (memcmp "memcmp") :int
-  (a :pointer)
-  (b :pointer)
-  (n :int))
-
-(cffi:defcfun (get-raw-input-device-list "GetRawInputDeviceList") :uint
-  (list :pointer)
-  (num :pointer)
-  (size :uint))
-
-(cffi:defcstruct (raw-input-device-list :conc-name raw-input-device-list-)
-  (device :pointer)
-  (type hid-device-type))
-
-(cffi:defcfun (get-raw-input-device-info "GetRawInputDeviceInfoW") :uint
-  (device :pointer)
-  (command hid-device-info-command)
-  (data :pointer)
-  (size :pointer))
-
-(cffi:defcstruct (hid-device-info :conc-name hid-device-info-)
-  (size dword)
-  (type hid-device-type)
-  (vendor-id dword)
-  (product-id dword)
-  (version-number dword)
-  (usage-page :ushort)
-  (usage :ushort))

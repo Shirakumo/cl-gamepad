@@ -12,6 +12,10 @@
   (code 0 :type (unsigned-byte 32))
   (label NIL :type symbol))
 
+(defmethod print-object ((event event) stream)
+  (print-unreadable-object (event stream :type T)
+    (format stream "~a" (or (event-label event) (event-code event)))))
+
 (defstruct (button-down (:include event)
                         (:constructor make-button-down (device time code label))))
 
@@ -23,6 +27,10 @@
                       (:conc-name event-))
   (value 0f0 :type single-float))
 
+(defmethod print-object ((event axis-move) stream)
+  (print-unreadable-object (event stream :type T)
+    (format stream "~a ~f" (or (event-label event) (event-code event)) (event-value event))))
+
 (defclass device ()
   ((name :initarg :name :initform NIL :reader name)
    (vendor :initarg :vendor :initform NIL :reader vendor)
@@ -31,3 +39,7 @@
    (driver-version :initarg :driver-version :initform NIL :reader driver-version)
    (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :reader button-map)
    (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :reader axis-map)))
+
+(defmethod print-object ((device device) stream)
+  (print-unreadable-object (device stream :type T)
+    (format stream "~a" (name device))))

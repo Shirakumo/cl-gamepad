@@ -102,7 +102,8 @@
    (xinput :initarg :xinput :initform NIL :reader xinput)
    (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)
    (button-state :initform (make-array (length +labels+) :element-type 'bit) :reader button-state)
-   (axis-state :initform (make-array (length +labels+) :element-type 'single-float) :reader axis-state)))
+   ;; Need extra space since POVs take up twice as much room.
+   (axis-state :initform (make-array (+ 4 (length +labels+)) :element-type 'single-float) :reader axis-state)))
 
 (defun close-device (device)
   (when (xinput device)
@@ -297,13 +298,12 @@
 (defun map-to-float (min value max)
   (- (* (/ (- value min) (float (- max min) 0f0)) 2f0) 1f0))
 
-(defun process-joystate (state device function)
-  ;; TODO: dinput state processing
-  (let ((button-state (button-state device))
-        (axis-state (axis-state device))
-        (time (get-internal-real-time)))
-    (loop for i from 0 below 32
-          do )))
+(defun pov-to-cartesian (value)
+  (if (or (= 65535 value) (= -1 value))
+      (values 0f0 0f0)
+      (let ((rad (* PI (/ (- 90 (/ value 100)) 180))))
+        (values (float (cos rad) 0f0)
+                (float (sin rad) 0f0)))))
 
 (defun process-object-data (state device function)
   (let ((offset (object-data-offset state))
@@ -316,16 +316,10 @@
          (signal-axis-move function device time code label (map-to-float -32768 (object-data-data state) 32767))))
       ;; POV (emulate as two axes)
       ((< offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons))
-       (let* ((code (+ 8 (* 2 (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'pov)) (cffi:foreign-type-size 'dword)))))
-              (value (object-data-data state))
-              (x 0f0) (y 0f0))
-         (unless (or (= 65535 value) (= -1 value))
-           ;; Normalise to polar coordinates
-           (let ((rad (* PI (/ (- 90 (/ value 100)) 180))))
-             (setf x (float (cos rad) 0f0))
-             (setf y (float (sin rad) 0f0))))
-         (signal-axis-move function device time code (gethash (+ 0 code) (axis-map device)) x)
-         (signal-axis-move function device time code (gethash (+ 1 code) (axis-map device)) y)))
+       (let ((code (+ 8 (* 2 (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'pov)) (cffi:foreign-type-size 'dword))))))
+         (multiple-value-bind (x y) (pov-to-cartesian (object-data-data state))
+           (signal-axis-move function device time code (gethash (+ 0 code) (axis-map device)) x)
+           (signal-axis-move function device time code (gethash (+ 1 code) (axis-map device)) y))))
       ;; Button
       (T
        (let* ((code (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons)) (cffi:foreign-type-size 'byte)))
@@ -333,6 +327,38 @@
          (if (= 1 (ldb (cl:byte 1 7) (object-data-data state)))
              (signal-button-down function device time code label)
              (signal-button-up function device time code label)))))))
+
+(defun process-joystate (state device function)
+  (let ((button-state (button-state device))
+        (axis-state (axis-state device))
+        (button-map (button-map device))
+        (axis-map (axis-map device))
+        (time (get-internal-real-time)))
+    (labels ((handle-axis (id new-state)
+               (unless (= new-state (aref axis-state id))
+                 (setf (aref axis-state id) new-state)
+                 (signal-axis-move function device time id (gethash id axis-map) new-state)))
+             (handle-pov (id new-state)
+               (multiple-value-bind (x y) (pov-to-cartesian new-state)
+                 (handle-axis (+ 32 (* id 2)) x)
+                 (handle-axis (+ 33 (* id 2)) y)))
+             (handle-button (id new-state)
+               (unless (eql (< 0 (sbit button-state id))
+                            (< 0 new-state))
+                 (setf (sbit button-state id) (if (< 0 new-state) 1 0))
+                 (if (< 0 new-state)
+                     (signal-button-down function device time id (gethash id button-map))
+                     (signal-button-up function device time id (gethash id button-map))))))
+      (loop with ptr = (cffi:foreign-slot-pointer state '(:struct joystate) 'axis)
+            for i from 0 below 32
+            for value = (cffi:mem-aref ptr 'long i)
+            do (handle-axis i (map-to-float -32768 (object-data-data state) 32767)))
+      (loop with ptr = (cffi:foreign-slot-pointer state '(:struct joystate) 'pov)
+            for i from 0 below 4
+            do (handle-pov i (cffi:mem-aref ptr 'dword i)))
+      (loop with ptr = (cffi:foreign-slot-pointer state '(:struct joystate) 'buttons)
+            for i from 0 below 36
+            do (handle-button i (cffi:mem-aref ptr 'byte i))))))
 
 (defun process-xinput-state (state device function)
   (let ((button-state (button-state device))

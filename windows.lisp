@@ -72,9 +72,6 @@
 (defun guid-product (guid)
   (ldb (cl:byte 16  0) (guid-data1 guid)))
 
-(defun guid-version (guid)
-  0)
-
 (defun dev-xinput-p (guid)
   (or (loop for known in (list IID-VALVE-STREAMING-GAMEPAD
                                IID-X360-WIRED-GAMEPAD
@@ -96,6 +93,14 @@
                                  (= (hid-device-info-product-id info) (guid-product guid))
                                  (< 0 (get-raw-input-device-info device :device-name name size))
                                  (string= "IG_" (wstring->string name 3))))))))))
+
+(defun guess-xinput-id (dev)
+  (when (dev-xinput-p dev)
+    (cffi:with-foreign-object (capabilities '(:struct xcapabilities))
+      (loop for i from 0 below 4
+            when (and (= 0 (sbit *xinput-taken* i))
+                      (eql :success (get-xcapabilities i 0 capabilities)))
+            return i))))
 
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
@@ -137,28 +142,24 @@
     (cffi:with-foreign-object (instance '(:struct device-instance))
       (check-return
        (device-get-device-info dev instance))
-      (let ((guid (guid-integer (device-instance-product instance))))
+      (let ((guid (device-instance-product instance)))
         (make-instance 'device
                        :dev dev
                        :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
                        :vendor (guid-vendor guid)
                        :product (guid-product guid)
-                       :version (guid-version guid)
-                       :driver-version 0
+                       :version 0
                        :poll-device poll-device
-                       :xinput (when (dev-xinput-p dev)
-                                 ;; Probably not right but the best we can do.
-                                 (loop for i from 0 below 4
-                                       when (= 0 (sbit *xinput-taken* i))
-                                       return i)))))))
+                       :xinput (guess-xinput-id dev))))))
 
 (defun ensure-device (guid)
   (or (gethash (guid-integer guid) *device-table*)
-      (cffi:with-foreign-object (dev :pointer)
-        (check-return
-         (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
-        (setf (gethash (guid-integer guid) *device-table*)
-              (make-device-from-dev (cffi:mem-ref dev :pointer))))))
+      (with-simple-restart (drop-device "Don't initialise ~a" (guid-string guid))
+        (cffi:with-foreign-object (dev :pointer)
+          (check-return
+           (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
+          (setf (gethash (guid-integer guid) *device-table*)
+                (make-device-from-dev (cffi:mem-ref dev :pointer)))))))
 
 (defun list-devices ()
   (loop for device being the hash-values of *device-table*
@@ -262,6 +263,15 @@
        (when *devices-need-refreshing*
          (refresh-devices)))))
 
+(defmacro check-dinput-device (dev form)
+  (let ((value (gensym "value")))
+    `(let ((,value (check-return ,form '(:ok :false :input-lost :not-acquired))))
+       (case ,value
+         ((:ok :false))
+         ((:input-lost :not-acquired)
+          (check-return (device-acquire ,dev) '(:ok :false))
+          (check-return ,form '(:ok :false)))))))
+
 (defun poll-events (device function &key timeout)
   (let ((dev (dev device))
         (xinput (xinput device))
@@ -269,31 +279,35 @@
               ((eql T) 1000)
               ((eql NIL) 0)
               ((integer 0) (floor (* 1000 timeout))))))
-    (cond (xinput
-           (cffi:with-foreign-objects ((state '(:struct xstate)))
-             (loop while (and (eql :ok (wait-for-single-object *poll-event* ms T))
-                              (eql T timeout)))
-             (check-return (get-xstate xinput state))
-             (loop with packet = 0
-                   while (/= packet (xstate-packet state))
-                   do (setf packet (xstate-packet state))
-                      (process-xinput-state (xstate-gamepad state) device function))))
-          ;; FIXME: Handle reacquisition and error escape more gracefully
-          ((poll-device-p device)
-           (cffi:with-foreign-objects ((state '(:struct joystate)))
-             (check-return (device-poll dev))
-             (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state)
-             (process-joystate state device function)))
-          (T
-           (cffi:with-foreign-objects ((state '(:struct object-data) EVENT-BUFFER-COUNT)
-                                       (count 'dword))
-             (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
-             (loop while (and (eql :ok (wait-for-single-object *poll-event* ms T))
-                              (eql T timeout)))
-             (check-return (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
-             (loop for i from 0 below (cffi:mem-ref count 'dword)
-                   for data = (cffi:mem-aptr state '(:struct object-data) i)
-                   do (process-object-data data device function)))))))
+    (restart-case
+        (cond (xinput
+               (cffi:with-foreign-objects ((state '(:struct xstate)))
+                 (loop until (or (eql :ok (wait-for-single-object *poll-event* ms T))
+                                 (not (eql T timeout))))
+                 (check-return (get-xstate xinput state))
+                 (loop with packet = -1
+                       while (/= packet (xstate-packet state))
+                       do (setf packet (xstate-packet state))
+                          (process-xinput-state (xstate-gamepad state) device function))))
+              ((poll-device-p device)
+               (cffi:with-foreign-objects ((state '(:struct joystate)))
+                 (check-dinput-device dev (device-poll dev))
+                 (check-dinput-device dev (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state))
+                 (process-joystate state device function)))
+              (T
+               (cffi:with-foreign-objects ((state '(:struct object-data) EVENT-BUFFER-COUNT)
+                                           (count 'dword))
+                 (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
+                 (loop until (or (eql :ok (wait-for-single-object *poll-event* ms T))
+                                 (not (eql T timeout))))
+                 (check-dinput-device dev (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
+                 (loop for i from 0 below (cffi:mem-ref count 'dword)
+                       for data = (cffi:mem-aptr state '(:struct object-data) i)
+                       do (process-object-data data device function)))))
+      (drop-device
+        :report "Close and remove the device."
+        (close-device device)
+        NIL))))
 
 (defun map-to-float (min value max)
   (- (* (/ (- value min) (float (- max min) 0f0)) 2f0) 1f0))

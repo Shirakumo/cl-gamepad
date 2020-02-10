@@ -25,10 +25,10 @@
   (:x      #x4000)
   (:y      #x8000))
 
-(cffi:defcenum (errno dword)
-  (:ok                   #x0000)
-  (:device-not-connected #x048F)
-  (:empty                #x10D2))
+(defcenum* (xreturn dword)
+  (:ok            #x0000)
+  (:not-connected #x048F)
+  (:empty         #x10D2))
 
 (cffi:defcstruct (xgamepad :conc-name xgamepad-)
   (buttons dword)
@@ -54,15 +54,15 @@
   (gamepad (:struct xstate))
   (vibration (:struct xvibration)))
 
-(cffi:defcfun (get-xcapabilities "XInputGetCapabilities") errno
+(cffi:defcfun (get-xcapabilities "XInputGetCapabilities") xreturn
   (user-index dword)
   (flags dword)
   (capabilities :pointer))
 
-(cffi:defcfun (get-xstate "XInputGetState") errno
+(cffi:defcfun (get-xstate "XInputGetState") xreturn
   (user-index dword)
   (state :pointer))
 
-(cffi:defcfun (set-xstate "XInputSetState") errno
+(cffi:defcfun (set-xstate "XInputSetState") xreturn
   (user-index dword)
   (vibration :pointer))

@@ -58,6 +58,7 @@
 
 (defcenum* hresult
   (:ok #x00000000)
+  (:false #x00000001)
   (:polled-device #x00000002)
   (:abort #x80004004)
   (:cancelled #x800704C7)
@@ -91,7 +92,13 @@
   (:unsupported-format 2290679816)
   (:wrong-endpoint-type 2290679811)
   (:class-not-registered 2147746132)
-  (:no-aggregation 2147746064))
+  (:no-aggregation 2147746064)
+  (:input-lost #x8007001e)
+  (:not-acquired #x8007000c)
+  (:not-initialized #x80070015)
+  (:other-has-priority #x80070005)
+  (:invalid-parameter #x80070057)
+  (:not-buffered #x80040207))
 
 (cffi:defcenum (wait-result dword)
   (:ok #x00)

@@ -17,7 +17,7 @@
   :components ((:file "package")
                (:file "types")
                (:file "protocol")
-               (:file "linux-cffi" :if-feature :linux)
+               (:file "evdev-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux)
                (:file "win32-cffi" :if-feature :win32)
                (:file "xinput-cffi" :if-feature :win32)

@@ -22,7 +22,10 @@
                (:file "win32-cffi" :if-feature :win32)
                (:file "xinput-cffi" :if-feature :win32)
                (:file "dinput-cffi" :if-feature :win32)
-               (:file "windows" :if-feature :win32))
+               (:file "windows" :if-feature :win32)
+               (:file "corefoundation-cffi" :if-feature :darwin)
+               (:file "iokit-cffi" :if-feature :darwin)
+               (:file "darwin" :if-feature :darwin))
   :depends-on (:cffi
                :trivial-features
                :documentation-utils))

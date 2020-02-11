@@ -36,6 +36,7 @@
    (vendor :initarg :vendor :initform NIL :reader vendor)
    (product :initarg :product :initform NIL :reader product)
    (version :initarg :version :initform NIL :reader version)
+   (driver :initarg :driver :initform NIL :reader driver)
    (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :reader button-map)
    (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :reader axis-map)))
 

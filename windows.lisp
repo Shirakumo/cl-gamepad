@@ -67,10 +67,10 @@
   :continue)
 
 (defun guid-vendor (guid)
-  (ldb (cl:byte 16 16) (guid-data1 guid)))
+  (ldb (cl:byte 16 0) (guid-data1 guid)))
 
 (defun guid-product (guid)
-  (ldb (cl:byte 16  0) (guid-data1 guid)))
+  (ldb (cl:byte 16 16) (guid-data1 guid)))
 
 (defun dev-xinput-p (guid)
   (or (loop for known in (list IID-VALVE-STREAMING-GAMEPAD
@@ -79,31 +79,35 @@
             thereis (= 0 (memcmp known guid 16)))
       (cffi:with-foreign-object (count :uint)
         (when (<= 0 (get-raw-input-device-list (cffi:null-pointer) count (cffi:foreign-type-size '(:struct raw-input-device-list))))
-          (cffi:with-foreign-objects ((devices '(:struct raw-input-device-list) (cffi:mem-ref count :uint))
+          (cffi:with-foreign-objects ((list '(:struct raw-input-device-list) (cffi:mem-ref count :uint))
                                       (info '(:struct hid-device-info))
-                                      (name :uint16 (cffi:foreign-type-size '(:struct hid-device-info)))
+                                      (name :uint16 256)
                                       (size :uint))
-            (setf (cffi:mem-ref size :uint) (cffi:foreign-type-size '(:struct hid-device-info)))
-            (when (<= 0 (get-raw-input-device-list devices count (cffi:foreign-type-size '(:struct raw-input-device-list))))
+            (when (< 0 (get-raw-input-device-list list count (cffi:foreign-type-size '(:struct raw-input-device-list))))
               (loop for i from 0 below (cffi:mem-ref count :uint)
-                    for device = (cffi:mem-aptr devices '(:struct raw-input-device-list) i)
-                    thereis (and (eql :hid (raw-input-device-list-type device))
-                                 (< 0 (get-raw-input-device-info device :device-info info size))
+                    for entry = (cffi:mem-aref list '(:struct raw-input-device-list) i)
+                    thereis (and (eql :hid (getf entry 'type))
+                                 ;; Compare device ID to check if this is our product
+                                 (setf (cffi:mem-ref size :uint) (cffi:foreign-type-size '(:struct hid-device-info)))
+                                 (<= 0 (get-raw-input-device-info (getf entry 'device) :device-info info size))
                                  (= (hid-device-info-vendor-id info) (guid-vendor guid))
                                  (= (hid-device-info-product-id info) (guid-product guid))
-                                 (< 0 (get-raw-input-device-info device :device-name name size))
-                                 (string= "IG_" (wstring->string name 3))))))))))
+                                 ;; Check name to see if it contains IG_, an identifier for xbox gamepads.
+                                 (setf (cffi:mem-ref size :uint) 256)
+                                 (<= 0 (get-raw-input-device-info (getf entry 'device) :device-name name size))
+                                 (search "IG_" (wstring->string name))))))))))
 
-(defun guess-xinput-id (dev)
-  (when (dev-xinput-p dev)
+(defun guess-xinput-id (guid)
+  (when (dev-xinput-p guid)
     (cffi:with-foreign-object (capabilities '(:struct xcapabilities))
       (loop for i from 0 below 4
             when (and (= 0 (sbit *xinput-taken* i))
-                      (eql :success (get-xcapabilities i 0 capabilities)))
+                      (eql :ok (get-xcapabilities i 0 capabilities)))
             return i))))
 
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
+   (guid :initarg :guid :reader guid)
    (xinput :initarg :xinput :initform NIL :reader xinput)
    (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)
    (button-state :initform (make-array (length +labels+) :element-type 'bit) :reader button-state)
@@ -114,52 +118,61 @@
   (when (xinput device)
     (setf (sbit *xinput-taken* (xinput device)) 0))
   (device-unacquire (dev device))
+  (device-set-event-notification (dev device) (cffi:null-pointer))
   (com-release (dev device))
-  (slot-makunbound device 'dev))
+  (slot-makunbound device 'dev)
+  (remhash (guid-integer (guid device)) *device-table*))
 
-(defun make-device-from-dev (dev)
-  (check-return
-   (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
-  (check-return
-   (device-set-data-format dev *joystate-format*))
-  (check-return
-   (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
-  (check-return
-   (device-acquire dev))
-  (let ((poll-device (eq :polled-device
-                         (check-return
-                          (device-set-event-notification dev *poll-event*) :ok :polled-device))))
-    (unless poll-device
-      ;; Allow receiving buffered events
-      (cffi:with-foreign-object (dword '(:struct property-dword))
-        (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
-        (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
-        (setf (property-dword-how dword) :device)
-        (setf (property-dword-type dword) 0)
-        (setf (property-dword-data dword) EVENT-BUFFER-COUNT)
+(defun make-device-from-guid (guid)
+  (let ((dev (cffi:with-foreign-object (dev :pointer)
+               (check-return
+                (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
+               (cffi:mem-ref dev :pointer))))
+    (device-unacquire dev)
+    (check-return
+     (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
+    (check-return
+     (device-set-data-format dev *joystate-format*))
+    (check-return
+     (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
+    (let ((poll-device (eq :polled-device
+                           (check-return
+                            (device-set-event-notification dev *poll-event*) :ok :polled-device))))
+      (unless poll-device
+        ;; Allow receiving buffered events
+        (cffi:with-foreign-object (dword '(:struct property-dword))
+          (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
+          (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
+          (setf (property-dword-how dword) :device)
+          (setf (property-dword-type dword) 0)
+          (setf (property-dword-data dword) EVENT-BUFFER-COUNT)
+          (check-return
+           (device-set-property dev DIPROP-BUFFERSIZE dword))))
+      (cffi:with-foreign-object (instance '(:struct device-instance))
+        (memset instance 0 (cffi:foreign-type-size '(:struct device-instance)))
+        (setf (device-instance-size instance) (cffi:foreign-type-size '(:struct device-instance)))
         (check-return
-         (device-set-property dev DIPROP-BUFFERSIZE dword))))
-    (cffi:with-foreign-object (instance '(:struct device-instance))
-      (check-return
-       (device-get-device-info dev instance))
-      (let ((guid (device-instance-product instance)))
-        (make-instance 'device
-                       :dev dev
-                       :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
-                       :vendor (guid-vendor guid)
-                       :product (guid-product guid)
-                       :version 0
-                       :poll-device poll-device
-                       :xinput (guess-xinput-id dev))))))
+         (device-get-device-info dev instance))
+        (check-return
+         (device-acquire dev))
+        (let* ((product-guid (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product))
+               (xinput (guess-xinput-id product-guid)))
+          (make-instance 'device
+                         :dev dev
+                         :guid guid
+                         :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
+                         :vendor (guid-vendor product-guid)
+                         :product (guid-product product-guid)
+                         :version 0
+                         :poll-device poll-device
+                         :xinput xinput
+                         :driver (if xinput :xinput :dinput)))))))
 
 (defun ensure-device (guid)
   (or (gethash (guid-integer guid) *device-table*)
       (with-simple-restart (drop-device "Don't initialise ~a" (guid-string guid))
-        (cffi:with-foreign-object (dev :pointer)
-          (check-return
-           (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
-          (setf (gethash (guid-integer guid) *device-table*)
-                (make-device-from-dev (cffi:mem-ref dev :pointer)))))))
+        (setf (gethash (guid-integer guid) *device-table*)
+              (make-device-from-guid guid)))))
 
 (defun list-devices ()
   (loop for device being the hash-values of *device-table*
@@ -225,7 +238,7 @@
     (setf (window-class-size window) (cffi:foreign-type-size '(:struct window-class)))
     (setf (window-class-procedure window) (cffi:callback device-change))
     (setf (window-class-instance window) (get-module-handle (cffi:null-pointer)))
-    (setf (window-class-class-name window) (string->wstring "ClGamepadMessages"))
+    (setf (window-class-class-name window) (string->wstring "cl-gamepad-messages"))
     (memset broadcast 0 (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-size broadcast) (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-device-type broadcast) :device-interface)
@@ -243,52 +256,71 @@
             (unregister-class class (get-module-handle (cffi:null-pointer))))
           (make-device-notifier class window notify))))))
 
-(defun process-window-events (notifier)
-  (cffi:with-foreign-object (message '(:struct message))
-    (loop with window = (device-notifier-window notifier)
-          while (peek-message message window 0 0 0)
-          do (when (get-message message window 0 0)
-               (translate-message message)
-               (dispatch-message message)))))
-
-(defun poll-devices (&key timeout)
+(defun poll-for (handle timeout)
   (let ((ms (etypecase timeout
               ((eql T) 1000)
               ((eql NIL) 0)
-              ((integer 0) (floor (* 1000 timeout))))))
-    (tagbody wait
-       (when (and (eql :ok (wait-for-single-object (device-notifier-window *device-notifier*) ms T))
-                  (eql T timeout))
-         (go wait))
-       (when *devices-need-refreshing*
-         (refresh-devices)))))
+              ((real 0) (floor (* 1000 timeout))))))
+    (loop for result = (wait-for-single-object handle ms)
+          do (when (eq :failed result)
+               (win32-error (get-last-error)))
+             ;; This is required to get SBCL/etc to process interrupts.
+             (finish-output)
+          until (or (eql :ok result)
+                    (not (eql T timeout))))))
+
+(defun poll-devices (&key timeout)
+  (let* ((ms (etypecase timeout
+               ((eql T) 1000)
+               ((eql NIL) 0)
+               ((real 0) (floor (* 1000 timeout)))))
+         (window (device-notifier-window *device-notifier*))
+         (timer (when timeout (set-timer window 0 ms (cffi:null-pointer)))))
+    (unwind-protect
+         (cffi:with-foreign-object (message '(:struct message))
+           (flet ((process ()
+                    (when (get-message message window 0 0)
+                      (translate-message message)
+                      (dispatch-message message))))
+             (loop
+               ;; First block with the timer if we have one
+               (when timer (process))
+               ;; Then remove remaining messages if there are any
+               (loop while (peek-message message window 0 0 0)
+                     do (process))
+               ;; If we got a HID message we can now refresh.
+               (when *devices-need-refreshing*
+                 (refresh-devices)
+                 (return))
+               (unless (eql T timeout)
+                 (return))
+               ;; This is required to get SBCL/etc to process interrupts.
+               (finish-output))))
+      (when timer (kill-timer window timer)))))
 
 (defmacro check-dinput-device (dev form)
   (let ((value (gensym "value")))
-    `(let ((,value (check-return ,form '(:ok :false :input-lost :not-acquired))))
+    `(let ((,value (check-return ,form :ok :false :input-lost :not-acquired)))
        (case ,value
          ((:ok :false))
          ((:input-lost :not-acquired)
-          (check-return (device-acquire ,dev) '(:ok :false))
-          (check-return ,form '(:ok :false)))))))
+          (check-return (device-acquire ,dev) :ok :false)
+          (check-return ,form :ok :false))
+         (T
+          (error 'win32-error :code ,value :function-name ',(first form)))))))
 
 (defun poll-events (device function &key timeout)
   (let ((dev (dev device))
-        (xinput (xinput device))
-        (ms (etypecase timeout
-              ((eql T) 1000)
-              ((eql NIL) 0)
-              ((integer 0) (floor (* 1000 timeout))))))
+        (xinput (xinput device)))
     (restart-case
         (cond (xinput
                (cffi:with-foreign-objects ((state '(:struct xstate)))
-                 (loop until (or (eql :ok (wait-for-single-object *poll-event* ms T))
-                                 (not (eql T timeout))))
+                 (poll-for *poll-event* timeout)
                  (check-return (get-xstate xinput state))
                  (loop with packet = -1
                        while (/= packet (xstate-packet state))
                        do (setf packet (xstate-packet state))
-                          (process-xinput-state (xstate-gamepad state) device function))))
+                          (process-xinput-state (cffi:foreign-slot-pointer state '(:struct xstate) 'gamepad) device function))))
               ((poll-device-p device)
                (cffi:with-foreign-objects ((state '(:struct joystate)))
                  (check-dinput-device dev (device-poll dev))
@@ -298,13 +330,12 @@
                (cffi:with-foreign-objects ((state '(:struct object-data) EVENT-BUFFER-COUNT)
                                            (count 'dword))
                  (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
-                 (loop until (or (eql :ok (wait-for-single-object *poll-event* ms T))
-                                 (not (eql T timeout))))
+                 (poll-for *poll-event* timeout)
                  (check-dinput-device dev (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
                  (loop for i from 0 below (cffi:mem-ref count 'dword)
                        for data = (cffi:mem-aptr state '(:struct object-data) i)
                        do (process-object-data data device function)))))
-      (drop-device
+      (drop-device ()
         :report "Close and remove the device."
         (close-device device)
         NIL))))
@@ -388,9 +419,9 @@
            (handle-axis (label id new-state)
              (unless (= new-state (aref axis-state id))
                (setf (aref axis-state id) new-state)
-               (signal-axis-move function device time label id new-state))))
+               (signal-axis-move function device time id label new-state))))
       (loop for (label id mask) in (load-time-value
-                                    (loop for label in '(:dpad-u :dpad-d :dpad-l :dpad-r :start :back :l3 :r3 :l1 :r1 :a :b :x :y)
+                                    (loop for label in '(:dpad-u :dpad-d :dpad-l :dpad-r :start :select :l3 :r3 :l1 :r1 :a :b :x :y)
                                           collect (list label
                                                         (gamepad:label-id label)
                                                         (cffi:foreign-bitfield-value 'xbuttons label))))

@@ -47,8 +47,8 @@
 (cffi:defctype long :int32)
 (cffi:defctype short :int16)
 (cffi:defctype byte :uint8)
-(cffi:defctype tchar :uint8)
 (cffi:defctype wchar :uint16)
+(cffi:defctype uint-ptr #+64-bit :uint64 #-64-bit :uint32)
 
 (cffi:defcenum coinit
   (:apartment-threaded #x2)
@@ -71,34 +71,15 @@
   (:out-of-memory #x8007000e)
   (:pointer #x80004003)
   (:unexpected #x8000ffff)
-  (:already-initialized 2290679810)
-  (:bad-pointer 2147500035)
-  (:bufduration-period-not-equal 2290679827)
-  (:buffer-error 2290679832)
-  (:buffer-operation-pending 2290679819)
-  (:buffer-size-error 2290679830)
-  (:buffer-size-not-aligned 2290679833)
-  (:buffer-too-large 2290679814)
-  (:cpuusage-exceeded 2290679831)
-  (:device-in-use 2290679818)
-  (:device-invalidated 2290679812)
-  (:endpoint-create-failed 2290679823)
-  (:exclusive-mode-not-allowed 2290679822)
-  (:invalid-device-period 2290679840)
-  (:invalid-size 2290679817)
-  (:not-initialized 2290679809)
-  (:out-of-order 2290679815)
-  (:service-not-running 2290679824)
-  (:unsupported-format 2290679816)
-  (:wrong-endpoint-type 2290679811)
-  (:class-not-registered 2147746132)
-  (:no-aggregation 2147746064)
   (:input-lost #x8007001e)
   (:not-acquired #x8007000c)
   (:not-initialized #x80070015)
   (:other-has-priority #x80070005)
   (:invalid-parameter #x80070057)
-  (:not-buffered #x80040207))
+  (:not-buffered #x80040207)
+  (:acquired #x800700aa)
+  (:handle-exists #x80070005)
+  (:unplugged #x80040209))
 
 (cffi:defcenum (wait-result dword)
   (:ok #x00)
@@ -113,8 +94,8 @@
   (:hid 2))
 
 (cffi:defcenum (hid-device-info-command :uint)
-  (:device-name #x20000007)
-  (:device-info #x2000000b)
+  (:device-name    #x20000007)
+  (:device-info    #x2000000b)
   (:preparsed-data #x20000005))
 
 (cffi:defcenum (win-device-type dword)
@@ -188,7 +169,8 @@
   (product-id dword)
   (version-number dword)
   (usage-page :ushort)
-  (usage :ushort))
+  (usage :ushort)
+  (pad :uint64))
 
 (cffi:defcfun (co-initialize "CoInitializeEx") hresult
   (nullable :pointer)
@@ -229,7 +211,7 @@
 (cffi:defcfun (register-class "RegisterClassExW") word
   (class :pointer))
 
-(cffi:defcfun (unregister-class "UnregisterClass") :void
+(cffi:defcfun (unregister-class "UnregisterClassW") :void
   (class-name :pointer)
   (handle :pointer))
 
@@ -264,10 +246,9 @@
   (wparam wparam)
   (lparam :pointer))
 
-(cffi:defcfun (wait-for-single-object "WaitForSingleObjectEx") wait-result
+(cffi:defcfun (wait-for-single-object "WaitForSingleObject") wait-result
   (handle :pointer)
-  (milliseconds dword)
-  (alertable :bool))
+  (milliseconds dword))
 
 (cffi:defcfun (peek-message "PeekMessageW") :bool
   (message :pointer)
@@ -276,7 +257,7 @@
   (filter-max :uint)
   (remove-msg :uint))
 
-(cffi:defcfun (get-message "GetMessage") :bool
+(cffi:defcfun (get-message "GetMessageW") :bool
   (message :pointer)
   (window :pointer)
   (filter-min :uint)
@@ -285,7 +266,7 @@
 (cffi:defcfun (translate-message "TranslateMessage") :bool
   (message :pointer))
 
-(cffi:defcfun (dispatch-message "DispatchMessage") :pointer
+(cffi:defcfun (dispatch-message "DispatchMessageW") :pointer
   (message :pointer))
 
 (cffi:defcfun (create-event "CreateEventW") :pointer
@@ -296,6 +277,16 @@
 
 (cffi:defcfun (close-handle "CloseHandle") :void
   (handle :pointer))
+
+(cffi:defcfun (set-timer "SetTimer") uint-ptr
+  (window :pointer)
+  (event uint-ptr)
+  (elapse :uint)
+  (func :pointer))
+
+(cffi:defcfun (kill-timer "KillTimer") :bool
+  (window :pointer)
+  (event uint-ptr))
 
 (cffi:defcfun (memcmp "memcmp") :int
   (a :pointer)
@@ -356,19 +347,27 @@
   (:report (lambda (c s) (format s "The call ~@[to~%  ~a~%~]returned with unexpected result code ~a.~@[~%  ~a~]"
                                  (function-name c) (code c) (message c)))))
 
+(declaim (inline win32-error))
+(defun win32-error (code &key function-name message)
+  (error 'win32-error :code code :function-name function-name
+                      :message (or message
+                                   (error-message
+                                    (etypecase code
+                                      (keyword (cffi:foreign-enum-value 'hresult code))
+                                      (integer code))))))
+
 (defmacro check-errno (predicate &body cleanup)
   `(unless ,predicate
      ,@cleanup
      (let ((errno (get-last-error)))
-       (error 'win32-error
-              :code errno :message (error-message errno)))))
+       (win32-error errno))))
 
 (defmacro check-return (value-form &rest expected)
   (let ((value (gensym "VALUE")))
     `(let ((,value ,value-form))
        (if (find ,value ',(or expected '(:ok)))
            ,value
-           (error 'win32-error :code ,value :function-name ',(first value-form))))))
+           (win32-error ,value :function-name ',(first value-form))))))
 
 (defun com-release (pointer)
   (cffi:foreign-funcall-pointer

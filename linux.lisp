@@ -78,6 +78,7 @@
                                  :vendor (get-id-vendor dev)
                                  :product (get-id-product dev)
                                  :version (get-id-version dev)
+                                 :driver :evdev
                                  :button-map (device-button-map dev)
                                  :axis-map (device-axis-map dev)))))))
 

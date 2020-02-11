@@ -15,7 +15,7 @@
   (:dpad-l #x0004)
   (:dpad-r #x0008)
   (:start  #x0010)
-  (:back   #x0020)
+  (:select #x0020)
   (:l3     #x0040)
   (:r3     #x0080)
   (:l1     #x0100)
@@ -31,7 +31,7 @@
   (:empty         #x10D2))
 
 (cffi:defcstruct (xgamepad :conc-name xgamepad-)
-  (buttons dword)
+  (buttons word)
   (left-trigger byte)
   (right-trigger byte)
   (lx short)

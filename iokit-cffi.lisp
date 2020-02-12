@@ -78,7 +78,7 @@
   (:invalid           #.(kio-err   1)) ; should never be seen
   (:success                         0))
 
-(cffi:defcenum (io-page :uint)
+(defcenum* (io-page :uint)
   (:undefined               #x00)
   (:generic-desktop         #x01)
   (:simulation              #x02)
@@ -113,57 +113,160 @@
   (:arcade                  #x91)
   (:vendor-defined-start    #xff00))
 
-(cffi:defcenum (io-desktop-usage :uint)
+(defcenum* (io-desktop-usage :uint)
   (:undefined #x00)
-  (:pointer #x01)   ; Physical Collection
-  (:mouse #x02)   ; Application Collection
-  (:joystick #x04)   ; Application Collection
-  (:gamepad #x05)   ; Application Collection
-  (:keyboard #x06)   ; Application Collection
-  (:keypad #x07)   ; Application Collection
-  (:multi-axis-controller #x08)   ; Application Collection
-  (:x #x30)   ; Dynamic Value
-  (:y #x31)   ; Dynamic Value
-  (:z #x32)   ; Dynamic Value
-  (:rx #x33)   ; Dynamic Value
-  (:ry #x34)   ; Dynamic Value
-  (:rz #x35)   ; Dynamic Value
-  (:slider #x36)   ; Dynamic Value
-  (:dial #x37)   ; Dynamic Value
-  (:wheel #x38)   ; Dynamic Value
-  (:hat-switch #x39)   ; Dynamic Value
-  (:counted-buffer #x3A)   ; Logical Collection
-  (:byte-count #x3B)   ; Dynamic Value
-  (:motion-wake-up #x3C)   ; One-Shot Control
-  (:start #x3D)   ; On/Off Control
-  (:select #x3E)   ; On/Off Control
-  (:vx #x40)   ; Dynamic Value
-  (:vy #x41)   ; Dynamic Value
-  (:vz #x42)   ; Dynamic Value
-  (:vbrx #x43)   ; Dynamic Value
-  (:vbry #x44)   ; Dynamic Value
-  (:vbrz #x45)   ; Dynamic Value
-  (:vno #x46)   ; Dynamic Value
-  (:system-control #x80)   ; Application Collection
-  (:system-powerdown #x81)   ; One-Shot Control
-  (:system-sleep #x82)   ; One-Shot Control
-  (:system-wakeup #x83)   ; One-Shot Control
-  (:system-context-menu #x84)   ; One-Shot Control
-  (:system-main-menu #x85)   ; One-Shot Control
-  (:system-app-menu #x86)   ; One-Shot Control
-  (:system-menu-help #x87)   ; One-Shot Control
-  (:system-menu-exit #x88)   ; One-Shot Control
-  (:system-menu-select #x89)   ; Selector
-  (:system-menu #x89)   ; Selector
-  (:system-menu-right #x8A)   ; Re-Trigger Control
-  (:system-menu-left #x8B)   ; Re-Trigger Control
-  (:system-menu-up #x8C)   ; Re-Trigger Control
-  (:system-menu-down #x8D)   ; Re-Trigger Control
-  (:dpad-up #x90)   ; On/Off Control
-  (:dpad-down #x91)   ; On/Off Control
-  (:dpad-right #x92)   ; On/Off Control
-  (:dpad-left #x93)   ; On/Off Control
-  (:reserved #xFFFF))
+  (:pointer #x01)   ; physical collection
+  (:mouse #x02)   ; application collection
+  (:joystick #x04)   ; application collection
+  (:gamepad #x05)   ; application collection
+  (:keyboard #x06)   ; application collection
+  (:keypad #x07)   ; application collection
+  (:multi-axis-controller #x08)   ; application collection
+  (:x #x30)   ; dynamic value
+  (:y #x31)   ; dynamic value
+  (:z #x32)   ; dynamic value
+  (:rx #x33)   ; dynamic value
+  (:ry #x34)   ; dynamic value
+  (:rz #x35)   ; dynamic value
+  (:slider #x36)   ; dynamic value
+  (:dial #x37)   ; dynamic value
+  (:wheel #x38)   ; dynamic value
+  (:hat-switch #x39)   ; dynamic value
+  (:counted-buffer #x3a)   ; logical collection
+  (:byte-count #x3b)   ; dynamic value
+  (:motion-wake-up #x3c)   ; one-shot control
+  (:start #x3d)   ; on/off control
+  (:select #x3e)   ; on/off control
+  (:vx #x40)   ; dynamic value
+  (:vy #x41)   ; dynamic value
+  (:vz #x42)   ; dynamic value
+  (:vbrx #x43)   ; dynamic value
+  (:vbry #x44)   ; dynamic value
+  (:vbrz #x45)   ; dynamic value
+  (:vno #x46)   ; dynamic value
+  (:system-control #x80)   ; application collection
+  (:system-powerdown #x81)   ; one-shot control
+  (:system-sleep #x82)   ; one-shot control
+  (:system-wakeup #x83)   ; one-shot control
+  (:system-context-menu #x84)   ; one-shot control
+  (:system-main-menu #x85)   ; one-shot control
+  (:system-app-menu #x86)   ; one-shot control
+  (:system-menu-help #x87)   ; one-shot control
+  (:system-menu-exit #x88)   ; one-shot control
+  (:system-menu-select #x89)   ; selector
+  (:system-menu #x89)   ; selector
+  (:system-menu-right #x8a)   ; re-trigger control
+  (:system-menu-left #x8b)   ; re-trigger control
+  (:system-menu-up #x8c)   ; re-trigger control
+  (:system-menu-down #x8d)   ; re-trigger control
+  (:dpad-up #x90)   ; on/off control
+  (:dpad-down #x91)   ; on/off control
+  (:dpad-right #x92)   ; on/off control
+  (:dpad-left #x93)   ; on/off control
+  (:reserved #xffff))
+
+(defcenum* (io-simulation-usage :uint)
+  (:undefined #x00)
+  (:flight-simulation-device #x01)    ; application collection
+  (:automobile-simulation-device #x02)    ; application collection
+  (:tank-simulation-device #x03)    ; application collection
+  (:spaceship-simulation-device #x04)    ; application collection
+  (:submarine-simulation-device #x05)    ; application collection
+  (:sailing-simulation-device #x06)    ; application collection
+  (:motorcycle-simulation-device #x07)    ; application collection
+  (:sports-simulation-device #x08)    ; application collection
+  (:airplane-simulation-device #x09)    ; application collection
+  (:helicopter-simulation-device #x0a)    ; application collection
+  (:magiccarpet-simulation-device #x0b)    ; application collection
+  (:bicycle-simulation-device #x0c)    ; application collection
+  (:flight-control-stick #x20)    ; application collection
+  (:flight-stick #x21)    ; application collection
+  (:cyclic-control #x22)    ; physical collection
+  (:cyclic-trim #x23)    ; physical collection
+  (:flight-yoke #x24)    ; application collection
+  (:track-control #x25)    ; physical collection
+  (:aileron #xb0)    ; dynamic value
+  (:aileron-trim #xb1)    ; dynamic value
+  (:anti-torque-control #xb2)    ; dynamic value
+  (:auto-pilot-enable #xb3)    ; on/off control
+  (:chaff-release #xb4)    ; one-shot control
+  (:collective-control #xb5)    ; dynamic value
+  (:dive-brake #xb6)    ; dynamic value
+  (:electronic-countermeasures #xb7)    ; on/off control
+  (:elevator #xb8)    ; dynamic value
+  (:elevator-trim #xb9)    ; dynamic value
+  (:rudder #xba)    ; dynamic value
+  (:throttle #xbb)    ; dynamic value
+  (:flight-communications #xbc)    ; on/off control
+  (:flare-release #xbd)    ; one-shot control
+  (:landing-gear #xbe)    ; on/off control
+  (:toe-brake #xbf)    ; dynamic value
+  (:trigger #xc0)    ; momentary control
+  (:weapons-arm #xc1)    ; on/off control
+  (:weapons #xc2)    ; selector
+  (:wing-flaps #xc3)    ; dynamic value
+  (:accelerator #xc4)    ; dynamic value
+  (:brake #xc5)    ; dynamic value
+  (:clutch #xc6)    ; dynamic value
+  (:shifter #xc7)    ; dynamic value
+  (:steering #xc8)    ; dynamic value
+  (:turret-direction #xc9)    ; dynamic value
+  (:barrel-elevation #xca)    ; dynamic value
+  (:dive-plane #xcb)    ; dynamic value
+  (:ballast #xcc)    ; dynamic value
+  (:bicycle-crank #xcd)    ; dynamic value
+  (:handlebars #xce)    ; dynamic value
+  (:front-brake #xcf)    ; dynamic value
+  (:rear-brake #xd0)    ; dynamic value
+  (:reserved #xffff))
+
+(defcenum* (io-vr-usage :uint)
+  (:undefined #x00)
+  (:belt #x01) ; application collection
+  (:body-suit #x02) ; application collection
+  (:flexor #x03) ; physical collection
+  (:glove #x04) ; application collection
+  (:head-tracker #x05) ; physical collection
+  (:head-mounted-display #x06) ; application collection
+  (:hand-tracker #x07) ; application collection
+  (:oculometer #x08) ; application collection
+  (:vest #x09) ; application collection
+  (:animatronic-device #x0a) ; application collection
+  (:stereo-enable #x20) ; on/off control
+  (:display-enable #x21) ; on/off control
+  (:reserved #xffff))
+
+(defcenum* (io-game-usage :uint)
+  (:undefined #x00)
+  (:3d-game-controller #x01) ; application collection
+  (:pinball-device #x02) ; application collection
+  (:gun-device #x03) ; application collection
+  (:point-of-view #x20) ; physical collection
+  (:turn-right-or-left #x21) ; dynamic value
+  (:pitch-up-or-down #x22) ; dynamic value
+  (:roll-right-or-left #x23) ; dynamic value
+  (:move-right-or-left #x24) ; dynamic value
+  (:move-forward-or-backward #x25) ; dynamic value
+  (:move-up-or-down #x26) ; dynamic value
+  (:lean-right-or-left #x27) ; dynamic value
+  (:lean-forward-or-backward #x28) ; dynamic value
+  (:height-of-pov #x29) ; dynamic value
+  (:flipper #x2a) ; momentary control
+  (:secondary-flipper #x2b) ; momentary control
+  (:bump #x2c) ; momentary control
+  (:new-game #x2d) ; one-shot control
+  (:shootball #x2e) ; one-shot control
+  (:player #x2f) ; one-shot control
+  (:gun-bolt #x30) ; on/off control
+  (:gun-clip #x31) ; on/off control
+  (:gun #x32) ; selector
+  (:gun-single-shot #x33) ; selector
+  (:gun-burst #x34) ; selector
+  (:gun-automatic #x35) ; selector
+  (:gun-safety #x36) ; on/off control
+  (:gamepad-fire-or-jump #x37) ; logical collection
+  (:gamepad-trigger #x39) ; logical collection
+  (:reserved #xffff))
 
 (cffi:defcenum (hid-element-type)
   (:input-misc          1)
@@ -210,15 +313,11 @@
   (run-loop :pointer)
   (mode :pointer))
 
-(cffi:defcfun (device-int-property "IOHIDDeviceGetIntProperty") :long
+(cffi:defcfun (device-property "IOHIDDeviceGetProperty") :pointer
   (device :pointer)
   (key :pointer))
 
-(cffi:defcfun (device-property "IOHidDeviceGetProperty") :pointer
-  (device :pointer)
-  (key :pointer))
-
-(cffi:defcfun (device-register-value-callback "IOHIDDeviceRegisterInputValueCallback") :void
+(cffi:defcfun (register-value-callback "IOHIDDeviceRegisterInputValueCallback") :void
   (device :pointer)
   (callback :pointer)
   (user :pointer))
@@ -262,5 +361,28 @@
 (cffi:defcfun (element-logical-max "IOHIDElementGetLogicalMax") :long
   (element :pointer))
 
-(cffi:defcfun (element-usage "IOHIDElementGetUsage") io-desktop-usage
+(cffi:defcfun (element-page-usage "IOHIDElementGetUsage") :uint32
   (element :pointer))
+
+(cffi:defcfun (element-page "IOHIDElementGetUsagePage") io-page
+  (element :pointer))
+
+(defun element-usage (element)
+  (let ((usage (element-page-usage element)))
+    (case (element-page element)
+      (:generic-desktop
+       (cffi:foreign-enum-keyword 'io-desktop-usage usage))
+      (:simulation
+       (cffi:foreign-enum-keyword 'io-simulation-usage usage))
+      (:vr
+       (cffi:foreign-enum-keyword 'io-vr-usage usage))
+      (:game
+       (cffi:foreign-enum-keyword 'io-game-usage usage))
+      (:button
+       usage))))
+
+(defun device-int-property (device key)
+  (let ((prop (check-null (device-property device key))))
+    (cffi:with-foreign-object (value :int32)
+      (number-get-value prop :int32 value)
+      (cffi:mem-ref value :int32))))

@@ -49,6 +49,11 @@
   (type number-type)
   (value :pointer))
 
+(cffi:defcfun (number-get-value "CFNumberGetValue") :void
+  (object :pointer)
+  (type number-type)
+  (value :pointer))
+
 (cffi:defcfun (%create-dictionary "CFDictionaryCreate") :pointer
   (allocator :pointer)
   (keys :pointer)

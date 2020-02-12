@@ -12,8 +12,8 @@
 
 ;;; Mini queue implementation, simply (TAIL-CONS . LIST)
 (defun make-queue ()
-  (let ((cons (cons NIL NIL)))
-    (setf (car cons) cons)))
+  (let ((queue (cons NIL NIL)))
+    (setf (car queue) queue)))
 
 (defun queue-push (element queue)
   (let ((cons (cons element NIL)))
@@ -21,7 +21,20 @@
     (setf (car queue) cons)))
 
 (defun queue-pop (queue)
-  (pop (cdr queue)))
+  (if (eq (car queue) (cdr queue))
+      (prog1 (caar queue)
+        (setf (car queue) queue
+              (cdr queue) NIL))
+      (pop (cdr queue))))
+
+(defun one-of (thing &rest choices)
+  (member thing choices))
+
+(define-compiler-macro one-of (thing &rest choices)
+  (let ((thingg (gensym "THING")))
+    `(let ((,thingg ,thing))
+       (or ,@(loop for choice in choices
+                   collect `(eql ,choice ,thingg))))))
 
 (cffi:defcallback device-match :void ((user :pointer) (result io-return) (sender :pointer) (dev :pointer))
   (declare (ignore user result sender))
@@ -37,27 +50,7 @@
   (declare (ignore result sender))
   (let ((device (gethash (cffi:pointer-address dev) *device-table*)))
     (when device
-      (let* ((element (value-element value))
-             (code (element-cookie element))
-             (time (value-timestamp value))
-             (int (value-int-value value))
-             (queue (event-queue device)))
-        (print (element-usage element))
-        (case (element-type element)
-          (:button
-           (let ((label (gethash code (button-map device))))
-             ;; (if (< 0 int)
-             ;;     (queue-push (gamepad::make-button-down device time code label) queue)
-             ;;     (queue-push (gamepad::make-button-up device time code label) queue))
-             ))
-          ((:axis :misc)
-           (let ((label (gethash code (axis-map device)))
-                 (min (element-logical-min element))
-                 (max (element-logical-max element)))
-             (case (element-usage element)
-               (:hat-switch)
-               (T
-                )))))))))
+      (handle-event device value))))
 
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
@@ -72,6 +65,7 @@
                    (cfstring->string product-key)))
          (mode (create-string name)))
     (register-value-callback dev (cffi:callback device-changed) dev)
+    (device-unschedule-from-run-loop dev (get-current-run-loop) *run-loop-mode*)
     (device-schedule-with-run-loop dev (get-current-run-loop) mode)
     (make-instance 'device
                    :dev dev
@@ -81,6 +75,52 @@
                    :product (device-int-property dev (cfstr PRODUCT-ID-KEY))
                    :version (device-int-property dev (cfstr VERSION-NUMBER-KEY))
                    :driver :iokit)))
+
+(defun handle-event (device value)
+  (let* ((element (value-element value))
+         (time (value-timestamp value))
+         (int (value-int-value value))
+         (queue (event-queue device))
+         (page (element-page element))
+         (code (logior (element-page-usage element)
+                       (ash (cffi:foreign-enum-value 'io-page page) 16))))
+    (case (element-type element)
+      (:input-button
+       (let ((label (gethash code (button-map device))))
+         (if (< 0 int)
+             (queue-push (gamepad::make-button-down device time code label) queue)
+             (queue-push (gamepad::make-button-up device time code label) queue))))
+      ((:input-axis :input-misc)
+       ;; Ignore weird pages that get sent for input-misc.
+       (when (one-of page :generic-desktop :simulation :vr :game :button)
+         (let* ((min (element-logical-min element))
+                (max (element-logical-max element))
+                (range (- max min))
+                (axis-map (axis-map device)))
+           (case (element-usage element)
+             (:hat-switch
+              (let ((x 0f0) (y 0f0)
+                    ;; Remap hats to cover two codes
+                    (xc (logior (+ 0 (* 2 (element-page-usage element)))
+                                (ash (cffi:foreign-enum-value 'io-page page) 16)))
+                    (yc (logior (+ 1 (* 2 (element-page-usage element)))
+                                (ash (cffi:foreign-enum-value 'io-page page) 16))))
+                ;; If within range, the value is a an 8-valued angle starting from north, going clockwise.
+                (when (<= int range)
+                  (let ((dir (round (* int 8) (1+ range))))
+                    (case dir
+                      ((1 2 3) (setf x +1f0))
+                      ((5 6 7) (setf x -1f0)))
+                    (case dir
+                      ((0 1 7) (setf y +1f0))
+                      ((3 4 5) (setf y -1f0)))))
+                (queue-push (gamepad::make-axis-move device time xc (gethash xc axis-map) x) queue)
+                (queue-push (gamepad::make-axis-move device time yc (gethash yc axis-map) y) queue)))
+             (T
+              (let ((value (1- (* (/ (- (cond ((< int min) min) ((< max int) max) (T int)) min)
+                                     range)
+                                  2f0))))
+                (queue-push (gamepad::make-axis-move device time code (gethash code axis-map) value) queue))))))))))
 
 (defun ensure-device (dev)
   (or (gethash (cffi:pointer-address dev) *device-table*)
@@ -93,8 +133,8 @@
   (slot-makunbound device 'dev))
 
 (defun init ()
-  (cffi:use-foreign-library 'corefoundation)
-  (cffi:use-foreign-library 'iokit)
+  (cffi:use-foreign-library corefoundation)
+  (cffi:use-foreign-library iokit)
   (unless (boundp '*run-loop-mode*)
     (setf *run-loop-mode* (create-string "device-run-loop")))
   (unless (boundp '*hid-manager*)
@@ -109,12 +149,13 @@
                       (d3 (create-dictionary (list (cons k1 n1) (cons k2 n4))))
                       (a (create-array (list d1 d2 d3))))
       (let ((manager (create-hid-manager (cffi:null-pointer) 0)))
+        (setf *hid-manager* manager)
         (set-matching-multiple manager a)
         (register-device-match-callback manager (cffi:callback device-match) (cffi:null-pointer))
         (register-device-remove-callback manager (cffi:callback device-remove) (cffi:null-pointer))
         (open-manager manager 0)
         (manager-schedule-with-run-loop manager (get-current-run-loop) *run-loop-mode*)
-        (run-loop *run-loop-mode* 0 T)))))
+        (run-loop *run-loop-mode* 0d0 T)))))
 
 (defun shutdown ()
   (when (boundp '*hid-manager*)

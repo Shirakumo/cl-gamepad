@@ -17,6 +17,7 @@
   :components ((:file "package")
                (:file "types")
                (:file "protocol")
+               (:file "weak-enum")
                (:file "evdev-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux)
                (:file "win32-cffi" :if-feature :win32)

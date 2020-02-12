@@ -256,18 +256,22 @@
             (unregister-class class (get-module-handle (cffi:null-pointer))))
           (make-device-notifier class window notify))))))
 
-(defun poll-for (handle timeout)
+(defun call-with-polling (function handle timeout)
   (let ((ms (etypecase timeout
               ((eql T) 1000)
               ((eql NIL) 0)
               ((real 0) (floor (* 1000 timeout))))))
-    (loop for result = (wait-for-single-object handle ms)
-          do (when (eq :failed result)
-               (win32-error (get-last-error)))
-             ;; This is required to get SBCL/etc to process interrupts.
-             (finish-output)
-          until (or (eql :ok result)
-                    (not (eql T timeout))))))
+    (loop (let ((result (wait-for-single-object handle ms)))
+            (when (eq :failed result)
+              (win32-error (get-last-error)))
+            (funcall function)
+            (if (eql T timeout)
+                ;; This is required to get SBCL/etc to process interrupts.
+                (finish-output)
+                (return))))))
+
+(defmacro with-polling ((handle timeout) &body body)
+  `(call-with-polling (lambda () ,@body) ,handle ,timeout))
 
 (defun poll-devices (&key timeout)
   (let* ((ms (etypecase timeout
@@ -290,12 +294,11 @@
                      do (process))
                ;; If we got a HID message we can now refresh.
                (when *devices-need-refreshing*
-                 (refresh-devices)
-                 (return))
-               (unless (eql T timeout)
-                 (return))
-               ;; This is required to get SBCL/etc to process interrupts.
-               (finish-output))))
+                 (refresh-devices))
+                (if (eql T timeout)
+                    ;; This is required to get SBCL/etc to process interrupts.
+                    (finish-output)
+                    (return)))))
       (when timer (kill-timer window timer)))))
 
 (defmacro check-dinput-device (dev form)
@@ -315,26 +318,29 @@
     (restart-case
         (cond (xinput
                (cffi:with-foreign-objects ((state '(:struct xstate)))
-                 (poll-for *poll-event* timeout)
-                 (check-return (get-xstate xinput state))
-                 (loop with packet = -1
-                       while (/= packet (xstate-packet state))
-                       do (setf packet (xstate-packet state))
-                          (process-xinput-state (cffi:foreign-slot-pointer state '(:struct xstate) 'gamepad) device function))))
+                 (with-polling (*poll-event* timeout)
+                   (check-return (get-xstate xinput state))
+                   (loop with packet = -1
+                         while (/= packet (xstate-packet state))
+                         do (setf packet (xstate-packet state))
+                            (process-xinput-state (cffi:foreign-slot-pointer state '(:struct xstate) 'gamepad) device function)))))
               ((poll-device-p device)
                (cffi:with-foreign-objects ((state '(:struct joystate)))
-                 (check-dinput-device dev (device-poll dev))
-                 (check-dinput-device dev (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state))
-                 (process-joystate state device function)))
+                 (loop do (check-dinput-device dev (device-poll dev))
+                          (check-dinput-device dev (device-get-device-state dev (cffi:foreign-type-size '(:struct joystate)) state))
+                          (process-joystate state device function)
+                          ;; Terrible, but the best we can do.
+                          (when (eql T timeout) (sleep 0.001))
+                       while (eql T timeout))))
               (T
                (cffi:with-foreign-objects ((state '(:struct object-data) EVENT-BUFFER-COUNT)
                                            (count 'dword))
-                 (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
-                 (poll-for *poll-event* timeout)
-                 (check-dinput-device dev (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
-                 (loop for i from 0 below (cffi:mem-ref count 'dword)
-                       for data = (cffi:mem-aptr state '(:struct object-data) i)
-                       do (process-object-data data device function)))))
+                 (with-polling (*poll-event* timeout)
+                   (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
+                   (check-dinput-device dev (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
+                   (loop for i from 0 below (cffi:mem-ref count 'dword)
+                         for data = (cffi:mem-aptr state '(:struct object-data) i)
+                         do (process-object-data data device function))))))
       (drop-device ()
         :report "Close and remove the device."
         (close-device device)

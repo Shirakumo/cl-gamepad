@@ -145,9 +145,11 @@
             do (cond ((< 0 poll)
                       (funcall function))
                      ((< poll 0)
-                      (error "Poll failed"))
-                     ((not (eql T timeout))
-                      (return)))))))
+                      (error "Poll failed")))
+               (when (not (eql T timeout))
+                 (return))
+               ;; Force interrupt handling
+               (finish-output)))))
 
 (defun process-connect-events ()
   (cffi:with-foreign-objects ((buffer '(:struct inotify) 32))

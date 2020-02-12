@@ -66,9 +66,27 @@
       `(load-time-value (position ,label (load-time-value +labels+)))
       whole))
 
-;; (defun init ())
-;; (defun shutdown ())
-;; (defun list-devices ())
-;; (defun poll-devices (&key timeout))
-;; (defun poll-events (device function &key timeout))
-;; (defun rumble (device &key)) ; TBD
+#-(or linux win32 darwin)
+(progn
+  (defun init ()
+    (error "Unsupported platform."))
+  
+  (defun shutdown ()
+    (error "Unsupported platform."))
+
+  (defun list-devices ()
+    ())
+
+  (defun poll-devices (&key timeout)
+    ())
+
+  (defun poll-events (device function &key timeout)
+    ())
+
+  ;; TODO:
+  ;; - Normalize dpad button events if controller only has axis and vice-versa
+  (defun rumble (device &key))
+
+  (defun (setf dead-zone) (min device axis))
+
+  (defun (setf pressure-curve) (curve device axis)))

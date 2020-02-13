@@ -44,26 +44,31 @@
         :stop)))
 
 (cffi:defcallback enum-objects enumerate-flag ((object :pointer) (device :pointer))
-  (device-unacquire device)
-  (cffi:with-foreign-object (range '(:struct property-range))
-    (setf (property-range-size range) (cffi:foreign-type-size '(:struct property-range)))
-    (setf (property-range-header-size range) (cffi:foreign-type-size '(:struct property-header)))
-    (setf (property-range-how range) :by-id)
-    (setf (property-range-type range) (device-object-instance-type object))
-    ;; One byte of range
-    (setf (property-range-min range) -32768)
-    (setf (property-range-max range) +32767)
-    (check-return
-     (device-set-property device DIPROP-RANGE range)))
-  (cffi:with-foreign-object (dword '(:struct property-dword))
-    (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
-    (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
-    (setf (property-dword-how dword) :by-id)
-    (setf (property-dword-type dword) (device-object-instance-type object))
-    ;; No dead zone, handled in user code
-    (setf (property-dword-data dword) 0)
-    (check-return
-     (device-set-property device DIPROP-DEADZONE dword)))
+  (case (device-object-instance-type object)
+    (:axis
+     ;;(device-unacquire device)
+     (cffi:with-foreign-object (range '(:struct property-range))
+       (setf (property-range-size range) (cffi:foreign-type-size '(:struct property-range)))
+       (setf (property-range-header-size range) (cffi:foreign-type-size '(:struct property-header)))
+       (setf (property-range-how range) :by-id)
+       (setf (property-range-type range) (device-object-instance-type object))
+       ;; One byte of range
+       (setf (property-range-min range) -32768)
+       (setf (property-range-max range) +32767)
+       (check-return
+        (device-set-property device DIPROP-RANGE range)))
+     (cffi:with-foreign-object (dword '(:struct property-dword))
+       (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
+       (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
+       (setf (property-dword-how dword) :by-id)
+       (setf (property-dword-type dword) (device-object-instance-type object))
+       ;; No dead zone, handled in user code
+       (setf (property-dword-data dword) 0)
+       (check-return
+        (device-set-property device DIPROP-DEADZONE dword))))
+    (:ff-actuator
+     ;; Record index
+     ))
   :continue)
 
 (defun guid-vendor (guid)
@@ -110,6 +115,7 @@
    (guid :initarg :guid :reader guid)
    (xinput :initarg :xinput :initform NIL :reader xinput)
    (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)
+   (effect :initarg :effect :reader effect)
    (button-state :initform (make-array (length +labels+) :element-type 'bit) :reader button-state)
    ;; Need extra space since POVs take up twice as much room.
    (axis-state :initform (make-array (+ 4 (length +labels+)) :element-type 'single-float) :reader axis-state)))
@@ -117,11 +123,47 @@
 (defun close-device (device)
   (when (xinput device)
     (setf (sbit *xinput-taken* (xinput device)) 0))
+  (when (effect device)
+    (effect-unload (effect device))
+    (setf (slot-value device 'effect) NIL))
   (device-unacquire (dev device))
   (device-set-event-notification (dev device) (cffi:null-pointer))
   (com-release (dev device))
   (slot-makunbound device 'dev)
   (remhash (guid-integer (guid device)) *device-table*))
+
+(defun make-effect (dev)
+  (cffi:with-foreign-objects ((ff-effect '(:struct ff-effect))
+                              (ff-constant '(:struct ff-constant))
+                              (ff-envelope '(:struct ff-envelope))
+                              (effect :pointer)
+                              (axes :long)
+                              (directions :long))
+    (setf (cffi:mem-ref axes :long) 0)
+    (setf (cffi:mem-ref directions :long) 0)
+    (setf (ff-effect-size ff-effect) (cffi:foreign-type-size '(:struct ff-effect)))
+    (setf (ff-effect-flags ff-effect) '(:cartesian :object-ids))
+    (setf (ff-effect-duration ff-effect) 100000)
+    (setf (ff-effect-sample-period ff-effect) 0)
+    (setf (ff-effect-gain ff-effect) 10000)
+    (setf (ff-effect-trigger-button ff-effect) 0)
+    (setf (ff-effect-trigger-repeat-interval ff-effect) 0)
+    (setf (ff-effect-axe-count ff-effect) 1)
+    (setf (ff-effect-axe-identifiers ff-effect) axes)
+    (setf (ff-effect-axe-directions ff-effect) directions)
+    (setf (ff-envelope-size envelope) (cffi:foreign-type-size '(:struct ff-envelope)))
+    (setf (ff-envelope-attack-level envelope) 0)
+    (setf (ff-envelope-attack-time envelope) 0)
+    (setf (ff-envelope-fade-level envelope) 0)
+    (setf (ff-envelope-fade-time envelope) 0)
+    (setf (ff-effect-envelope ff-effect) envelope)
+    (setf (ff-effect-specific-size ff-effect) (cffi:foreign-type-size '(:struct ff-constant)))
+    (setf (ff-constant-magnitude ff-constant) 10000)
+    (setf (ff-effect-specific ff-effect) ff-constant)
+    (setf (ff-effect-start-delay ff-effect) 0)
+    (check-return (device-create-effect dev GUID-CONSTANT-FORCE ff-effect effect (cffi:null-pointer)))
+    (unless (cffi:null-pointer-p (cffi:mem-ref effect :pointer))
+      (cffi:mem-ref effect :pointer))))
 
 (defun make-device-from-guid (guid)
   (let ((dev (cffi:with-foreign-object (dev :pointer)
@@ -134,7 +176,7 @@
     (check-return
      (device-set-data-format dev *joystate-format*))
     (check-return
-     (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
+     (device-enum-objects dev (cffi:callback enum-objects) dev '(:axis :ff-actuator)))
     (let ((poll-device (eq :polled-device
                            (check-return
                             (device-set-event-notification dev *poll-event*) :ok :polled-device))))
@@ -165,6 +207,7 @@
                          :product (guid-product product-guid)
                          :version 0
                          :poll-device poll-device
+                         :effect (make-effect dev)
                          :xinput xinput
                          :driver (if xinput :xinput :dinput)))))))
 
@@ -445,14 +488,29 @@
         ((< max value) max)
         (T value)))
 
-(defun rumble (device strength &key pan)
-  (cond ((xinput device)
-         (cffi:with-foreign-object (xvibration '(:struct xvibration))
-           (let ((strength (* 65535 (clamp 0 strength 1))))
-             (setf (xvibration-left xvibration)
-                   (floor (* strength (/ (1- pan) -2))))
-             (setf (xvibration-right xvibration)
-                   (floor (* strength (/ (1+ pan) +2)))))
-           (set-xstate (xinput device) xvibration)))
-        (T
-         )))
+(defun rumble (device strength &key (pan 0))
+  (let ((strength (clamp 0 strength 1))
+        (pan (clamp -1 pan +1)))
+    (cond ((xinput device)
+           (cffi:with-foreign-object (xvibration '(:struct xvibration))
+             (let ((strength (* 65535 strength)))
+               (setf (xvibration-left xvibration)
+                     (floor (* strength (/ (1- pan) -2))))
+               (setf (xvibration-right xvibration)
+                     (floor (* strength (/ (1+ pan) +2)))))
+             (set-xstate (xinput device) xvibration)))
+          ((effect device)
+           (cffi:with-foreign-objects ((ff-effect '(:struct ff-effect))
+                                       (axes :long)
+                                       (direction :long))
+             (setf (cffi:mem-ref axes :long) 0)
+             (setf (cffi:mem-ref direction :long) pan)
+             (setf (ff-effect-flags ff-effect) '(:cartesian))
+             (setf (ff-effect-size ff-effect) (cffi:foreign-type-size '(:struct ff-effect)))
+             (setf (ff-effect-gain ff-effect) (floor (* 10000 strength)))
+             (setf (ff-effect-axe-count ff-effect) 1)
+             (setf (ff-effect-axe-identifiers ff-effect) axes)
+             (setf (ff-effect-axe-directions ff-effect) direction)
+             (effect-set-parameters (effect device) ff-effect '(:direction :gain))))
+          (T
+           :unsupported))))

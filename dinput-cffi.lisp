@@ -114,12 +114,34 @@
   (:by-id 2)
   (:by-usage 3))
 
-(cffi:defcenum (effect-flags dword)
+(cffi:defbitfield (effect-flags dword)
   (:object-ids     #x00000001)
   (:object-offsets #x00000002)
   (:cartesian      #x00000010)
   (:polar          #x00000020)
   (:spherical      #x00000040))
+
+(cffi:defbitfield (effect-status dword)
+  (:playing #x1)
+  (:emulated #x2))
+
+(cffi:defbitfield (effect-parameter-types dword)
+  (:duration             #x00000001)
+  (:sample-period        #x00000002)
+  (:gain                 #x00000004)
+  (:trigger-button       #x00000008)
+  (:trigger-repeat-interval #x00000010)
+  (:axes                 #x00000020)
+  (:direction            #x00000040)
+  (:envelope             #x00000080)
+  (:type-specific-params #x00000100)
+  (:start-delay          #x00000200)
+  (:all-params-dx5       #x000001ff)
+  (:all-params           #x000003ff))
+
+(cffi:defbitfield (effect-start-flags dword)
+  (:solo        #x00000001)
+  (:no-download #x80000000))
 
 (cffi:defcstruct (device-instance :conc-name device-instance-)
   (size dword)
@@ -198,7 +220,7 @@
   (size dword)
   (guid (:struct guid))
   (ofs dword)
-  (type dword)
+  (type object-flags)
   (flags dword)
   (name wchar :count #.MAX-PATH)
   (ff-max-force dword)
@@ -252,7 +274,7 @@
   (start :long)
   (end :long))
 
-(cffi:defcstruct (effect :conc-name effect-)
+(cffi:defcstruct (ff-effect :conc-name ff-effect-)
   (size dword)
   (flags effect-flags)
   (duration dword)
@@ -315,6 +337,18 @@
   (bild-action-map hresult (format :pointer) (user-name :pointer) (flags dword))
   (set-action-map hresult (format :pointer) (user-name :pointer) (flags dword))
   (get-image-info hresult (image-info :pointer)))
+
+(define-comstruct effect
+  (initialize hresult (hinstance :pointer) (version dword) (guid :pointer))
+  (get-effect-guid hresult (guid :pointer))
+  (get-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
+  (set-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
+  (start hresult (times dword) (flags effect-start-flags))
+  (stop hresult)
+  (get-effect-status hresult (status :pointer))
+  (download hresult)
+  (unload hresult)
+  (escape hresult (escape :pointer)))
 
 ;;; Construct our own joystate
 (cffi:defcstruct (joystate :conc-name joystate-)

@@ -41,6 +41,30 @@
   (make-guid #x55728220 #xD33C #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
 (defvar GUID-POV
   (make-guid #xA36D02F2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
+(defvar GUID-CONSTANT-FORCE
+  (make-guid #x13541C20 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-RAMP-FORCE
+  (make-guid #x13541C21 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-SQUARE
+  (make-guid #x13541C22 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-SINE
+  (make-guid #x13541C23 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-TRIANGLE
+  (make-guid #x13541C24 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-SAWTOOTH-UP
+  (make-guid #x13541C25 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-SAWTOOTH-DOWN
+  (make-guid #x13541C26 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-SPRING
+  (make-guid #x13541C27 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-DAMPER
+  (make-guid #x13541C28 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-INERTIA
+  (make-guid #x13541C29 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-FRICTION
+  (make-guid #x13541C2A #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(defvar GUID-CUSTOM-FORCE
+  (make-guid #x13541C2B #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
 
 (cffi:defcenum (device-type dword)
   (:all 0)
@@ -89,6 +113,13 @@
   (:by-offset 1)
   (:by-id 2)
   (:by-usage 3))
+
+(cffi:defcenum (effect-flags dword)
+  (:object-ids     #x00000001)
+  (:object-offsets #x00000002)
+  (:cartesian      #x00000010)
+  (:polar          #x00000020)
+  (:spherical      #x00000040))
 
 (cffi:defcstruct (device-instance :conc-name device-instance-)
   (size dword)
@@ -186,6 +217,56 @@
   (reserved dword)
   (guid (:struct guid))
   (name wchar))
+
+(cffi:defcstruct (ff-envelope :conc-name ff-envelope-)
+  (size dword)
+  (attack-level dword)
+  (attack-time dword)
+  (fade-level dword)
+  (fade-time dword))
+
+(cffi:defcstruct (ff-condition :conc-name ff-condition-)
+  (offset :long)
+  (positive-coefficient :long)
+  (negative-coefficient :long)
+  (positive-saturation dword)
+  (negative-saturation dword)
+  (dead-band :long))
+
+(cffi:defcstruct (ff-custom :conc-name ff-custom-)
+  (channels dword)
+  (sample-period dword)
+  (samples dword)
+  (force-data :pointer))
+
+(cffi:defcstruct (ff-periodic :conc-name ff-periodic-)
+  (magnitude dword)
+  (offset :long)
+  (phase dword)
+  (period dword))
+
+(cffi:defcstruct (ff-constant :conc-name ff-constant-)
+  (magnitude :long))
+
+(cffi:defcstruct (ff-ramp :conc-name ff-ramp-)
+  (start :long)
+  (end :long))
+
+(cffi:defcstruct (effect :conc-name effect-)
+  (size dword)
+  (flags effect-flags)
+  (duration dword)
+  (sample-period dword)
+  (gain dword)
+  (trigger-button dword)
+  (trigger-repeat-interval dword)
+  (axe-count dword)
+  (axe-identifiers :pointer)
+  (axe-directions :pointer)
+  (envelope :pointer)
+  (specific-size dword)
+  (specific :pointer)
+  (start-delay dword))
 
 (cffi:defcfun (create-direct-input "DirectInput8Create") hresult
   (instance :pointer)

@@ -37,7 +37,11 @@
 (cffi:defcenum read-status
   (:success 0)
   (:sync    1)
-  (:again -11))
+  (:bad-fd -9)
+  (:again -11)
+  (:out-of-memory -12)
+  (:device-busy -16)
+  (:no-such-device -19))
 
 (cffi:defcenum property
   (:pointer        #x0)
@@ -48,7 +52,7 @@
   (:pointing-stick #x5)
   (:accelerometer  #x6))
 
-(cffi:defcenum event-type
+(defcenum* (event-type :uint16)
   (:synchronization #x00)
   (:key             #x01)
   (:relative-axis   #x02)
@@ -67,22 +71,22 @@
   (:playing #x01))
 
 (cffi:defcenum (effect-type :uint16)
-  (:rumble #x50)
+  (:rumble   #x50)
   (:periodic #x51)
   (:constant #x52)
-  (:spring #x53)
+  (:spring   #x53)
   (:friction #x54)
-  (:damper #x55)
-  (:inertia #x56)
-  (:ramp #x57))
+  (:damper   #x55)
+  (:inertia  #x56)
+  (:ramp     #x57))
 
 (cffi:defcenum (periodic-effect-type :uint16)
-  (:square #x58)
+  (:square   #x58)
   (:triangle #x59)
-  (:sine #x5A)
-  (:saw-up #x5B)
+  (:sine     #x5A)
+  (:saw-up   #x5B)
   (:saw-down #x5C)
-  (:custom #x5D))
+  (:custom   #x5D))
 
 (cffi:defcenum (effect-direction :uint16)
   (:down  #x0000)
@@ -90,10 +94,11 @@
   (:up    #x8000)
   (:right #xC000))
 
-(cffi:defcenum (ioctl :int)
-  (:send-effect   #x40304580)
-  (:remove-effect #x40044581)
-  (:effect-count  #x80044584))
+(cffi:defcenum (ioctl :uint)
+  (:send-effect         #x40304580)
+  (:remove-effect       #x40044581)
+  (:effect-count        #x80044584)
+  (:effect-capabilities #x80024535))
 
 (cffi:defbitfield (poll-event :short)
   (:in  #x001)
@@ -119,7 +124,7 @@
 (cffi:defcstruct (event :conc-name event-)
   (sec :uint64)
   (usec :uint64)
-  (type :uint16)
+  (type event-type)
   (code :uint16)
   (value :int32))
 
@@ -207,10 +212,20 @@
   (buffer :pointer)
   (length :int))
 
+(cffi:defcfun (u-write "write") :int
+  (fd fd)
+  (buffer :pointer)
+  (length :int))
+
 (cffi:defcfun (poll "poll") :int
   (pollfds :pointer)
   (n :int)
   (timeout :int))
+
+(cffi:defcfun (memset "memset") :pointer
+  (pointer :pointer)
+  (fill :int)
+  (n :uint))
 
 (cffi:defcfun (new-inotify "inotify_init1") fd
   (flags inotify-flag))
@@ -223,6 +238,10 @@
 (cffi:defcfun (new-from-fd "libevdev_new_from_fd") errno
   (fd fd)
   (device :pointer))
+
+(cffi:defcfun (change-fd "libevdev_change_fd") errno
+  (device :pointer)
+  (fd fd))
 
 (cffi:defcfun (free-device "libevdev_free") :void
   (device :pointer))

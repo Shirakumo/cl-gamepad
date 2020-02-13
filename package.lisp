@@ -15,6 +15,7 @@
    #:button-map
    #:axis-map)
   (:export
+   #:gamepad-error
    #:event
    #:event-device
    #:event-time
@@ -29,7 +30,9 @@
    #:vendor
    #:product
    #:version
-   #:driver-version
+   #:driver
+   #:effect
+   #:device
    #:label-id
    #:id-label
    #:init
@@ -55,8 +58,8 @@
    #:list-devices
    #:poll-devices
    #:poll-events
-   #:rumble
    #:label-id
-   #:id-label)
+   #:id-label
+   #:rumble)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

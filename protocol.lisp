@@ -85,7 +85,7 @@
 
   ;; TODO:
   ;; - Normalize dpad button events if controller only has axis and vice-versa
-  (defun rumble (device &key))
+  (defun rumble (device strength &key pan))
 
   (defun (setf dead-zone) (min device axis))
 

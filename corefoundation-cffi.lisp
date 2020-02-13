@@ -89,6 +89,13 @@
 (cffi:defcfun (cfstr "__CFStringMakeConstantString") :pointer
   (string :string))
 
+(cffi:defcfun (set-get-count "CFSetGetCount") :long
+  (set :pointer))
+
+(cffi:defcfun (set-get-values "CFSetGetValues") :void
+  (set :pointer)
+  (values :pointer))
+
 (cffi:defcfun (run-loop "CFRunLoopRunInMode") run-loop-result
   (mode :pointer)
   (seconds :double)

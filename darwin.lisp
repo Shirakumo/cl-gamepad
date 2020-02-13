@@ -132,6 +132,18 @@
   (remhash (cffi:pointer-address (dev device)) *device-table*)
   (slot-makunbound device 'dev))
 
+(defun refresh-devices ()
+  (let ((to-delete (list-devices)))
+    (with-cf-objects ((set (manager-device-set *hid-manager*)))
+      (let ((size (set-get-count set)))
+        (cffi:with-foreign-object (devices :pointer size)
+          (set-get-values set devices)
+          (loop for i from 0 below size
+                for dev = (cffi:mem-aref devices :pointer i)
+                do (setf to-delete) (delete (ensure-device dev) to-delete)))))
+    (mapc #'close-device to-delete)
+    (list-devices)))
+
 (defun init ()
   (cffi:use-foreign-library corefoundation)
   (cffi:use-foreign-library iokit)
@@ -155,7 +167,8 @@
         (register-device-remove-callback manager (cffi:callback device-remove) (cffi:null-pointer))
         (open-manager manager 0)
         (manager-schedule-with-run-loop manager (get-current-run-loop) *run-loop-mode*)
-        (run-loop *run-loop-mode* 0d0 T)))))
+        (run-loop *run-loop-mode* 0d0 T)
+        (refresh-devices)))))
 
 (defun shutdown ()
   (when (boundp '*hid-manager*)
@@ -164,7 +177,8 @@
       (manager-unschedule-from-run-loop manager (get-current-run-loop) (cffi:null-pointer))
       (mapc #'close-device (list-devices))
       (close-manager manager 0)
-      (release manager))))
+      (release manager)
+      T)))
 
 (defun list-devices ()
   (loop for v being the hash-values of *device-table* collect v))

@@ -313,6 +313,9 @@
   (run-loop :pointer)
   (mode :pointer))
 
+(cffi:defcfun (manager-device-set "IOHIDManagerCopyDevices") :pointer
+  (manager :pointer))
+
 (cffi:defcfun (device-property "IOHIDDeviceGetProperty") :pointer
   (device :pointer)
   (key :pointer))

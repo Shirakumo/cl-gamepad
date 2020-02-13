@@ -277,3 +277,26 @@
   (fd fd)
   (request ioctl)
   (data :pointer))
+
+(cffi:defcfun (error-message "strerror") :string
+  (errno errno))
+
+(cffi:defcvar (errno "errno") errno)
+
+(define-condition linux-error (gamepad:gamepad-error)
+  ((function-name :initarg :function-name :initform NIL :reader function-name)
+   (code :initarg :code :reader code)
+   (message :initarg :message :initform NIL :reader message))
+  (:report (lambda (c s) (format s "The call ~@[to~%  ~a~%~]returned with unexpected result code ~a.~@[~%  ~a~]"
+                                 (function-name c) (code c) (message c)))))
+
+(declaim (inline linux-error))
+(defun linux-error (code &key function-name message)
+  (error 'linux-error :code code :function-name function-name
+                      :message (or message (error-message code))))
+
+(defmacro check-errno (predicate &body cleanup)
+  `(unless ,predicate
+     ,@cleanup
+     (let ((code errno))
+       (linux-error code))))

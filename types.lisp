@@ -6,6 +6,9 @@
 
 (in-package #:org.shirakumo.fraf.gamepad)
 
+(define-condition gamepad-error (error)
+  ())
+
 (defstruct event
   (device NIL)
   (time 0 :type (unsigned-byte 64))

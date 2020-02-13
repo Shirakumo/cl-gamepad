@@ -317,7 +317,7 @@
                     (cffi:null-pointer) errno 0 string 256 (cffi:null-pointer))
     (wstring->string string)))
 
-(define-condition win32-error (error)
+(define-condition win32-error (gamepad:gamepad-error)
   ((function-name :initarg :function-name :initform NIL :reader function-name)
    (code :initarg :code :reader code)
    (message :initarg :message :initform NIL :reader message))

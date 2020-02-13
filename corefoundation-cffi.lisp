@@ -9,6 +9,39 @@
 (cffi:define-foreign-library corefoundation
   (T (:framework "CoreFoundation")))
 
+;; Have to use early.
+(cffi:use-foreign-library corefoundation)
+
+(cffi:defcenum (hresult :int32)
+  (:ok                        #x00000000)
+  (:false                     #x00000001)
+  (:download-skipped          #x00000003)
+  (:effect-restarted          #x00000004)
+  (:truncated                 #x00000008)
+  (:truncated-and-restarted   #x0000000c)
+  ;;(:device-not-reg            REGDB_E_CLASSNOTREG)
+  (:invalid-param             #x80000003)
+  (:no-interface              #x80000004)
+  (:generic                   #x80000008)
+  (:out-of-memory             #x80000002)
+  (:unsupported               #x80000001)
+  (:pending                   #x8000000a)
+  (:device-full               #x80040201)
+  (:more-data                 #x80040202)
+  (:not-downloaded            #x80040203)
+  (:has-effects               #x80040204)
+  (:incomplete-effect         #x80040206)
+  (:effect-playing            #x80040208)
+  (:unplugged                 #x80040209)
+  (:invalid-download-id       #x80040300)
+  (:device-paused             #x80040301)
+  (:internal                  #x80040302)
+  (:effect-type-mismatch      #x80040303)
+  (:unsupported-axis          #x80040304)
+  (:no-tinitialized           #x80040305)
+  (:effect-type-not-supported #x80040306)
+  (:device-released           #x80040307))
+
 (cffi:defcenum (run-loop-result :int32)
   (:finished 1)
   (:stopped 2)
@@ -36,7 +69,7 @@
 (cffi:defcfun (string-type-id "CFStringGetTypeID") :ulong)
 
 (cffi:defcenum (string-encoding :uint32)
-    (:utf-8 #x08000100))
+  (:utf-8 #x08000100))
 
 (cffi:defcfun (%release "CFRelease") :void
   (object :pointer))
@@ -95,6 +128,25 @@
 (cffi:defcfun (set-get-values "CFSetGetValues") :void
   (set :pointer)
   (values :pointer))
+
+(cffi:defcfun (get-uuid "CFUUIDGetConstantUUIDWithBytes") :pointer
+  (allocator :pointer)
+  (byte0 :uint8)
+  (byte1 :uint8)
+  (byte2 :uint8)
+  (byte3 :uint8)
+  (byte4 :uint8)
+  (byte5 :uint8)
+  (byte6 :uint8)
+  (byte7 :uint8)
+  (byte8 :uint8)
+  (byte9 :uint8)
+  (byte10 :uint8)
+  (byte11 :uint8)
+  (byte12 :uint8)
+  (byte13 :uint8)
+  (byte14 :uint8)
+  (byte15 :uint8))
 
 (cffi:defcfun (run-loop "CFRunLoopRunInMode") run-loop-result
   (mode :pointer)

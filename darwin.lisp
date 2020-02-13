@@ -58,7 +58,7 @@
    (event-queue :initform (make-queue) :reader event-queue)))
 
 (defun create-device-from-dev (dev)
-  (let* ((product-key (device-property dev (cfstr PRODUCT-KEY)))
+  (let* ((product-key (device-property dev PRODUCT-KEY))
          (name (if (or (cffi:null-pointer-p product-key)
                        (/= (string-type-id) (type-id product-key)))
                    "[Unknown]"
@@ -71,9 +71,9 @@
                    :dev dev
                    :run-loop-mode mode
                    :name name
-                   :vendor (device-int-property dev (cfstr VENDOR-ID-KEY))
-                   :product (device-int-property dev (cfstr PRODUCT-ID-KEY))
-                   :version (device-int-property dev (cfstr VERSION-NUMBER-KEY))
+                   :vendor (device-int-property dev VENDOR-ID-KEY)
+                   :product (device-int-property dev PRODUCT-ID-KEY)
+                   :version (device-int-property dev VERSION-NUMBER-KEY)
                    :driver :iokit)))
 
 (defun handle-event (device value)
@@ -150,15 +150,13 @@
   (unless (boundp '*run-loop-mode*)
     (setf *run-loop-mode* (create-string "device-run-loop")))
   (unless (boundp '*hid-manager*)
-    (with-cf-objects ((k1 (cfstr DEVICE-USAGE-PAGE-KEY))
-                      (k2 (cfstr DEVICE-USAGE-KEY))
-                      (n1 (create-number :int32 (cffi:foreign-enum-value 'io-page :generic-desktop)))
+    (with-cf-objects ((n1 (create-number :int32 (cffi:foreign-enum-value 'io-page :generic-desktop)))
                       (n2 (create-number :int32 (cffi:foreign-enum-value 'io-desktop-usage :joystick)))
                       (n3 (create-number :int32 (cffi:foreign-enum-value 'io-desktop-usage :gamepad)))
                       (n4 (create-number :int32 (cffi:foreign-enum-value 'io-desktop-usage :multi-axis-controller)))
-                      (d1 (create-dictionary (list (cons k1 n1) (cons k2 n2))))
-                      (d2 (create-dictionary (list (cons k1 n1) (cons k2 n3))))
-                      (d3 (create-dictionary (list (cons k1 n1) (cons k2 n4))))
+                      (d1 (create-dictionary (list (cons DEVICE-USAGE-PAGE-KEY n1) (cons DEVICE-USAGE-KEY n2))))
+                      (d2 (create-dictionary (list (cons DEVICE-USAGE-PAGE-KEY n1) (cons DEVICE-USAGE-KEY n3))))
+                      (d3 (create-dictionary (list (cons DEVICE-USAGE-PAGE-KEY n1) (cons DEVICE-USAGE-KEY n4))))
                       (a (create-array (list d1 d2 d3))))
       (let ((manager (create-hid-manager (cffi:null-pointer) 0)))
         (setf *hid-manager* manager)

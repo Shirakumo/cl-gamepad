@@ -9,12 +9,12 @@
 (cffi:define-foreign-library iokit
   (T (:framework "IOKit")))
 
-(defvar DEVICE-USAGE-PAGE-KEY "DeviceUsagePage")
-(defvar DEVICE-USAGE-KEY "DeviceUsage")
-(defvar PRODUCT-KEY "Product")
-(defvar PRODUCT-ID-KEY "ProductID")
-(defvar VENDOR-ID-KEY "VendorID")
-(defvar VERSION-NUMBER-KEY "VersionNumber")
+(defvar DEVICE-USAGE-PAGE-KEY (cfstr "DeviceUsagePage"))
+(defvar DEVICE-USAGE-KEY (cfstr "DeviceUsage"))
+(defvar PRODUCT-KEY (cfstr "Product"))
+(defvar PRODUCT-ID-KEY (cfstr "ProductID"))
+(defvar VENDOR-ID-KEY (cfstr "VendorID"))
+(defvar VERSION-NUMBER-KEY (cfstr "VersionNumber"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun kio-err (x)
@@ -23,6 +23,31 @@
            (err-sub (x)
              (ash (logand x #xFFF) 14)))
       (logior (err-system #x38) (err-sub 0) x))))
+
+(defvar UUID-CONSTANT-FORCE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x60 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-RAMP-FORCE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x61 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-SQUARE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x62 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-SINE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x63 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-TRIANGLE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x64 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-SAWTOOTH-UP
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x65 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-SAWTOOTH-DOWN
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x66 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-SPRING
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x67 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-DAMPER
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x68 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-INERTIA
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x69 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-FRICTION
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x6A #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
+(defvar UUID-CUSTOM-FORCE
+  (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x6B #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
 
 (cffi:defcenum io-return
   (:error             #.(kio-err 700)) ; general error    
@@ -277,6 +302,82 @@
   (:feature           257)
   (:collection        513))
 
+(cffi:defbitfield (parameter-flag :uint32)
+  (:duration                #x00000001)
+  (:sample-period           #x00000002)
+  (:gain                    #x00000004)
+  (:trigger-button          #x00000008)
+  (:trigger-repeat-interval #x00000010)
+  (:axes                    #x00000020)
+  (:direction               #x00000040)
+  (:envelope                #x00000080)
+  (:type-specific-params    #x00000100)
+  (:start-delay             #x00000200)
+  (:all-params              #x000003ff)
+  (:start                   #x20000000)
+  (:no-restart              #x40000000)
+  (:no-download             #x80000000)
+  (:no-trigger              #xffffffff))
+
+(cffi:defbitfield (effect-start-flags :uint32)
+  (:solo        #x00000001)
+  (:no-download #x80000000))
+
+(cffi:defbitfield (effect-flags :uint32)
+  (:cartesian #x0000001)
+  (:polar     #x0000002)
+  (:spherical #x0000004))
+
+(cffi:defcstruct (ff-envelope :conc-name ff-envelope-)
+  (size :uint32)
+  (attack-level :uint32)
+  (attack-time :uint32)
+  (fade-level :uint32)
+  (fade-time :uint32))
+
+(cffi:defcstruct (ff-condition :conc-name ff-condition-)
+  (offset :int32)
+  (positive-coefficient :int32)
+  (negative-coefficient :int32)
+  (positive-saturation :uint32)
+  (negative-saturation :uint32)
+  (dead-band :int32))
+
+(cffi:defcstruct (ff-custom :conc-name ff-custom-)
+  (channels :uint32)
+  (sample-period :uint32)
+  (samples :uint32)
+  (force-data :pointer))
+
+(cffi:defcstruct (ff-periodic :conc-name ff-periodic-)
+  (magnitude :uint32)
+  (offset :int32)
+  (phase :uint32)
+  (period :uint32))
+
+(cffi:defcstruct (ff-constant :conc-name ff-constant-)
+  (magnitude :int32))
+
+(cffi:defcstruct (ff-ramp :conc-name ff-ramp-)
+  (start :int32)
+  (end :int32))
+
+(cffi:defcstruct (ff-effect :conc-name ff-effect-)
+  (size :uint32)
+  (flags effect-flags)
+  (duration :uint32)
+  (sample-period :uint32)
+  (gain :uint32)
+  (trigger-button :uint32)
+  (trigger-repeat-interval :uint32)
+  (axe-count :uint32)
+  (axe-identifiers :pointer)
+  (axe-directions :pointer)
+  (envelope :pointer)
+  (specific-size :uint32)
+  (specific :pointer)
+  (start-delay :uint32))
+
 (cffi:defcfun (create-hid-manager "IOHIDManagerCreate") :pointer
   (allocator :pointer)
   (options :uint32))
@@ -313,9 +414,6 @@
   (run-loop :pointer)
   (mode :pointer))
 
-(cffi:defcfun (manager-device-set "IOHIDManagerCopyDevices") :pointer
-  (manager :pointer))
-
 (cffi:defcfun (device-property "IOHIDDeviceGetProperty") :pointer
   (device :pointer)
   (key :pointer))
@@ -339,6 +437,39 @@
   (device :pointer)
   (run-loop :pointer)
   (mode :pointer))
+
+(cffi:defcfun (device-has-force-feedback "FFIsForceFeedback") hresult
+  (device :pointer))
+
+(cffi:defcfun (device-create-ff "FFCreateDevice") hresult
+  (device :pointer)
+  (ff-device :pointer))
+
+(cffi:defcfun (ff-release "FFReleaseDevice") hresult
+  (ff-device :pointer))
+
+(cffi:defcfun (ff-create-effect "FFDeviceCreateEffect") hresult
+  (ff-device :pointer)
+  (uuid :pointer)
+  (effect-definition :pointer)
+  (effect :pointer))
+
+(cffi:defcfun (ff-release-effect "FFDeviceReleaseEffect") hresult
+  (ff-device :pointer)
+  (effect :pointer))
+
+(cffi:defcfun (effect-set-parameters "FFEffectSetParameters") hresult
+  (effect :pointer)
+  (effect-definition :pointer)
+  (parameters parameter-flag))
+
+(cffi:defcfun (effect-start "FFEffectStart") hresult
+  (effect :pointer)
+  (times :uint32)
+  (flags effect-start-flags))
+
+(cffi:defcfun (effect-stop "FFEffectStop") hresult
+  (effect :pointer))
 
 (cffi:defcfun (value-element "IOHIDValueGetElement") :pointer
   (value :pointer))

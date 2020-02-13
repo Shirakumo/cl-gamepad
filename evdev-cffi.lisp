@@ -62,6 +62,39 @@
   (:power           #x16)
   (:force-feedback-status #x17))
 
+(cffi:defcenum (effect-status :uint16)
+  (:stopped #x00)
+  (:playing #x01))
+
+(cffi:defcenum (effect-type :uint16)
+  (:rumble #x50)
+  (:periodic #x51)
+  (:constant #x52)
+  (:spring #x53)
+  (:friction #x54)
+  (:damper #x55)
+  (:inertia #x56)
+  (:ramp #x57))
+
+(cffi:defcenum (periodic-effect-type :uint16)
+  (:square #x58)
+  (:triangle #x59)
+  (:sine #x5A)
+  (:saw-up #x5B)
+  (:saw-down #x5C)
+  (:custom #x5D))
+
+(cffi:defcenum (effect-direction :uint16)
+  (:down  #x0000)
+  (:left  #x4000)
+  (:up    #x8000)
+  (:right #xC000))
+
+(cffi:defcenum (ioctl :int)
+  (:send-effect   #x40304580)
+  (:remove-effect #x40044581)
+  (:effect-count  #x80044584))
+
 (cffi:defbitfield (poll-event :short)
   (:in  #x001)
   (:pri #x002)
@@ -101,6 +134,66 @@
   (cookie :uint32)
   (length :uint32)
   (name :char :count 0))
+
+(cffi:defcstruct (ff-replay :conc-name ff-replay-)
+  (length :uint16)
+  (delay :uint16))
+
+(cffi:defcstruct (ff-trigger :conc-name ff-trigger-)
+  (button :uint16)
+  (interval :uint16))
+
+(cffi:defcstruct (ff-envelope :conc-name ff-envelope-)
+  (attack-length :uint16)
+  (attack-level :uint16)
+  (fade-length :uint16)
+  (fade-level :uint16))
+
+(cffi:defcstruct (ff-constant :conc-name ff-constant-)
+  (level :int16)
+  (envelope (:struct ff-envelope)))
+
+(cffi:defcstruct (ff-ramp :conc-name ff-ramp-)
+  (start-level :int16)
+  (end-level :int16)
+  (envelope (:struct ff-envelope)))
+
+(cffi:defcstruct (ff-condition :conc-name ff-condition-)
+  (right-saturation :uint16)
+  (left-saturation :uint16)
+  (right-coefficient :int16)
+  (left-coefficient :int16)
+  (deadband :uint16)
+  (center :int16))
+
+(cffi:defcstruct (ff-periodic :conc-name ff-periodic-)
+  (waveform periodic-effect-type)
+  (period :uint16)
+  (magnitude :int16)
+  (offset :int16)
+  (phase :uint16)
+  (envelope (:struct ff-envelope))
+  (custom-length :uint32)
+  (custom-data :pointer))
+
+(cffi:defcstruct (ff-rumble :conc-name ff-rumble-)
+  (strong-magnitude :uint16)
+  (weak-magnitude :uint16))
+
+(cffi:defcunion ff-effect
+  (constant (:struct ff-constant))
+  (ramp (:struct ff-ramp))
+  (periodic (:struct ff-periodic))
+  (condition (:struct ff-condition) :count 2)
+  (rumble (:struct ff-rumble)))
+
+(cffi:defcstruct (effect :conc-name effect-)
+  (type effect-type)
+  (id :int16)
+  (direction effect-direction)
+  (trigger (:struct ff-trigger))
+  (replay (:struct ff-replay))
+  (data (:union ff-effect)))
 
 (cffi:defcfun (u-open "open") fd
   (pathname :string)
@@ -179,3 +272,8 @@
   (device :pointer)
   (flag read-flag)
   (event :pointer))
+
+(cffi:defcfun (ioctl "ioctl") errno
+  (fd fd)
+  (request ioctl)
+  (data :pointer))

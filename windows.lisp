@@ -222,7 +222,8 @@
     (co-uninitialize))
   (when (boundp '*poll-event*)
     (close-handle *poll-event*)
-    (makunbound '*poll-event*)))
+    (makunbound '*poll-event*)
+    T))
 
 (defun init-dinput ()
   (cffi:with-foreign-object (directinput :pointer)
@@ -438,3 +439,20 @@
       (handle-axis :l-v (label-id :l-v) (map-to-float -32768 (xgamepad-ly state) 32767))
       (handle-axis :r-h (label-id :r-h) (map-to-float -32768 (xgamepad-rx state) 32767))
       (handle-axis :r-v (label-id :r-v) (map-to-float -32768 (xgamepad-ry state) 32767)))))
+
+(defun clamp (min value max)
+  (cond ((< value min) min)
+        ((< max value) max)
+        (T value)))
+
+(defun rumble (device strength &key pan)
+  (cond ((xinput device)
+         (cffi:with-foreign-object (xvibration '(:struct xvibration))
+           (let ((strength (* 65535 (clamp 0 strength 1))))
+             (setf (xvibration-left xvibration)
+                   (floor (* strength (/ (1- pan) -2))))
+             (setf (xvibration-right xvibration)
+                   (floor (* strength (/ (1+ pan) +2)))))
+           (set-xstate (xinput device) xvibration)))
+        (T
+         )))

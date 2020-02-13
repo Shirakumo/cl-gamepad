@@ -73,7 +73,7 @@
     (let ((replay (cffi:foreign-slot-pointer effect '(:struct effect) 'replay))
           (data (cffi:foreign-slot-pointer effect '(:struct effect) 'data)))
       (setf (effect-id effect) -1)
-      (setf (effect-direction effect) :left)
+      (setf (effect-direction effect) :up)
       (setf (ff-replay-length replay) 100)
       (block NIL
         (setf (effect-type effect) :constant)
@@ -161,7 +161,8 @@
   (when *device-notify*
     (u-close *device-notify*)
     (setf *device-notify* NIL)
-    (mapc #'close-device (list-devices))))
+    (mapc #'close-device (list-devices))
+    T))
 
 (defun list-devices ()
   (loop for device being the hash-values of *device-table*

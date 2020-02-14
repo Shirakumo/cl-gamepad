@@ -28,16 +28,44 @@
                    (and (= av bv)
                         (< ap bp))))))))
 
+(defun copyhash (from to)
+  (clrhash to)
+  (maphash (lambda (k v) (setf (gethash k to) v)) from))
+
+(defun update-mapping-in-device (device mapping)
+  (setf (button-map device) (or (getf mapping :buttons)
+                                (error "Malformed mapping, missing :BUTTONS")))
+  (setf (axis-map device) (or (getf mapping :axes)
+                              (error "Malformed mapping, missing :AXES"))))
+
+(defmethod initialize-instance :after ((device device) &key)
+  (let ((mapping (device-mapping device)))
+    (when mapping (update-mapping-in-device device mapping))))
+
 (defun device-mapping (id)
   (gethash (normalize-mapping-id id) *device-mappings*))
 
 (defun (setf device-mapping) (mapping id)
-  (let ((mapping (etypecase mapping
-                   (cons mapping)
-                   (device (list :name (name mapping)
-                                 :buttons (button-map mapping)
-                                 :axes (axis-map mapping))))))
-    (setf (gethash (normalize-mapping-id id) *device-mappings*) mapping)))
+  (let* ((id (normalize-mapping-id id))
+         (mapping (etypecase mapping
+                    (cons mapping)
+                    (device (list :name (name mapping)
+                                  :buttons (button-map mapping)
+                                  :axes (axis-map mapping)))))
+         (known (device-mapping id)))
+    (cond (known
+           ;; Update the values in place to immediately update all
+           ;; devices using it, too.
+           (setf (getf known :name) (getf mapping :name))
+           (copyhash (getf mapping :axes) (getf known :axes))
+           (copyhash (getf mapping :buttons) (getf known :buttons)))
+          (T
+           (setf (gethash id *device-mappings*) mapping)
+           ;; Need to go through all devices to see if they match
+           ;; the new mapping.
+           (dolist (device (list-devices))
+             (when (equalp id (normalize-mapping-id device))
+               (update-mapping-in-device device mapping)))))))
 
 (defun remove-device-mapping (id)
   (remhash (normalize-mapping-id id) *device-mappings*))

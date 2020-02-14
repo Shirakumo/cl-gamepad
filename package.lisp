@@ -8,10 +8,6 @@
 (defpackage #:org.shirakumo.fraf.gamepad
   (:use #:cl)
   (:intern
-   #:+labels+
-   #:signal-button-down
-   #:signal-button-up
-   #:signal-axis-move
    #:button-map
    #:axis-map)
   ;; configurator.lisp
@@ -26,16 +22,7 @@
    #:save-device-mappings)
   ;; protocol.lisp
   (:export
-   #:label-id
-   #:id-label
-   #:init
-   #:shutdown
-   #:list-devices
-   #:poll-devices
-   #:poll-events
-   #:rumble)
-  ;; types.lisp
-  (:export
+   #:+labels+
    #:gamepad-error
    #:event
    #:event-device
@@ -51,7 +38,16 @@
    #:vendor
    #:product
    #:version
-   #:driver))
+   #:driver
+   #:init
+   #:shutdown
+   #:list-devices
+   #:poll-devices
+   #:poll-events
+   #:drop-device
+   #:rumble
+   #:dead-zone
+   #:ramp))
 
 (defpackage #:org.shirakumo.fraf.gamepad.impl
   (:use #:cl)
@@ -59,9 +55,6 @@
   (:import-from
    #:org.shirakumo.fraf.gamepad
    #:+labels+
-   #:signal-button-down
-   #:signal-button-up
-   #:signal-axis-move
    #:button-map
    #:axis-map
    #:init
@@ -69,8 +62,7 @@
    #:list-devices
    #:poll-devices
    #:poll-events
-   #:label-id
-   #:id-label
+   #:drop-device
    #:rumble)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)))

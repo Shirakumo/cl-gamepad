@@ -15,12 +15,11 @@
   :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
   :serial T
   :components ((:file "package")
-               (:file "types")
                (:file "protocol")
                (:file "mapping")
                (:file "configurator")
                (:file "default-device-mappings")
-               (:file "weak-enum")
+               (:file "common")
                (:file "evdev-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux)
                (:file "win32-cffi" :if-feature :win32)
@@ -29,7 +28,8 @@
                (:file "windows" :if-feature :win32)
                (:file "corefoundation-cffi" :if-feature :darwin)
                (:file "iokit-cffi" :if-feature :darwin)
-               (:file "darwin" :if-feature :darwin))
+               (:file "darwin" :if-feature :darwin)
+               (:file "documentation"))
   :depends-on (:cffi
                :trivial-features
                :documentation-utils))

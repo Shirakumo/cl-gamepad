@@ -265,12 +265,9 @@
            (linux-error result :message "Failed to read events.")))))))
 
 (defun poll-events (device function &key timeout)
-  (restart-case
-      (call-with-polling (lambda () (call-with-device-events function device))
-                         (fd device) :timeout timeout)
-    (drop-device ()
-      :report "Close the device."
-      (close-device device))))
+  (with-device-failures (device)
+    (call-with-polling (lambda () (call-with-device-events function device))
+                       (fd device) :timeout timeout)))
 
 (defun clamp (min value max)
   (cond ((< value min) min)
@@ -280,21 +277,22 @@
 (defun rumble (device strength &key pan)
   (declare (ignore pan))
   (if (effect device)
-      (let ((effect (effect device))
-            (strength (floor (* #x7FFF (clamp 0 strength 1)))))
-        (ecase (effect-type effect)
-          (:constant
-           (setf (ff-constant-level (effect-data effect)) strength))
-          (:rumble
-           (setf (ff-rumble-strong-magnitude (effect-data effect)) strength)
-           (setf (ff-rumble-weak-magnitude (effect-data effect)) strength))
-          (:periodic
-           (setf (ff-periodic-magnitude (effect-data effect)) strength)))
-        (check-errno (<= 0 (ioctl (fd device) :send-effect effect)))
-        (cffi:with-foreign-object (event '(:struct event))
-          (setf (event-type event) :force-feedback)
-          (setf (event-code event) (effect-id effect))
-          (setf (event-value event) (if (= 0 strength) 0 1))
-          (check-errno (< 0 (u-write (fd device) event (cffi:foreign-type-size '(:struct event)))))
-          :ok))
+      (with-device-failures (device)
+        (let ((effect (effect device))
+              (strength (floor (* #x7FFF (clamp 0 strength 1)))))
+          (ecase (effect-type effect)
+            (:constant
+             (setf (ff-constant-level (effect-data effect)) strength))
+            (:rumble
+             (setf (ff-rumble-strong-magnitude (effect-data effect)) strength)
+             (setf (ff-rumble-weak-magnitude (effect-data effect)) strength))
+            (:periodic
+             (setf (ff-periodic-magnitude (effect-data effect)) strength)))
+          (check-errno (<= 0 (ioctl (fd device) :send-effect effect)))
+          (cffi:with-foreign-object (event '(:struct event))
+            (setf (event-type event) :force-feedback)
+            (setf (event-code event) (effect-id effect))
+            (setf (event-value event) (if (= 0 strength) 0 1))
+            (check-errno (< 0 (u-write (fd device) event (cffi:foreign-type-size '(:struct event)))))
+            :ok)))
       :unsupported))

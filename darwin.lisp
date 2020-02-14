@@ -9,23 +9,7 @@
 (defvar *hid-manager*)
 (defvar *run-loop-mode*)
 (defvar *device-table* (make-hash-table :test 'eql))
-
-;;; Mini queue implementation, simply (TAIL-CONS . LIST)
-(defun make-queue ()
-  (let ((queue (cons NIL NIL)))
-    (setf (car queue) queue)))
-
-(defun queue-push (element queue)
-  (let ((cons (cons element NIL)))
-    (setf (cdr (car queue)) cons)
-    (setf (car queue) cons)))
-
-(defun queue-pop (queue)
-  (if (eq (car queue) (cdr queue))
-      (prog1 (caar queue)
-        (setf (car queue) queue
-              (cdr queue) NIL))
-      (pop (cdr queue))))
+(defvar *event-handler*)
 
 (defun one-of (thing &rest choices)
   (member thing choices))
@@ -54,8 +38,7 @@
 
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
-   (run-loop-mode :initarg :run-loop-mode :reader run-loop-mode)
-   (event-queue :initform (make-queue) :reader event-queue)))
+   (run-loop-mode :initarg :run-loop-mode :reader run-loop-mode)))
 
 (defun create-device-from-dev (dev)
   (let* ((product-key (device-property dev PRODUCT-KEY))
@@ -80,7 +63,6 @@
   (let* ((element (value-element value))
          (time (value-timestamp value))
          (int (value-int-value value))
-         (queue (event-queue device))
          (page (element-page element))
          (code (logior (element-page-usage element)
                        (ash (cffi:foreign-enum-value 'io-page page) 16))))
@@ -114,13 +96,13 @@
                     (case dir
                       ((0 1 7) (setf y +1f0))
                       ((3 4 5) (setf y -1f0)))))
-                (queue-push (gamepad::make-axis-move device time xc (gethash xc axis-map) x) queue)
-                (queue-push (gamepad::make-axis-move device time yc (gethash yc axis-map) y) queue)))
+                (funcall *event-handler* (gamepad::make-axis-move device time xc (gethash xc axis-map) x))
+                (funcall *event-handler* (gamepad::make-axis-move device time yc (gethash yc axis-map) y))))
              (T
               (let ((value (1- (* (/ (- (cond ((< int min) min) ((< max int) max) (T int)) min)
                                      range)
                                   2f0))))
-                (queue-push (gamepad::make-axis-move device time code (gethash code axis-map) value) queue))))))))))
+                (funcall *event-handler* (gamepad::make-axis-move device time code (gethash code axis-map) value)))))))))))
 
 (defun ensure-device (dev)
   (or (gethash (cffi:pointer-address dev) *device-table*)
@@ -200,9 +182,7 @@
   (with-polling (*run-loop-mode* timeout)))
 
 (defun poll-events (device function &key timeout)
-  (with-polling ((run-loop-mode device) timeout)
-    (loop for event = (queue-pop (event-queue device))
-          while event
-          do (funcall function event))))
+  (let ((*event-handler* function))
+    (with-polling ((run-loop-mode device) timeout))))
 
 ;; (defun rumble (device &key)) ; TBD

@@ -155,6 +155,16 @@
 
 (cffi:defcfun (get-current-run-loop "CFRunLoopGetCurrent") :pointer)
 
+(define-condition macos-error (gamepad:gamepad-error)
+  ((function-name :initarg :function-name :initform NIL :reader function-name)
+   (message :initarg :message :initform NIL :reader message))
+  (:report (lambda (c s) (format s "The call ~@[to~%  ~a~%~]failed.~@[~%  ~a~]"
+                                 (function-name c) (message c)))))
+
+(declaim (inline macos-error))
+(defun macos-error (&key function-name message)
+  (error 'macos-error :function-name function-name :message message))
+
 (defun release (&rest objects)
   (dolist (object objects)
     (unless (cffi:null-pointer-p object)
@@ -164,7 +174,7 @@
   (let ((value (gensym "VALUE")))
     `(let ((,value ,form))
        (if (cffi:null-pointer-p ,value)
-           (error "The allocation~%  ~a~%failed." ',form)
+           (macos-error :function-name ',(first form))
            ,value))))
 
 (defun create-number (type number)
@@ -202,7 +212,7 @@
                  (cffi:with-foreign-object (buffer :uint8 length)
                    (if (string-get-cstring pointer buffer length :utf-8)
                        (cffi:foreign-string-to-lisp buffer :encoding :utf-8)
-                       (error "Failed to convert string to lisp!"))))))
+                       (macos-error :message "Failed to convert string to lisp!"))))))
           (T
            (cffi:foreign-string-to-lisp buffer :encoding :utf-8)))))
 

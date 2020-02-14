@@ -56,7 +56,9 @@
   (:not-buffered #x80040207)
   (:acquired #x800700aa)
   (:handle-exists #x80070005)
-  (:unplugged #x80040209))
+  (:unplugged #x80040209)
+  (:device-full #x80040201)
+  (:device-not-reg #x80040154))
 
 (cffi:defcenum (wait-result dword)
   (:ok #x00)

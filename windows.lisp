@@ -44,31 +44,25 @@
         :stop)))
 
 (cffi:defcallback enum-objects enumerate-flag ((object :pointer) (device :pointer))
-  (case (device-object-instance-type object)
-    (:axis
-     ;;(device-unacquire device)
-     (cffi:with-foreign-object (range '(:struct property-range))
-       (setf (property-range-size range) (cffi:foreign-type-size '(:struct property-range)))
-       (setf (property-range-header-size range) (cffi:foreign-type-size '(:struct property-header)))
-       (setf (property-range-how range) :by-id)
-       (setf (property-range-type range) (device-object-instance-type object))
-       ;; One byte of range
-       (setf (property-range-min range) -32768)
-       (setf (property-range-max range) +32767)
-       (check-return
-        (device-set-property device DIPROP-RANGE range)))
-     (cffi:with-foreign-object (dword '(:struct property-dword))
-       (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
-       (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
-       (setf (property-dword-how dword) :by-id)
-       (setf (property-dword-type dword) (device-object-instance-type object))
-       ;; No dead zone, handled in user code
-       (setf (property-dword-data dword) 0)
-       (check-return
-        (device-set-property device DIPROP-DEADZONE dword))))
-    (:ff-actuator
-     ;; Record index
-     ))
+  (cffi:with-foreign-object (range '(:struct property-range))
+    (setf (property-range-size range) (cffi:foreign-type-size '(:struct property-range)))
+    (setf (property-range-header-size range) (cffi:foreign-type-size '(:struct property-header)))
+    (setf (property-range-how range) :by-id)
+    (setf (property-range-type range) (device-object-instance-type object))
+    ;; One byte of range
+    (setf (property-range-min range) -32768)
+    (setf (property-range-max range) +32767)
+    (check-return
+     (device-set-property device DIPROP-RANGE range)))
+  (cffi:with-foreign-object (dword '(:struct property-dword))
+    (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
+    (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
+    (setf (property-dword-how dword) :by-id)
+    (setf (property-dword-type dword) (device-object-instance-type object))
+    ;; No dead zone, handled in user code
+    (setf (property-dword-data dword) 0)
+    (check-return
+     (device-set-property device DIPROP-DEADZONE dword)))
   :continue)
 
 (defun guid-vendor (guid)
@@ -135,35 +129,44 @@
 (defun make-effect (dev)
   (cffi:with-foreign-objects ((ff-effect '(:struct ff-effect))
                               (ff-constant '(:struct ff-constant))
-                              (ff-envelope '(:struct ff-envelope))
+                              (ff-ramp '(:struct ff-ramp))
+                              (ff-periodic '(:struct ff-periodic))
                               (effect :pointer)
                               (axes :long)
                               (directions :long))
     (setf (cffi:mem-ref axes :long) 0)
     (setf (cffi:mem-ref directions :long) 0)
+    (setf (ff-constant-magnitude ff-constant) 10000)
+    (setf (ff-ramp-start ff-ramp) 10000)
+    (setf (ff-ramp-end ff-ramp) 10000)
+    (setf (ff-periodic-magnitude ff-periodic) 10000)
+    (setf (ff-periodic-offset ff-periodic) 0)
+    (setf (ff-periodic-phase ff-periodic) 0)
+    (setf (ff-periodic-period ff-periodic) 1)
     (setf (ff-effect-size ff-effect) (cffi:foreign-type-size '(:struct ff-effect)))
-    (setf (ff-effect-flags ff-effect) '(:cartesian :object-ids))
+    (setf (ff-effect-flags ff-effect) '(:cartesian :object-offsets))
     (setf (ff-effect-duration ff-effect) 100000)
     (setf (ff-effect-sample-period ff-effect) 0)
     (setf (ff-effect-gain ff-effect) 10000)
-    (setf (ff-effect-trigger-button ff-effect) 0)
+    (setf (ff-effect-trigger-button ff-effect) #xFFFFFFFF)
     (setf (ff-effect-trigger-repeat-interval ff-effect) 0)
     (setf (ff-effect-axe-count ff-effect) 1)
     (setf (ff-effect-axe-identifiers ff-effect) axes)
     (setf (ff-effect-axe-directions ff-effect) directions)
-    (setf (ff-envelope-size envelope) (cffi:foreign-type-size '(:struct ff-envelope)))
-    (setf (ff-envelope-attack-level envelope) 0)
-    (setf (ff-envelope-attack-time envelope) 0)
-    (setf (ff-envelope-fade-level envelope) 0)
-    (setf (ff-envelope-fade-time envelope) 0)
-    (setf (ff-effect-envelope ff-effect) envelope)
+    (setf (ff-effect-envelope ff-effect) (cffi:null-pointer))
     (setf (ff-effect-specific-size ff-effect) (cffi:foreign-type-size '(:struct ff-constant)))
-    (setf (ff-constant-magnitude ff-constant) 10000)
-    (setf (ff-effect-specific ff-effect) ff-constant)
     (setf (ff-effect-start-delay ff-effect) 0)
-    (check-return (device-create-effect dev GUID-CONSTANT-FORCE ff-effect effect (cffi:null-pointer)))
-    (unless (cffi:null-pointer-p (cffi:mem-ref effect :pointer))
-      (cffi:mem-ref effect :pointer))))
+    (flet ((try-effect (guid ptr)
+             (setf (ff-effect-specific ff-effect) ptr)
+             (let ((value (device-create-effect dev guid ff-effect effect (cffi:null-pointer))))
+               (case value
+                 (:ok (cffi:mem-ref effect :pointer))
+                 ;;(:device-full) ; FIXME: Empty device and retry.
+                 (:not-implemented)
+                 (T (win32-error value :function-name 'device-create-effect))))))
+      (or (try-effect GUID-CONSTANT-FORCE ff-constant)
+          (try-effect GUID-RAMP-FORCE ff-ramp)
+          (try-effect GUID-SINE ff-periodic)))))
 
 (defun make-device-from-guid (guid)
   (let ((dev (cffi:with-foreign-object (dev :pointer)
@@ -176,7 +179,7 @@
     (check-return
      (device-set-data-format dev *joystate-format*))
     (check-return
-     (device-enum-objects dev (cffi:callback enum-objects) dev '(:axis :ff-actuator)))
+     (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
     (let ((poll-device (eq :polled-device
                            (check-return
                             (device-set-event-notification dev *poll-event*) :ok :polled-device))))
@@ -207,7 +210,7 @@
                          :product (guid-product product-guid)
                          :version 0
                          :poll-device poll-device
-                         :effect (make-effect dev)
+                         :effect (unless xinput (make-effect dev))
                          :xinput xinput
                          :driver (if xinput :xinput :dinput)))))))
 
@@ -504,9 +507,9 @@
                                        (axes :long)
                                        (direction :long))
              (setf (cffi:mem-ref axes :long) 0)
-             (setf (cffi:mem-ref direction :long) pan)
-             (setf (ff-effect-flags ff-effect) '(:cartesian))
+             (setf (cffi:mem-ref direction :long) (floor (* pan 10000)))
              (setf (ff-effect-size ff-effect) (cffi:foreign-type-size '(:struct ff-effect)))
+             (setf (ff-effect-flags ff-effect) '(:cartesian))
              (setf (ff-effect-gain ff-effect) (floor (* 10000 strength)))
              (setf (ff-effect-axe-count ff-effect) 1)
              (setf (ff-effect-axe-identifiers ff-effect) axes)

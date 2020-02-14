@@ -43,7 +43,7 @@
   (packet dword)
   (gamepad (:struct xgamepad)))
 
-(cffi:defcstruct (xvibration :conc-name xvibration)
+(cffi:defcstruct (xvibration :conc-name xvibration-)
   (left word)
   (right word))
 

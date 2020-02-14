@@ -44,6 +44,7 @@
         :stop)))
 
 (cffi:defcallback enum-objects enumerate-flag ((object :pointer) (device :pointer))
+  (device-unacquire device)
   (cffi:with-foreign-object (range '(:struct property-range))
     (setf (property-range-size range) (cffi:foreign-type-size '(:struct property-range)))
     (setf (property-range-header-size range) (cffi:foreign-type-size '(:struct property-header)))

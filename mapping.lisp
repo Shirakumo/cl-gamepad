@@ -32,7 +32,12 @@
   (gethash (normalize-mapping-id id) *device-mappings*))
 
 (defun (setf device-mapping) (mapping id)
-  (setf (gethash (normalize-mapping-id id) *device-mappings*) mapping))
+  (let ((mapping (etypecase mapping
+                   (cons mapping)
+                   (device (list :name (name mapping)
+                                 :buttons (button-map mapping)
+                                 :axes (axis-map mapping))))))
+    (setf (gethash (normalize-mapping-id id) *device-mappings*) mapping)))
 
 (defun remove-device-mapping (id)
   (remhash (normalize-mapping-id id) *device-mappings*))

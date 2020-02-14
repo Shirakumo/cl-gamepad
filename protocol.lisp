@@ -22,6 +22,12 @@
                           :move-x :move-y :move-z
                           :wheel :gas :brake :throttle :rudder))
 
+(define-global +common-buttons+ #(:a :b :x :y :l1 :l2 :l3 :r1 :r2 :r3
+                                  :dpad-l :dpad-r :dpad-u :dpad-d
+                                  :select :home :start))
+
+(define-global +common-axes+ #(:l2 :r2 :l-h :l-v :r-h :r-v :dpad-h :dpad-v))
+
 ;;; Allow relaying events to the user without allocating fresh event instances
 (define-global +button-down-event+ (make-button-down NIL 0 0 NIL))
 (define-global +button-up-event+ (make-button-up NIL 0 0 NIL))

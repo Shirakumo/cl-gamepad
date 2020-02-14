@@ -46,9 +46,12 @@
   (%with-updated-event (+axis-move-event+)
     (setf (event-value event) value)))
 
-(defmethod initialize-instance :after ((device device) &key vendor product version)
-  ;; TODO: look up maps in database
-  )
+(defmethod initialize-instance :after ((device device) &key)
+  (let ((mapping (device-mapping device)))
+    (when (getf mapping :buttons)
+      (setf (button-map device) (getf mapping :buttons)))
+    (when (getf mapping :axes)
+      (setf (axis-map device) (getf mapping :axes)))))
 
 (defun id-label (id)
   (svref (load-time-value +labels+) id))
@@ -83,10 +86,10 @@
   (defun poll-events (device function &key timeout)
     ())
 
-  ;; TODO:
-  ;; - Normalize dpad button events if controller only has axis and vice-versa
   (defun rumble (device strength &key pan))
 
+  ;; TODO:
+  ;; - Normalize dpad button events if controller only has axis and vice-versa
   (defun (setf dead-zone) (min device axis))
 
   (defun (setf pressure-curve) (curve device axis)))

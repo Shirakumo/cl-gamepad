@@ -495,6 +495,7 @@
   (let ((strength (clamp 0 strength 1))
         (pan (clamp -1 pan +1)))
     (cond ((xinput device)
+           ;; On the X360 "left" and "right" denote strong and weak motors respectively, not the actual side. Sigh
            (cffi:with-foreign-object (xvibration '(:struct xvibration))
              (let ((strength (* 65535 strength)))
                (setf (xvibration-left xvibration)

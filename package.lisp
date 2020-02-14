@@ -14,6 +14,27 @@
    #:signal-axis-move
    #:button-map
    #:axis-map)
+  ;; configurator.lisp
+  (:export
+   #:configure-device)
+  ;; mapping.lisp
+  (:export
+   #:*default-mappings-file*
+   #:device-mapping
+   #:remove-device-mapping
+   #:define-device-mapping
+   #:save-device-mappings)
+  ;; protocol.lisp
+  (:export
+   #:label-id
+   #:id-label
+   #:init
+   #:shutdown
+   #:list-devices
+   #:poll-devices
+   #:poll-events
+   #:rumble)
+  ;; types.lisp
   (:export
    #:gamepad-error
    #:event
@@ -30,17 +51,7 @@
    #:vendor
    #:product
    #:version
-   #:driver
-   #:effect
-   #:device
-   #:label-id
-   #:id-label
-   #:init
-   #:shutdown
-   #:list-devices
-   #:poll-devices
-   #:poll-events
-   #:rumble))
+   #:driver))
 
 (defpackage #:org.shirakumo.fraf.gamepad.impl
   (:use #:cl)

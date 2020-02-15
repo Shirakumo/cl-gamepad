@@ -25,7 +25,7 @@ You can access the event properties with ``event-device``, ``event-time``, ``eve
 
 If the device gets disconnected or some other problem occurs during event polling, an error of type ``gamepad-error`` will be signalled. You should handle this error and unhook the device from your own system, then either invoke the restart ``drop-device``, or call ``poll-devices`` to automatically refresh the current device list.
 
-Typically the library will try its best to offer standardised labels for the gamepad (see ``+labels+``). If it cannot figure out the mapping for a feature, the ``event-label`` will be ``NIL`` and the correct purpose has to be figured out from the ``event-code``. To provide this mapping persistently, you can configure the device using ``configure-device``, which will use an interactive wizard to set all the mappings. After mapping a device, please "submit a PR"(https://github.com/Shirakumo/cl-gamepad/compare) of the ``default-device-mappings.lisp`` file to include it in the official distribution.
+If the label in the event is ``NIL``, the feature may not be properly mapped to a standardised label. Please see the "following section"(#Standardised Button Maps).
 
 Whenever you want to listen for new device connections or ensure current devices still exist, you should run ``poll-devices``. Both ``poll-events`` and ``poll-devices`` accept a timeout argument to allow you to efficiently poll if you need a dedicated thread. The default behaviour is to return immediately if there are no pending changes, allowing you to use the calls synchronously.
 
@@ -34,6 +34,13 @@ Most gamepads also support haptic or force feedback. You can activate the rumble
 You can query the last known state of a gamepad feature through ``button`` and ``axis``. Only standardised labels can be given for these functions however, so unmapped features cannot be queried.
 
 Finally you can configure common axis features such as the ``dead-zone`` and the ``ramp`` per device. Do note however that these settings are not persistent, so you must apply them whenever the device is connected anew. The axis values are rezoned after the dead-zone clamp has applied, meaning that if the value exceeds the dead-zone, it will be remapped to fit into the [0,1] range again. Also note that if you apply the dead-zone to the two axes of a single joystick separately, the zone you set will be square, rather than the expected circular dead zone. You can set a circular dead zone by setting the dead zone on the virtual labels ``:L`` for the ``:L-H`` and ``:L-V`` axes, or ``:R`` for the ``:R-H`` and ``:R-V`` axes. The ``ramp`` function is applied after the dead zone. By default no dead zone or ramp is applied.
+
+## Standardised Button Maps
+In order to make portable interaction with gamepads possible, their features (buttons and axes) must be mapped to standardised purposes (see ``+labels+``). Cl-gamepad will try to determine such a mapping automatically if possible. On Evdev and XInput this is typically the case. On DirectInput and IOKit not so much. In any case, when the automated mapping fails, manual mappings from the device's internal feature IDs to the standardised labels must be provided.
+
+To this end cl-gamepad includes a database of mappings in ``default-device-mappings.lisp``. These mappings are automatically loaded for any matching controller and should thus apply immediately, making the listed controllers compatible. If your controller is not listed and auto-detection fails, please use ``configure-device`` from a terminal. It will guide you through the process of mapping the device features to the proper labels, and will then save the mapping to the aforementioned file to make it persistent.
+
+If you do configure a new device, please "submit the updated mapping file"(https://github.com/Shirakumo/cl-gamepad/compare) to the upstream repository so that it can be included in the main distribution.
 
 ## Supported Platforms
 Currently the following platforms are supported:

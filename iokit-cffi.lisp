@@ -9,6 +9,9 @@
 (cffi:define-foreign-library iokit
   (T (:framework "IOKit")))
 
+(cffi:define-foreign-library forcefeedback
+  (T (:framework "ForceFeedback")))
+
 (defvar DEVICE-USAGE-PAGE-KEY (cfstr "DeviceUsagePage"))
 (defvar DEVICE-USAGE-KEY (cfstr "DeviceUsage"))
 (defvar PRODUCT-KEY (cfstr "Product"))
@@ -414,6 +417,9 @@
   (run-loop :pointer)
   (mode :pointer))
 
+(cffi:defcfun (manager-device-set "IOHIDManagerCopyDevices") :pointer
+  (manager :pointer))
+
 (cffi:defcfun (device-property "IOHIDDeviceGetProperty") :pointer
   (device :pointer)
   (key :pointer))
@@ -437,6 +443,9 @@
   (device :pointer)
   (run-loop :pointer)
   (mode :pointer))
+
+(cffi:defcfun (device-get-service "IOHIDDeviceGetService") :pointer
+  (device :pointer))
 
 (cffi:defcfun (device-has-force-feedback "FFIsForceFeedback") hresult
   (device :pointer))
@@ -520,3 +529,10 @@
     (cffi:with-foreign-object (value :int32)
       (number-get-value prop :int32 value)
       (cffi:mem-ref value :int32))))
+
+(defmacro check-return (call &rest accepted)
+  (let ((accepted (or accepted '(:success :ok :false))))
+    `(let ((value ,call))
+       (if (member value ',accepted)
+           value
+           (macos-error :function-name ',(first call) :message (string value))))))

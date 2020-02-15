@@ -12,7 +12,7 @@
 ;; Have to use early.
 (cffi:use-foreign-library corefoundation)
 
-(cffi:defcenum (hresult :int32)
+(cffi:defcenum (hresult :uint32)
   (:ok                        #x00000000)
   (:false                     #x00000001)
   (:download-skipped          #x00000003)

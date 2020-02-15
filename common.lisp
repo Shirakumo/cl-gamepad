@@ -31,9 +31,9 @@
   (cffi::%defcenum-like name-and-options enum-list 'make-weak-foreign-enum))
 
 ;;; Allow relaying events to the user without allocating fresh event instances
-(define-global +button-down-event+ (make-button-down NIL 0 0 NIL))
-(define-global +button-up-event+ (make-button-up NIL 0 0 NIL))
-(define-global +axis-move-event+ (make-axis-move NIL 0 0 NIL 0f0))
+(gamepad::define-global +button-down-event+ (gamepad::make-button-down NIL 0 0 NIL))
+(gamepad::define-global +button-up-event+ (gamepad::make-button-up NIL 0 0 NIL))
+(gamepad::define-global +axis-move-event+ (gamepad::make-axis-move NIL 0 0 NIL 0f0))
 
 (defmacro %with-updated-event ((event) &body body)
   `(let ((event ,event))

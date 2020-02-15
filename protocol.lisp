@@ -63,11 +63,73 @@
    (version :initarg :version :initform NIL :reader version)
    (driver :initarg :driver :initform NIL :reader driver)
    (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :accessor button-map)
-   (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :accessor axis-map)))
+   (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :accessor axis-map)
+   (button-states :initform (make-array (length +labels+) :element-type 'bit :initial-element 0) :accessor button-states)
+   (axis-states :initform (make-array (length +labels+) :element-type 'single-float :initial-element 0f0) :accessor axis-states)
+   (axis-raw-states :initform (make-array (length +labels+) :element-type 'single-float :initial-element 0f0) :accessor axis-raw-states)
+   (axis-ramps :initform (make-array (length +labels+) :initial-element #'identity) :accessor axis-ramps)
+   (axis-dead-zones :initform (make-array (+ 2 (length +labels+)) :element-type 'single-float :initial-element 0f0) :accessor axis-dead-zones)))
 
 (defmethod print-object ((device device) stream)
   (print-unreadable-object (device stream :type T)
     (format stream "~a" (name device))))
+
+(defun id-label (id)
+  (svref (load-time-value +labels+) id))
+
+(define-compiler-macro id-label (&whole whole id &environment env)
+  (if (constantp id env)
+      `(load-time-value (svref (load-time-value +labels+) id))
+      whole))
+
+(defun label-id (label)
+  (or (position label (load-time-value +labels+))
+      (error "~s is not a valid label." label)))
+
+(define-compiler-macro label-id (&whole whole label &environment env)
+  (if (constantp label env)
+      `(load-time-value (or (position ,label (load-time-value +labels+))
+                            (error "~s is not a valid label." ,label)))
+      whole))
+
+(defun button (button device)
+  (< 0 (bit (button-states device)) (label-id button)))
+
+(define-compiler-macro button (&whole whole button device &environment env)
+  (if (constantp button env)
+      `(< 0 (bit (button-states ,device) (label-id ,button)))
+      whole))
+
+(defun axis (axis device)
+  (aref (axis-states device) (label-id axis)))
+
+(define-compiler-macro axis (&whole whole axis device &environment env)
+  (if (constantp axis env)
+      `(< 0 (bit (axis-states ,device) (label-id ,axis)))
+      whole))
+
+(defun dead-zone (device axis)
+  (let ((id (case axis
+              (:l 0)
+              (:r 1)
+              (T (+ 2 (label-id axis))))))
+    (aref (axis-dead-zones device) id)))
+
+(defun (setf dead-zone) (value device axis)
+  (let ((id (case axis
+              (:l 0)
+              (:r 1)
+              (T (+ 2 (label-id axis)))))
+        (value (float value 0f0)))
+    (check-type value (single-float 0f0 1f0))
+    (setf (aref (axis-dead-zones device) id) value)))
+
+(defun ramp (device axis)
+  (aref (axis-ramps device) (label-id axis)))
+
+(defun (setf ramp) (ramp device axis)
+  (check-type ramp function)
+  (setf (aref (axis-ramps device) (label-id axis)) ramp))
 
 #-(or linux win32 darwin)
 (progn

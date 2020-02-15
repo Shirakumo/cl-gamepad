@@ -111,9 +111,9 @@
    (xinput :initarg :xinput :initform NIL :reader xinput)
    (poll-device :initarg :poll-device :initform NIL :reader poll-device-p)
    (effect :initarg :effect :reader effect)
-   (button-state :initform (make-array (length +labels+) :element-type 'bit) :reader button-state)
+   (private-button-state :initform (make-array (length +labels+) :element-type 'bit) :reader private-button-state)
    ;; Need extra space since POVs take up twice as much room.
-   (axis-state :initform (make-array (+ 4 (length +labels+)) :element-type 'single-float) :reader axis-state)))
+   (private-axis-state :initform (make-array (+ 4 (length +labels+)) :element-type 'single-float) :reader private-axis-state)))
 
 (defun close-device (device)
   (when (xinput device)
@@ -424,8 +424,8 @@
              (signal-button-up function device time code label)))))))
 
 (defun process-joystate (state device function)
-  (let ((button-state (button-state device))
-        (axis-state (axis-state device))
+  (let ((button-state (private-button-state device))
+        (axis-state (private-axis-state device))
         (button-map (button-map device))
         (axis-map (axis-map device))
         (time (get-internal-real-time)))
@@ -456,9 +456,8 @@
             do (handle-button i (cffi:mem-aref ptr 'byte i))))))
 
 (defun process-xinput-state (state device function)
-  (let ((button-state (button-state device))
-        (axis-state (axis-state device))
-        (xbutton-state (xgamepad-buttons state))
+  (let ((xbutton-state (xgamepad-buttons state))
+        (button-state (button-state device))
         (time (get-internal-real-time)))
     (flet ((handle-button (label id new-state)
              (unless (eql (< 0 (sbit button-state id)) new-state)
@@ -467,13 +466,12 @@
                    (signal-button-down function device time id label)
                    (signal-button-up function device time id label))))
            (handle-axis (label id new-state)
-             (unless (= new-state (aref axis-state id))
-               (setf (aref axis-state id) new-state)
-               (signal-axis-move function device time id label new-state))))
+             ;; signal already handles deduplication and recording.
+             (signal-axis-move function device time id label new-state)))
       (loop for (label id mask) in (load-time-value
                                     (loop for label in '(:dpad-u :dpad-d :dpad-l :dpad-r :start :select :l3 :r3 :l1 :r1 :a :b :x :y)
                                           collect (list label
-                                                        (gamepad:label-id label)
+                                                        (label-id label)
                                                         (cffi:foreign-bitfield-value 'xbuttons label))))
             do (handle-button label id (< 0 (logand mask xbutton-state))))
       (handle-axis :l2 (label-id :l2) (/ (xgamepad-left-trigger state) 255f0))
@@ -482,11 +480,6 @@
       (handle-axis :l-v (label-id :l-v) (map-to-float -32768 (xgamepad-ly state) 32767))
       (handle-axis :r-h (label-id :r-h) (map-to-float -32768 (xgamepad-rx state) 32767))
       (handle-axis :r-v (label-id :r-v) (map-to-float -32768 (xgamepad-ry state) 32767)))))
-
-(defun clamp (min value max)
-  (cond ((< value min) min)
-        ((< max value) max)
-        (T value)))
 
 (defun rumble (device strength &key (pan 0))
   (let ((strength (clamp 0 strength 1))

@@ -37,38 +37,78 @@
 
 (defmacro %with-updated-event ((event) &body body)
   `(let ((event ,event))
-     (setf (event-device event) device)
-     (setf (event-time event) time)
-     (setf (event-code event) code)
-     (setf (event-label event) label)
+     (setf (gamepad:event-device event) device)
+     (setf (gamepad:event-time event) time)
+     (setf (gamepad:event-code event) code)
+     (setf (gamepad:event-label event) label)
      ,@body
      (funcall function event)))
 
 (defun signal-button-down (function device time code label)
-  (%with-updated-event (+button-down-event+)))
+  (%with-updated-event (+button-down-event+)
+    (when label
+      (setf (sbit (button-states device) (label-id label)) 1))))
 
 (defun signal-button-up (function device time code label)
-  (%with-updated-event (+button-up-event+)))
+  (%with-updated-event (+button-up-event+)
+    (when label
+      (setf (sbit (button-states device) (label-id label)) 0))))
+
+(defun sibling-id (id)
+  (ecase id
+    (#.(label-id :l-h) (label-id :l-v))
+    (#.(label-id :l-v) (label-id :l-h))
+    (#.(label-id :r-h) (label-id :r-v))
+    (#.(label-id :r-v) (label-id :r-h))))
+
+(defun circular-rezone (value zone other-value)
+  (declare (type single-float value zone other-value))
+  (declare (optimize speed))
+  (if (<= zone 0f0)
+      value
+      (let ((vector (+ (expt value 2) (expt other-value 2))))
+        (if (< vector (expt zone 2))
+            0f0
+            (let ((len (sqrt vector)))
+              (clamp -1f0 (* (/ value len) (/ (- len zone) (- 1 zone))) +1f0))))))
+
+(defun square-rezone (value zone)
+  (declare (type single-float value zone))
+  (declare (optimize speed))
+  (if (<= zone 0f0)
+      value
+      (if (< value zone)
+          0f0
+          (/ (- value zone) (- 1f0 zone)))))
 
 (defun signal-axis-move (function device time code label value)
+  (declare (optimize speed))
   (%with-updated-event (+axis-move-event+)
-    (setf (event-value event) value)))
-
-(defun id-label (id)
-  (svref (load-time-value +labels+) id))
-
-(define-compiler-macro id-label (&whole whole id &environment env)
-  (if (constantp id env)
-      `(load-time-value (svref (load-time-value +labels+) id))
-      whole))
-
-(defun label-id (label)
-  (position label (load-time-value +labels+)))
-
-(define-compiler-macro label-id (&whole whole label &environment env)
-  (if (constantp label env)
-      `(load-time-value (position ,label (load-time-value +labels+)))
-      whole))
+    (when label
+      (let ((id (label-id label))
+            (zones (axis-dead-zones device))
+            (raw-states (axis-raw-states device))
+            (states (axis-states device))
+            (ramps (axis-ramps device)))
+        (declare (type (simple-array single-float) zones raw-states states)
+                 (type (simple-array function) ramps))
+        ;; Update state
+        (setf (aref raw-states id) value)
+        ;; Square rezone
+        (setf value (square-rezone value (aref zones (+ 2 id))))
+        ;; Circular rezone
+        (case label
+          ((:l-h :l-v)
+           (setf value (circular-rezone value (aref zones 0) (aref raw-states (sibling-id id)))))
+          ((:r-h :r-v)
+           (setf value (circular-rezone value (aref zones 1) (aref raw-states (sibling-id id))))))
+        ;; Apply ramp
+        (setf value (the single-float (funcall (aref ramps id) value)))
+        ;; Exit out if state did not change. This enforces the dead-zone
+        (if (= value (aref states id))
+            (return-from signal-axis-move)
+            (setf (aref states id) value))))
+    (setf (gamepad:event-value event) value)))
 
 (defmacro with-device-failures ((device) &body body)
   `(restart-case
@@ -77,3 +117,8 @@
        :report "Close and remove the device."
        (close-device ,device)
        NIL)))
+
+(defun clamp (min value max)
+  (cond ((< value min) min)
+        ((< max value) max)
+        (T value)))

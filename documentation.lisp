@@ -278,6 +278,50 @@ May be one of:
   :IOKIT   --- (Apple IOKit)
 
 See DEVICE")
+
+  (function button
+    "Returns the last known value of the button.
+
+Returns T if the button is pressed, NIL if it is released.
+This state is automatically updated when POLL-EVENTS is called.
+The button name must be a known and mapped keyword from +LABELS+.
+
+See BUTTON-DOWN-EVENT
+See BUTTON-UP-EVENT
+See POLL-EVENTS
+See DEVICE
+See +LABELS+")
+
+  (function axis
+    "Returns the last known value of the axis.
+
+Returns a single-float representing the axis state.
+This state is automatically updated when POLL-EVENTS is called.
+The axis name must be a known and mapped keyword from +LABELS+.
+
+See AXIS-EVENT
+See POLL-EVENTS
+See DEVICE
+See +LABELS+")
+  
+  (function dead-zone
+    "Accessor for the dead zone of the axis on the device.
+
+The dead zone can be defined on a combination of horizontal and
+vertical axes, or a single axis. When applied to a combination, the
+axis name must be :L, or :R, in which case the dead zone is circular.
+
+See +LABELS+
+See DEVICE")
+  
+  (function ramp
+    "Accessor for the ramp of the axis on the device.
+
+The ramp descriptor must be a function of a single argument that takes
+a basic, linear axis value, and returns the mapped axis value.
+
+See +LABELS+
+See DEVICE")
   
   (function init
     "Initialises the library for use.
@@ -391,23 +435,4 @@ completely by setting the strength to zero.
 You must have called INIT prior to calling this function.
 
 See INIT
-See DEVICE")
-  
-  (function dead-zone
-    "Accessor for the dead zone of the axis on the device.
-
-The dead zone can be defined on a combination of horizontal and
-vertical axes, or a single axis. When applied to a combination, the
-axis name must be :L, or :R, in which case the dead zone is circular.
-
-See +LABELS+
-See DEVICE")
-  
-  (function ramp
-    "Accessor for the ramp of the axis on the device.
-
-The ramp descriptor must be a function of a single argument that takes
-a basic, linear axis value, and returns the mapped axis value.
-
-See +LABELS+
 See DEVICE"))

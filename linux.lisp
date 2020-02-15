@@ -222,7 +222,6 @@
   (call-with-polling #'process-connect-events *device-notify* :timeout timeout))
 
 (defun translate-event (function event device)
-  ;; TODO: Could probably make axis normalisation much faster based on AOT compilation.
   (let ((time (logand (+ (* 1000 (event-sec event))
                          (floor (event-usec event) 1000))
                       (1- (ash 1 64)))))
@@ -245,8 +244,7 @@
                              ((:l2 :r2) (float (/ (- value min) range)))
                              ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
                              (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
-         (signal-axis-move function device time code label float-value)))
-      (T :other))))
+         (signal-axis-move function device time code label float-value))))))
 
 (defun call-with-device-events (function device)
   (let ((dev (dev device)))
@@ -268,11 +266,6 @@
   (with-device-failures (device)
     (call-with-polling (lambda () (call-with-device-events function device))
                        (fd device) :timeout timeout)))
-
-(defun clamp (min value max)
-  (cond ((< value min) min)
-        ((< max value) max)
-        (T value)))
 
 (defun rumble (device strength &key pan)
   (declare (ignore pan))

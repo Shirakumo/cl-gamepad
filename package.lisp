@@ -9,7 +9,14 @@
   (:use #:cl)
   (:intern
    #:button-map
-   #:axis-map)
+   #:axis-map
+   #:button-states
+   #:axis-states
+   #:axis-raw-states
+   #:axis-ramps
+   #:axis-dead-zones
+   #:label-id
+   #:id-label)
   ;; configurator.lisp
   (:export
    #:configure-device)
@@ -39,6 +46,8 @@
    #:product
    #:version
    #:driver
+   #:button
+   #:axis
    #:init
    #:shutdown
    #:list-devices
@@ -57,6 +66,13 @@
    #:+labels+
    #:button-map
    #:axis-map
+   #:button-states
+   #:axis-states
+   #:axis-raw-states
+   #:axis-ramps
+   #:axis-dead-zones
+   #:label-id
+   #:id-label
    #:init
    #:shutdown
    #:list-devices

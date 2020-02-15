@@ -253,11 +253,6 @@
     (with-device-failures (device)
       (with-polling ((run-loop-mode device) timeout)))))
 
-(defun clamp (min value max)
-  (cond ((< value min) min)
-        ((< max value) max)
-        (T value)))
-
 (defun rumble (device strength &key pan)
   (let ((effect (effect device))
         (strength (clamp 0 strength 1))

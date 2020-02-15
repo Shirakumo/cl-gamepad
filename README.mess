@@ -1,0 +1,46 @@
+## About cl-gamepad
+This is a library to provide cross-platform access to gamepads, joysticks, and other such HID devices.
+
+## How To
+For this tutorial we assume the nickname ``gamepad`` exists for ``org.shirakumo.fraf.gamepad``. Before you can start, you must initialise the library.
+
+::common lisp
+(gamepad:init)
+::
+
+If successful, it will return a list of currently connected gamepads. You can query the device properties with ``name``, ``vendor``, ``product``, ``version``, and ``driver``. Once you are ready to process device input, you can do so with ``poll-events``.
+
+::common lisp
+(gamepad:poll-events device
+  (lambda (event)
+    (format T "~& ~a ~a~%"
+      (etypecase event
+        (gamepad:button-down "Pressed")
+        (gamepad:button-up "Released")
+        (gamepad:axis-move "Moved"))
+      (or (gamepad:event-label event) (gamepad:event-code event)))))
+::
+
+You can access the event properties with ``event-device``, ``event-time``, ``event-code``, ``event-label``, and for axis events ``event-value``. Do note that the event instance is only valid within the dynamic extent of your supplied function. You cannot store the event elsewhere or process it out of band.
+
+If the device gets disconnected or some other problem occurs during event polling, an error of type ``gamepad-error`` will be signalled. You should handle this error and unhook the device from your own system, then either invoke the restart ``drop-device``, or call ``poll-devices`` to automatically refresh the current device list.
+
+Typically the library will try its best to offer standardised labels for the gamepad (see ``+labels+``). If it cannot figure out the mapping for a feature, the ``event-label`` will be ``NIL`` and the correct purpose has to be figured out from the ``event-code``. To provide this mapping persistently, you can configure the device using ``configure-device``, which will use an interactive wizard to set all the mappings. After mapping a device, please "submit a PR"(https://github.com/Shirakumo/cl-gamepad/compare) of the ``default-device-mappings.lisp`` file to include it in the official distribution.
+
+Whenever you want to listen for new device connections or ensure current devices still exist, you should run ``poll-devices``. Both ``poll-events`` and ``poll-devices`` accept a timeout argument to allow you to efficiently poll if you need a dedicated thread. The default behaviour is to return immediately if there are no pending changes, allowing you to use the calls synchronously.
+
+Most gamepads also support haptic or force feedback. You can activate the rumble feature and modulate it over time using the ``rumble`` function. Do note that sadly the capability of the devices, and especially the capability of the underlying drivers varies wildly and the feature may thus sometimes just not be available.
+
+You can query the last known state of a gamepad feature through ``button`` and ``axis``. Only standardised labels can be given for these functions however, so unmapped features cannot be queried.
+
+Finally you can configure common axis features such as the ``dead-zone`` and the ``ramp`` per device. Do note however that these settings are not persistent, so you must apply them whenever the device is connected anew. The axis values are rezoned after the dead-zone clamp has applied, meaning that if the value exceeds the dead-zone, it will be remapped to fit into the [0,1] range again. Also note that if you apply the dead-zone to the two axes of a single joystick separately, the zone you set will be square, rather than the expected circular dead zone. You can set a circular dead zone by setting the dead zone on the virtual labels ``:L`` for the ``:L-H`` and ``:L-V`` axes, or ``:R`` for the ``:R-H`` and ``:R-V`` axes. The ``ramp`` function is applied after the dead zone. By default no dead zone or ramp is applied.
+
+## Supported Platforms
+Currently the following platforms are supported:
+
+- Linux evdev (via libevdev)
+- macOS/iOS IOKit
+- Windows DirectInput
+- Windows XInput
+
+On Windows DirectInput and XInput are used at the same time.

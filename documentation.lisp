@@ -203,9 +203,9 @@ See +LABELS+")
 For a horizontal axis, -1 means left, +1 means right.
 For a vertical axis, -1 means down, +1 means up.
 
-This field is only accessible for AXIS-EVENTs.
+This field is only accessible for AXIS-MOVEs.
 
-See AXIS-EVENT")
+See AXIS-MOVE")
   
   (type button-down
     "Event issued when a button is pressed down.
@@ -286,8 +286,8 @@ Returns T if the button is pressed, NIL if it is released.
 This state is automatically updated when POLL-EVENTS is called.
 The button name must be a known and mapped keyword from +LABELS+.
 
-See BUTTON-DOWN-EVENT
-See BUTTON-UP-EVENT
+See BUTTON-DOWN
+See BUTTON-UP
 See POLL-EVENTS
 See DEVICE
 See +LABELS+")
@@ -299,7 +299,7 @@ Returns a single-float representing the axis state.
 This state is automatically updated when POLL-EVENTS is called.
 The axis name must be a known and mapped keyword from +LABELS+.
 
-See AXIS-EVENT
+See AXIS-MOVE
 See POLL-EVENTS
 See DEVICE
 See +LABELS+")

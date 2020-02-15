@@ -1,0 +1,371 @@
+<!DOCTYPE html> <html lang="EN"> <head> <meta charset="utf-8"> <title>Cl Gamepad</title> <style>html body{margin:0 auto 0 auto;padding:20px;max-width:1024px;font-family:sans-serif;font-size:14pt;overflow-y:scroll;}html body a{text-decoration:none;}html body a[href]{color:#0055AA;}html body a[href]:hover{color:#0088EE;}html body pre{background:#FAFAFA;border:1px solid #DDDDDD;padding:0.75em;overflow-x:auto;}html body pre >code a[href]{color:#223388;}article.project h1{font-size:1.7em;}article.project h1,article.project h2,article.project h3,article.project h4,article.project h5,article.project h6{margin:0.2em 0 0.1em 0;text-indent:1em;}article.project >header{text-align:center;}article.project >header img.logo{display:block;margin:auto;max-height:170px;}article.project >header h1{display:inline-block;text-indent:0;font-size:2.5em;}article.project >header .version{vertical-align:bottom;}article.project >header .languages{margin-top:-0.5em;text-transform:capitalize;}article.project >header .description{margin:0;}article.project >header .pages{margin-top:0.5em;font-size:1.2em;text-transform:capitalize;}article.project >header .pages a{display:inline-block;padding:0 0.2em;}article.project >section{margin:1em 0 1em 0;}article.project #index >ul{list-style:none;margin:0;padding:0;}article.project .row label{display:inline-block;min-width:6em;}article.project #system .row{display:flex;}article.project #system #dependencies{display:inline;margin:0;padding:0;}article.project #system #dependencies li{display:inline;padding:0 0.2em;}article.definition{margin:1em 0 0 0;}article.definition >header h1,article.definition >header h2,article.definition >header h3,article.definition >header h4,article.definition >header h5,article.definition >header h6{text-indent:0;display:inline-block;}article.definition >header ul{display:inline-block;list-style:none;margin:0;padding:0;}article.definition >header ul li{display:inline-block;padding:0 0.2em 0 0;}article.definition >header .visibility{display:none;}article.definition >header .visibility,article.definition >header .type{text-transform:lowercase;}article.definition >header .source-link{visibility:hidden;float:right;}article.definition >header .source-link:after{visibility:visible;content:"[SRC]";}article.definition .docstring{margin:0 0 0 1em;}article.definition .docstring pre{font-size:0.8em;white-space:pre-wrap;}.definition.package >header ul.nicknames{display:inline-block;list-style:none;margin:0;padding:0 0 0 1em;}.definition.package >header ul.nicknames li{display:inline;}.definition.package >header ul.nicknames:before{content:"(";}.definition.package >header ul.nicknames:after{content:")";}.definition.package ul.definitions{margin:0;list-style:none;padding:0 0 0 0.5em;}.definition.callable >header .name:before,.definition.type >header .name:before{content:"(";font-weight:normal;}.definition.callable >header .arguments:after,.definition.type >header .arguments:after{content:")";}.definition.callable >header .arguments .arguments:before,.definition.type >header .arguments .arguments:before{content:"(";}.definition.callable >header .arguments .argument,.definition.type >header .arguments .argument{padding:0;}.definition.callable >header .arguments .argument.lambda-list-keyword,.definition.type >header .arguments .argument.lambda-list-keyword{color:#991155;}.definition li>mark{background:none;border-left:0.3em solid #0088EE;padding-left:0.3em;display:block;}</style> </head> <body> <article class="project"> <header>  <h1>cl gamepad</h1>  <span class="version">3.0.0</span>  <nav class="languages">  </nav>  <p class="description">Portability library for gamepad and joystick access.</p>  <nav class="pages">  </nav> </header> <section id="documentation"><article><h2 id="About cl-gamepad">About cl-gamepad</h2><p>This is a library to provide cross-platform access to gamepads, joysticks, and other such HID devices.</p><h2 id="How To">How To</h2><p>For this tutorial we assume the nickname <code>gamepad</code> exists for <code>org.shirakumo.fraf.gamepad</code>. Before you can start, you must initialise the library.</p><code style="display:block" class="code-block" data-language="ommon lisp"><pre>(<a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT" class="xref">gamepad:init</a>)</pre></code><p>If successful, it will return a list of currently connected gamepads. You can query the device properties with <code><a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ANAME" class="xref">name</a></code>, <code><a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVENDOR" class="xref">vendor</a></code>, <code><a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APRODUCT" class="xref">product</a></code>, <code><a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVERSION" class="xref">version</a></code>, and <code><a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADRIVER" class="xref">driver</a></code>. Once you are ready to process device input, you can do so with <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">poll-events</a></code>.</p><code style="display:block" class="code-block" data-language="ommon lisp"><pre>(<a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">gamepad:poll-events</a> device
+  (lambda (event)
+    (<a href="http://l1sp.org/cl/format" class="xref">format</a> T &quot;~&amp; ~a ~a~%&quot;
+      (<a href="http://l1sp.org/cl/etypecase" class="xref">etypecase</a> event
+        (gamepad:button-down &quot;Pressed&quot;)
+        (gamepad:button-up &quot;Released&quot;)
+        (gamepad:axis-move &quot;Moved&quot;))
+      (<a href="http://l1sp.org/cl/or" class="xref">or</a> (<a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-LABEL" class="xref">gamepad:event-label</a> event) (<a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-CODE" class="xref">gamepad:event-code</a> event)))))</pre></code><p>You can access the event properties with <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-DEVICE" class="xref">event-device</a></code>, <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-TIME" class="xref">event-time</a></code>, <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-CODE" class="xref">event-code</a></code>, <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-LABEL" class="xref">event-label</a></code>, and for axis events <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-VALUE" class="xref">event-value</a></code>. Do note that the event instance is only valid within the dynamic extent of your supplied function. You cannot store the event elsewhere or process it out of band.</p><p>If the device gets disconnected or some other problem occurs during event polling, an error of type <code><a href="#CONDITION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AGAMEPAD-ERROR" class="xref">gamepad-error</a></code> will be signalled. You should handle this error and unhook the device from your own system, then either invoke the restart <code>drop-device</code>, or call <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-DEVICES" class="xref">poll-devices</a></code> to automatically refresh the current device list.</p><p>Typically the library will try its best to offer standardised labels for the gamepad (see <code><a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+labels+</a></code>). If it cannot figure out the mapping for a feature, the <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-LABEL" class="xref">event-label</a></code> will be <code>NIL</code> and the correct purpose has to be figured out from the <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-CODE" class="xref">event-code</a></code>. To provide this mapping persistently, you can configure the device using <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ACONFIGURE-DEVICE" class="xref">configure-device</a></code>, which will use an interactive wizard to set all the mappings. After mapping a device, please <a class="external-link" href="https://github.com/Shirakumo/cl-gamepad/compare">submit a PR</a> of the <code>default-device-mappings.lisp</code> file to include it in the official distribution.</p><p>Whenever you want to listen for new device connections or ensure current devices still exist, you should run <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-DEVICES" class="xref">poll-devices</a></code>. Both <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">poll-events</a></code> and <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-DEVICES" class="xref">poll-devices</a></code> accept a timeout argument to allow you to efficiently poll if you need a dedicated thread. The default behaviour is to return immediately if there are no pending changes, allowing you to use the calls synchronously.</p><p>Most gamepads also support haptic or force feedback. You can activate the rumble feature and modulate it over time using the <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ARUMBLE" class="xref">rumble</a></code> function. Do note that sadly the capability of the devices, and especially the capability of the underlying drivers varies wildly and the feature may thus sometimes just not be available.</p><p>You can query the last known state of a gamepad feature through <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON" class="xref">button</a></code> and <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS" class="xref">axis</a></code>. Only standardised labels can be given for these functions however, so unmapped features cannot be queried.</p><p>Finally you can configure common axis features such as the <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEAD-ZONE" class="xref">dead-zone</a></code> and the <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ARAMP" class="xref">ramp</a></code> per device. Do note however that these settings are not persistent, so you must apply them whenever the device is connected anew. The axis values are rezoned after the dead-zone clamp has applied, meaning that if the value exceeds the dead-zone, it will be remapped to fit into the [0,1] range again. Also note that if you apply the dead-zone to the two axes of a single joystick separately, the zone you set will be square, rather than the expected circular dead zone. You can set a circular dead zone by setting the dead zone on the virtual labels <code>:L</code> for the <code>:L-H</code> and <code>:L-V</code> axes, or <code>:R</code> for the <code>:R-H</code> and <code>:R-V</code> axes. The <code><a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ARAMP" class="xref">ramp</a></code> function is applied after the dead zone. By default no dead zone or ramp is applied.</p><h2 id="Supported Platforms">Supported Platforms</h2><p>Currently the following platforms are supported:</p><ul><li><p>Linux evdev (via libevdev)</p></li><li><p>macOS/iOS IOKit</p></li><li><p>Windows DirectInput</p></li><li><p>Windows XInput</p></li></ul><p>On Windows DirectInput and XInput are used at the same time.</p></article></section>   <section id="system"> <h2>System Information</h2>  <div class="row"> <label for="version">Version:</label> <a id="version">3.0.0</a> </div>   <div class="row"> <label for="dependencies">Dependencies:</label> <ul id="dependencies"><li><a class="external">cffi</a></li><li><a class="external">trivial-features</a></li><li><a class="external" href="https://Shinmera.github.io/documentation-utils/">documentation-utils</a></li></ul> </div>   <div class="row"> <label for="author">Author:</label> <a id="author" href="mailto:shinmera@tymoon.eu">Nicolas Hafner</a> </div>   <div class="row"> <label for="license">License:</label> <a id="license" href="https://github.com/Shirakumo/cl-gamepad/blob/master/LICENSE">zlib</a> </div>   <div class="row"> <label for="homepage">Homepage:</label> <a id="homepage" href="https://Shirakumo.github.io/cl-gamepad/">https://Shirakumo.github.io/cl-gamepad/</a> </div>  </section>    <section id="index"> <h2>Definition Index</h2> <ul> <li> <article class="definition package" id="PACKAGE ORG.SHIRAKUMO.FRAF.GAMEPAD"> <header> <h3> <a href="#PACKAGE%20ORG.SHIRAKUMO.FRAF.GAMEPAD">ORG.SHIRAKUMO.FRAF.GAMEPAD</a> </h3> <ul class="nicknames"></ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> <ul class="definitions"> <li> <article class="definition special-variable" id="VARIABLE ORG.SHIRAKUMO.FRAF.GAMEPAD:*DEFAULT-MAPPINGS-FILE*"> <header> <span class="visibility">EXTERNAL</span> <span class="type">SPECIAL-VARIABLE</span> <h4 class="name"> <a href="#VARIABLE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2ADEFAULT-MAPPINGS-FILE%2A">*DEFAULT-MAPPINGS-FILE*</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition global" id="GLOBAL ORG.SHIRAKUMO.FRAF.GAMEPAD:+LABELS+"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GLOBAL</span> <h4 class="name"> <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B">+LABELS+</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  </header> <div class="docstring"><pre>Vector of standardised button and axis labels.
+
+Modifying this value results in undefined behaviour.
+
+The labels are intended to have the following semantic meanings:
+
+  A        --- The A B C buttons are laid out on the bottom diagonal
+  B            named button row, with A being the bottom-most.
+  C            This follows the &quot;Xbox&quot; convention.
+  X        --- The X Y Z buttons are laid out on the top diagonal
+  Y            named button row, with X being the bottom-most.
+  Z            This follows the &quot;Xbox&quot; convention.
+  L1       --- The left hand upper trigger button.
+  L2       --- The left hand lower trigger button/axis.
+  L3       --- The left hand stick press-in button.
+  R1       --- The right hand upper trigger button.
+  R2       --- The right hand lower trigger button/axis.
+  R3       --- The right hand stick press-in button.
+  DPAD-L   --- The left dpad button.
+  DPAD-R   --- The right dpad button.
+  DPAD-U   --- The upper dpad button.
+  DPAD-D   --- The lower dpad button.
+  SELECT   --- The left central button. Often named select, back, or share.
+  HOME     --- The middle central button. Usually a logo.
+  START    --- The right central button. Often named start, or options.
+  L-H      --- The left stick horizontal axis.
+  L-V      --- The left stick vertical axis.
+  R-H      --- The right stick horizontal axis.
+  R-V      --- The right stick vertical axis.
+  DPAD-H   --- The dpad horizontal axis.
+  DPAD-V   --- The dpad vertical axis.
+  TILT-X   --- The tilt degree around the X (along the length) axis.
+  TILT-Y   --- The tilt degree around the Y (along the height) axis.
+  TILT-Z   --- The tilt degree around the Z (along the depth) axis.
+  MOVE-X   --- The relative motion over the X axis.
+  MOVE-Y   --- The relative motion over the Y axis.
+  MOVE-Z   --- The relative motion over the Z axis.
+  WHEEL    --- The steering wheel direction.
+  GAS      --- The gas pedal.
+  BRAKE    --- The brake pedal.
+  THROTTLE --- The throttle strength.
+  RUDDER   --- The rudder direction.
+</pre></div> </article> </li>  <li> <article class="definition class" id="CLASS ORG.SHIRAKUMO.FRAF.GAMEPAD:DEVICE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CLASS</span> <h4 class="name"> <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE">DEVICE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L59">Source</a>  </header> <div class="docstring"><pre>Representation of a physical gamepad device.
+
+The actual type of instances may be a subtype of this with internal
+features relevant to the driver.
+
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ANAME" class="xref">NAME</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVENDOR" class="xref">VENDOR</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APRODUCT" class="xref">PRODUCT</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVERSION" class="xref">VERSION</a>
+See <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADRIVER" class="xref">DRIVER</a></pre></div> </article> </li>  <li> <article class="definition condition" id="CONDITION ORG.SHIRAKUMO.FRAF.GAMEPAD:GAMEPAD-ERROR"> <header> <span class="visibility">EXTERNAL</span> <span class="type">CONDITION</span> <h4 class="name"> <a href="#CONDITION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AGAMEPAD-ERROR">GAMEPAD-ERROR</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L31">Source</a>  </header> <div class="docstring"><pre>Error signalled when an underlying operating system, driver, or device problem occurs.
+
+Depending on the driver used the actual type of error signalled may be
+a subtype of this condition with more information available about the
+error specifics.</pre></div> </article> </li>  <li> <article class="definition structure" id="STRUCTURE ORG.SHIRAKUMO.FRAF.GAMEPAD:AXIS-MOVE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">STRUCTURE</span> <h4 class="name"> <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS-MOVE">AXIS-MOVE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L50">Source</a>  </header> <div class="docstring"><pre>Event issued when an axis moves.
+
+This event may be signalled many times with very similar values.
+It will NOT be issued if the combined axis (horizontal and vertical)
+has a dead zone set and the axis falls within the dead zone.
+If a ramp is defined on the axis, the value is already ramp-adjusted.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-VALUE" class="xref">EVENT-VALUE</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition structure" id="STRUCTURE ORG.SHIRAKUMO.FRAF.GAMEPAD:BUTTON-DOWN"> <header> <span class="visibility">EXTERNAL</span> <span class="type">STRUCTURE</span> <h4 class="name"> <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-DOWN">BUTTON-DOWN</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L44">Source</a>  </header> <div class="docstring"><pre>Event issued when a button is pressed down.
+
+This event is only signalled once on the rising edge.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition structure" id="STRUCTURE ORG.SHIRAKUMO.FRAF.GAMEPAD:BUTTON-UP"> <header> <span class="visibility">EXTERNAL</span> <span class="type">STRUCTURE</span> <h4 class="name"> <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-UP">BUTTON-UP</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L47">Source</a>  </header> <div class="docstring"><pre>Event issued when a button is released.
+
+This event is only signalled once on the falling edge.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition structure" id="STRUCTURE ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">STRUCTURE</span> <h4 class="name"> <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT">EVENT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><pre>Base type for device events.
+
+An event denotes a change in the device's buttons or axes.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">POLL-EVENTS</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-DOWN" class="xref">BUTTON-DOWN</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-UP" class="xref">BUTTON-UP</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS-MOVE" class="xref">AXIS-MOVE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-DEVICE" class="xref">EVENT-DEVICE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-TIME" class="xref">EVENT-TIME</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-CODE" class="xref">EVENT-CODE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-LABEL" class="xref">EVENT-LABEL</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-VALUE" class="xref">EVENT-VALUE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:AXIS"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS">AXIS</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">AXIS</li>    <li class="argument">DEVICE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L103">Source</a>  </header> <div class="docstring"><pre>Returns the last known value of the axis.
+
+Returns a single-float representing the axis state.
+This state is automatically updated when POLL-EVENTS is called.
+The axis name must be a known and mapped keyword from +LABELS+.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS-MOVE" class="xref">AXIS-MOVE</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">POLL-EVENTS</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a>
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+LABELS+</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:BUTTON"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON">BUTTON</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">BUTTON</li>    <li class="argument">DEVICE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L95">Source</a>  </header> <div class="docstring"><pre>Returns the last known value of the button.
+
+Returns T if the button is pressed, NIL if it is released.
+This state is automatically updated when POLL-EVENTS is called.
+The button name must be a known and mapped keyword from +LABELS+.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-DOWN" class="xref">BUTTON-DOWN</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ABUTTON-UP" class="xref">BUTTON-UP</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS" class="xref">POLL-EVENTS</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a>
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+LABELS+</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:CONFIGURE-DEVICE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ACONFIGURE-DEVICE">CONFIGURE-DEVICE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">DEVICE</li>    <li class="argument lambda-list-keyword">&amp;KEY</li>    <li class="argument">BUTTON-LABELS</li>    <li class="argument">AXIS-LABELS</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/configurator.lisp#L15">Source</a>  </header> <div class="docstring"><pre>Run an interactive configuration wizard to determine the proper button mappings.
+
+This will interactively ask you to press the correct buttons and axes
+corresponding to the prompted labels.
+
+You can use this to configure a device's button and axis mappings if
+the default mapping is not correct.
+
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BCOMMON-BUTTONS%2B" class="xref">+COMMON-BUTTONS+</a>
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BCOMMON-AXES%2B" class="xref">+COMMON-AXES+</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ASAVE-DEVICE-MAPPINGS" class="xref">SAVE-DEVICE-MAPPINGS</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:DEAD-ZONE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEAD-ZONE">DEAD-ZONE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">DEVICE</li>    <li class="argument">AXIS</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L111">Source</a>  </header> <div class="docstring"><pre>Accessor for the dead zone of the axis on the device.
+
+The dead zone can be defined on a combination of horizontal and
+vertical axes, or a single axis. When applied to a combination, the
+axis name must be :L, or :R, in which case the dead zone is circular.
+
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+LABELS+</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF DEAD-ZONE)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20DEAD-ZONE%29">(SETF DEAD-ZONE)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">DEVICE</li>    <li class="argument">AXIS</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L118">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:DEVICE-MAPPING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE-MAPPING">DEVICE-MAPPING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">ID</li>  </ul>  </header> <div class="docstring"><pre>A place accessing the device mapping associated with the given ID.
+
+An ID can either be a DEVICE instance, or a list with the following
+members:
+
+  DRIVER   --- The name of the underlying driver for the device.
+               One of :DINPUT :XINPUT :EVDEV :IOKIT
+  VENDOR   --- The vendor ID of the device.
+  PRODUCT  --- The product ID of the device.
+
+Returns NIL if no mapping is known, or a plist with the following
+members:
+
+  :NAME    --- A string identifying the device in a hopefully
+               human-readable way.
+  :BUTTONS --- A hash table mapping backend-specific button IDs to the
+               standardised button labels from +LABELS+
+  :AXES    --- A hash table mapping backend-specific axis IDs to the
+               standardised axis labels from +LABELS+
+
+Setting a device mapping will automatically update all known
+devices that match the mapping.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AREMOVE-DEVICE-MAPPING" class="xref">REMOVE-DEVICE-MAPPING</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ACONFIGURE-DEVICE" class="xref">CONFIGURE-DEVICE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF DEVICE-MAPPING)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20DEVICE-MAPPING%29">(SETF DEVICE-MAPPING)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">MAPPING</li>    <li class="argument">ID</li>  </ul>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT-CODE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-CODE">EVENT-CODE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><pre>Returns the underlying code of the feature on the device that caused the event.
+
+The code is a positive integer that has a device and driver specific
+meaning.
+
+This field is always set.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF EVENT-CODE)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20EVENT-CODE%29">(SETF EVENT-CODE)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT-DEVICE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-DEVICE">EVENT-DEVICE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><pre>Returns the device the event came from.
+
+This field is always set.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF EVENT-DEVICE)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20EVENT-DEVICE%29">(SETF EVENT-DEVICE)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT-LABEL"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-LABEL">EVENT-LABEL</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><pre>Returns the standardised label associated with the axis or button that caused the event.
+
+If the feature is unknown or not properly mapped, NIL is
+returned. Otherwise the returned symbol must be one contained in
++LABELS+.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a>
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+LABELS+</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF EVENT-LABEL)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20EVENT-LABEL%29">(SETF EVENT-LABEL)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT-TIME"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-TIME">EVENT-TIME</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><pre>Returns some form of time identifier for the event.
+
+The actual time resolution is dependent on the driver. This is mostly
+useful to gauge whether events happened simultaneously or not.
+
+This field is always set.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF EVENT-TIME)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20EVENT-TIME%29">(SETF EVENT-TIME)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L34">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:EVENT-VALUE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT-VALUE">EVENT-VALUE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L50">Source</a>  </header> <div class="docstring"><pre>Returns the axis value as a single-float in [-1,+1].
+
+For a horizontal axis, -1 means left, +1 means right.
+For a vertical axis, -1 means down, +1 means up.
+
+This field is only accessible for AXIS-MOVEs.
+
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AAXIS-MOVE" class="xref">AXIS-MOVE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF EVENT-VALUE)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20EVENT-VALUE%29">(SETF EVENT-VALUE)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">VALUE</li>    <li class="argument">INSTANCE</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L50">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:INIT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT">INIT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L151">Source</a>  </header> <div class="docstring"><pre>Initialises the library for use.
+
+This will cause system shared objects to be loaded and will cause
+certain support structures to be allocated and initialised. Only call
+this function on a target system where the gamepads should be queried.
+
+You MUST call this function before calling any other device functions.
+
+It is safe to call this function multiple times.
+
+Returns the list of currently known devices.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ASHUTDOWN" class="xref">SHUTDOWN</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:LIST-DEVICES"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ALIST-DEVICES">LIST-DEVICES</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L167">Source</a>  </header> <div class="docstring"><pre>Returns a fresh list of all known gamepad devices.
+
+This will not query for device updates, and only represents the
+currently known state of the system.
+
+On an uninitialised system this will return NIL.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-DEVICES" class="xref">POLL-DEVICES</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:POLL-DEVICES"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-DEVICES">POLL-DEVICES</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument lambda-list-keyword">&amp;KEY</li>    <li class="argument">TIMEOUT</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L221">Source</a>  </header> <div class="docstring"><pre>Queries for device changes.
+
+TIMEOUT can be a one of the following:
+
+   T    --- Continuously poll for device changes indefinitely.
+   NIL  --- Immediately return if no changes are pending.
+   REAL --- Wait up to the given number of seconds until a change is
+            noticed. Returns as soon as a change happened, or some
+            time until the timeout runs out.
+
+You should call this function whenever you want to allow changing the
+connected devices, or whenever an existing device is disconnected.
+
+You must have called INIT prior to calling this function.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT" class="xref">INIT</a>
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ALIST-DEVICES" class="xref">LIST-DEVICES</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:POLL-EVENTS"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APOLL-EVENTS">POLL-EVENTS</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">DEVICE</li>    <li class="argument">FUNCTION</li>    <li class="argument lambda-list-keyword">&amp;KEY</li>    <li class="argument">TIMEOUT</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L265">Source</a>  </header> <div class="docstring"><pre>Queries the device for events.
+
+The FUNCTION is called with any new device events that arrive during
+querying. The events are not guaranteed to be fresh and you MUST NOT
+store them anywhere. You should instead translate the event into a
+format more suitable for your use case or consume it on the spot.
+
+TIMEOUT can be of one of the following:
+
+   T    --- Continuously poll for device events indefinitely.
+   NIL  --- Immediately return if no events are pending.
+   REAL --- Wait up to the given number of seconds until an event is
+            noticed. Returns as soon as an event happened, or some
+            time until the timeout runs out.
+
+You should call this function whenever you wish to query the gamepad
+for new changes in its buttons or axes.
+
+This function may signal an error of type GAMEPAD-ERROR. When this
+happens the device has become unavailable for some reason. You should
+remove the device from your own references and invoke the restart
+DROP-DEVICE which will remove the device from the internal library and
+abort the query.
+
+You must have called INIT prior to calling this function.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT" class="xref">INIT</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a>
+See <a href="#STRUCTURE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AEVENT" class="xref">EVENT</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:RAMP"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ARAMP">RAMP</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">DEVICE</li>    <li class="argument">AXIS</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L127">Source</a>  </header> <div class="docstring"><pre>Accessor for the ramp of the axis on the device.
+
+The ramp descriptor must be a function of a single argument that takes
+a basic, linear axis value, and returns the mapped axis value.
+
+See <a href="#GLOBAL%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2BLABELS%2B" class="xref">+LABELS+</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:(SETF RAMP)"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%28SETF%20RAMP%29">(SETF RAMP)</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">RAMP</li>    <li class="argument">DEVICE</li>    <li class="argument">AXIS</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/protocol.lisp#L130">Source</a>  </header> <div class="docstring"><i>No documentation provided.</i></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:REMOVE-DEVICE-MAPPING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AREMOVE-DEVICE-MAPPING">REMOVE-DEVICE-MAPPING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">ID</li>  </ul>  </header> <div class="docstring"><pre>Removes the device mapping associated with the given ID.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE-MAPPING" class="xref">DEVICE-MAPPING</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:RUMBLE"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ARUMBLE">RUMBLE</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">DEVICE</li>    <li class="argument">STRENGTH</li>    <li class="argument lambda-list-keyword">&amp;KEY</li>    <li class="argument">PAN</li>  </ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L270">Source</a>  </header> <div class="docstring"><pre>Causes haptic feedback on the controller.
+
+STRENGTH should be a number in [0,1] denoting the strength of the
+haptic feedback.
+
+PAN should be a number in [-1,+1] denoting where (from left to right)
+to rumble.
+
+Note that haptic feedback is wildly inconsistent across devices and
+drivers, and may be completely unsupported, or not behave exactly as
+described here.
+
+If the haptic feedback is unsupported, this function returns
+:UNSUPPORTED.
+
+The rumbling will last at least 0.1 seconds, and may go on
+indefinitely. You must modulate the rumbling manually, or stop it
+completely by setting the strength to zero.
+
+You must have called INIT prior to calling this function.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT" class="xref">INIT</a>
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:SAVE-DEVICE-MAPPINGS"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ASAVE-DEVICE-MAPPINGS">SAVE-DEVICE-MAPPINGS</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument lambda-list-keyword">&amp;OPTIONAL</li>    <li class="argument">FILE</li>  </ul>  </header> <div class="docstring"><pre>Saves all known device mappings to a lisp source file.
+
+The source file can simply be LOADed in to restore the mappings.
+
+See <a href="#VARIABLE%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3A%2ADEFAULT-MAPPINGS-FILE%2A" class="xref">*DEFAULT-MAPPINGS-FILE*</a></pre></div> </article> </li>  <li> <article class="definition function callable" id="FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:SHUTDOWN"> <header> <span class="visibility">EXTERNAL</span> <span class="type">FUNCTION</span> <h4 class="name"> <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ASHUTDOWN">SHUTDOWN</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments"></ul>  <a class="source-link" href="https://github.com/Shirakumo/cl-gamepad/blob/master/linux.lisp#L160">Source</a>  </header> <div class="docstring"><pre>Uninitialises the library and closes all used resources.
+
+This will not unload system shared objects, but it will close all used
+devices and other services and deallocate them. You should call this
+function when shutting down on a target system.
+
+After calling this function you MUST NOT call any other device
+functions without first calling INIT again.
+
+It is safe to call this function multiple times.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AINIT" class="xref">INIT</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:DRIVER"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADRIVER">DRIVER</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns a symbol identifying the driver underlying the device.
+
+May be one of:
+
+  :EVDEV   --- (Linux evdev)
+  :DINPUT  --- (Windows DirectInput)
+  :XINPUT  --- (Windows XInput)
+  :IOKIT   --- (Apple IOKit)
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:NAME"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ANAME">NAME</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns a human-readable name for the device.
+
+No guarantees can be made about the quality or descriptiveness of the
+name.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:PRODUCT"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3APRODUCT">PRODUCT</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns an integer ID identifying the device product.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:VENDOR"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVENDOR">VENDOR</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns an integer ID identifying the vendor of the device.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition generic-function callable" id="GENERIC-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:VERSION"> <header> <span class="visibility">EXTERNAL</span> <span class="type">GENERIC-FUNCTION</span> <h4 class="name"> <a href="#GENERIC-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3AVERSION">VERSION</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <li class="argument">OBJECT</li>  </ul>  </header> <div class="docstring"><pre>Returns an integer denoting the version of the device.
+
+See <a href="#CLASS%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE" class="xref">DEVICE</a></pre></div> </article> </li>  <li> <article class="definition macro callable" id="MACRO-FUNCTION ORG.SHIRAKUMO.FRAF.GAMEPAD:DEFINE-DEVICE-MAPPING"> <header> <span class="visibility">EXTERNAL</span> <span class="type">MACRO</span> <h4 class="name"> <a href="#MACRO-FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEFINE-DEVICE-MAPPING">DEFINE-DEVICE-MAPPING</a> </h4> <ul class="qualifiers"></ul> <ul class="arguments">  <ul class="arguments"> <li class="argument">DRIVER</li>  <li class="argument">VENDOR</li>  <li class="argument">PRODUCT</li> </ul>    <li class="argument lambda-list-keyword">&amp;BODY</li>    <li class="argument">PLIST</li>  </ul>  </header> <div class="docstring"><pre>Defines a new device mapping for the named device type.
+
+This is a shorthand around (SETF DEVICE-MAPPING). The BODY should be a
+plist with :NAME :BUTTONS and :AXES keys. For buttons and axes, the
+value should be a plist from device IDs to labels.
+
+See <a href="#FUNCTION%20ORG.SHIRAKUMO.FRAF.GAMEPAD%3ADEVICE-MAPPING" class="xref">DEVICE-MAPPING</a></pre></div> </article> </li> </ul> </article> </li> </ul> </section>  </article> <script>window.addEventListener("DOMContentLoaded", function(){
+    var unmarkElement = function(el){
+        if(el.tagName === "mark" || el.tagName === "MARK"){
+            [].forEach.call(el.childNodes, function(child){
+                el.parentNode.insertBefore(child, el);
+            });
+            el.parentNode.removeChild(el);
+        }else if(el.parentNode.tagName === "mark"){
+            return unmarkElement(el.parentNode);
+        }
+        return null;
+    }
+
+    var unmarkAll = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("mark"), unmarkElement);
+    }
+    
+    var markElement = function(el){
+        if(el.parentNode.tagName === "mark" || el.parentNode.tagName === "MARK"){
+            return el.parentNode;
+        } else {
+            unmarkAll();
+            var marked = document.createElement("mark");
+            el.parentNode.insertBefore(marked, el);
+            marked.appendChild(el);
+            return marked;
+        }
+    }
+
+    var markFragmented = function(){
+        if(window.location.hash){
+            var el = document.getElementById(decodeURIComponent(window.location.hash.substr(1)));
+            if(el) markElement(el);
+        }
+    }
+
+    var registerXrefLink = function(link){
+        var el = document.getElementById(decodeURIComponent(link.getAttribute("href").substr(1)));
+        if(el){
+            link.addEventListener("click", function(){
+                markElement(el);
+            });
+        }
+    }
+
+    var registerXrefLinks = function(root){
+        root = root || document;
+        [].forEach.call(root.querySelectorAll("a.xref"), registerXrefLink);
+    }
+
+    markFragmented();
+    registerXrefLinks();
+}); </script> </body> </html> 

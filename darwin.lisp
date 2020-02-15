@@ -36,6 +36,39 @@
     (when device
       (handle-event device value))))
 
+(defun device-get-axis-map ()
+  (let ((map (make-hash-table :test 'eql)))
+    (loop for (c l) in '((#x30 :L-H)
+                         (#x31 :L-V)
+                         (#x32 :L2)
+                         (#x33 :R-H)
+                         (#x34 :R-V)
+                         (#x35 :R2))
+          for id = (logior c (ash (cffi:foreign-enum-value 'io-page :generic-desktop) 16))
+          do (setf (gethash id map) l))
+    map))
+
+(defun device-get-button-map ()
+  (let ((map (make-hash-table :test 'eql)))
+    (loop for (c l) in '((#x01 :A)
+                         (#x02 :B)
+                         (#x03 :X)
+                         (#x04 :Y)
+                         (#x05 :L1)
+                         (#x06 :R1)
+                         (#x07 :L3)
+                         (#x08 :R3)
+                         (#x09 :START)
+                         (#x0A :SELECT)
+                         (#x0B :HOME)
+                         (#x0C :DPAD-U)
+                         (#x0D :DPAD-D)
+                         (#x0E :DPAD-L)
+                         (#x0F :DPAD-R))
+          for id = (logior c (ash (cffi:foreign-enum-value 'io-page :button) 16))
+          do (setf (gethash id map) l))
+    map))
+
 (defclass device (gamepad:device)
   ((dev :initarg :dev :reader dev)
    (run-loop-mode :initarg :run-loop-mode :reader run-loop-mode)
@@ -117,7 +150,9 @@
                    :version (device-int-property dev VERSION-NUMBER-KEY)
                    :driver :iokit
                    :effect-device effect-device
-                   :effect (when effect-device (make-effect effect-device)))))
+                   :effect (when effect-device (make-effect effect-device))
+                   :button-map (device-get-button-map)
+                   :axis-map (device-get-axis-map))))
 
 (defun handle-event (device value)
   (let* ((element (value-element value))
@@ -130,8 +165,8 @@
       (:input-button
        (let ((label (gethash code (button-map device))))
          (if (< 0 int)
-             (queue-push (gamepad::make-button-down device time code label) queue)
-             (queue-push (gamepad::make-button-up device time code label) queue))))
+             (signal-button-down *event-handler* device time code label)
+             (signal-button-up *event-handler* device time code label))))
       ((:input-axis :input-misc)
        ;; Ignore weird pages that get sent for input-misc.
        (when (one-of page :generic-desktop :simulation :vr :game :button)
@@ -156,13 +191,16 @@
                     (case dir
                       ((0 1 7) (setf y +1f0))
                       ((3 4 5) (setf y -1f0)))))
-                (funcall *event-handler* (gamepad::make-axis-move device time xc (gethash xc axis-map) x))
-                (funcall *event-handler* (gamepad::make-axis-move device time yc (gethash yc axis-map) y))))
+                (signal-axis-move *event-handler* device time xc (gethash xc axis-map) x)
+                (signal-axis-move *event-handler* device time yc (gethash yc axis-map) y)))
              (T
-              (let ((value (1- (* (/ (- (cond ((< int min) min) ((< max int) max) (T int)) min)
-                                     range)
-                                  2f0))))
-                (funcall *event-handler* (gamepad::make-axis-move device time code (gethash code axis-map) value)))))))))))
+              (let* ((label (gethash code axis-map))
+                     (value (clamp min int max))
+                     (float-value (case label
+                                    ((:l2 :r2) (float (/ (- value min) range)))
+                                    ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
+                                    (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
+                (signal-axis-move *event-handler* device time code label float-value))))))))))
 
 (defun ensure-device (dev)
   (or (gethash (cffi:pointer-address dev) *device-table*)

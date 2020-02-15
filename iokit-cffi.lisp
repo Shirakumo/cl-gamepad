@@ -525,10 +525,12 @@
        usage))))
 
 (defun device-int-property (device key)
-  (let ((prop (check-null (device-property device key))))
-    (cffi:with-foreign-object (value :int32)
-      (number-get-value prop :int32 value)
-      (cffi:mem-ref value :int32))))
+  (let ((prop (device-property device key)))
+    (if (cffi:null-pointer-p prop)
+        0
+        (cffi:with-foreign-object (value :int32)
+          (number-get-value prop :int32 value)
+          (cffi:mem-ref value :int32)))))
 
 (defmacro check-return (call &rest accepted)
   (let ((accepted (or accepted '(:success :ok :false))))

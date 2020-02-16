@@ -11,6 +11,12 @@
 ;;;
 (in-package "ORG.SHIRAKUMO.FRAF.GAMEPAD")
 
+(define-device-mapping (:DINPUT 1356 616)
+  :name "Sony Dual Shock 3"
+  :buttons (2 :A 1 :B 3 :X 0 :Y 6 :L1 4 :L2 10 :L3 7 :R1 5 :R2 11 :R3 9 :SELECT
+            12 :HOME 8 :START)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 33 :DPAD-V 32 :DPAD-H))
+
 (define-device-mapping (:DINPUT 1356 2508)
   :name "Sony Dual Shock 4"
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT

@@ -29,8 +29,9 @@
                         (< ap bp))))))))
 
 (defun copyhash (from &optional (to (make-hash-table :test (hash-table-test from))))
-  (clrhash to)
-  (maphash (lambda (k v) (setf (gethash k to) v)) from)
+  (unless (eq from to)
+    (clrhash to)
+    (maphash (lambda (k v) (setf (gethash k to) v)) from))
   to)
 
 (defun update-mapping-in-device (device mapping)

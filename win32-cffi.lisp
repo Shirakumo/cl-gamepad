@@ -420,7 +420,7 @@
           ,return-type)))))
 
 (defmacro define-comstruct (name &body methods)
-  (let ((methods (list* `(query-interface hresult)
+  (let ((methods (list* `(query-interface hresult (uid :pointer) (out :pointer))
                         `(add-ref :unsigned-long)
                         `(release :unsigned-long)
                         methods)))

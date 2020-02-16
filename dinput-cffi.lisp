@@ -15,6 +15,8 @@
 (defvar DIPROP-DEADZONE (cffi:make-pointer 5))
 (defvar IID-IDIRECTINPUT8
   (make-guid #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00))
+(defvar IID-IDIRECTINPUTDEVICE8
+  (make-guid #x54D41081 #xDC15 #x4833 #xA4 #x1B #x74 #x8F #x73 #xA3 #x81 #x79))
 (defvar IID-VALVE-STREAMING-GAMEPAD
   (make-guid #x28DE11FF #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
 (defvar IID-X360-WIRED-GAMEPAD

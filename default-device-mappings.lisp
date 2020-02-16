@@ -47,6 +47,13 @@
             318 :R3 290 :DPAD-L 289 :SELECT 314 :HOME 316 :HOME 315 :START)
   :axes (21 :L2 20 :R2 0 :L-H 1 :R-H 4 :R-V 3 :R-H))
 
+(define-device-mapping (:IOKIT 1133 49674)
+  :name "WingMan RumblePad"
+  :buttons (589825 :A 589826 :B 589827 :C 589828 :X 589829 :Y 589830 :Z 589833
+            :SELECT 589831 :L1 589832 :R1)
+  :axes (65650 :DPAD-H 65651 :DPAD-V 65584 :L-H 65585 :L-V 65589 :R-H 65590
+         :R-V 65586 :THROTTLE))
+
 (define-device-mapping (:IOKIT 1356 616)
   :name "Sony Dual Shock 3"
   :buttons (589839 :A 589838 :B 589840 :X 589837 :Y 589835 :L1 589833 :L2

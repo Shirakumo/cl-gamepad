@@ -388,6 +388,7 @@
             (T
              (cffi:with-foreign-objects ((state '(:struct object-data) EVENT-BUFFER-COUNT)
                                          (count 'dword))
+               (check-dinput-device dev (device-poll dev))
                (with-polling (*poll-event* timeout)
                  (setf (cffi:mem-ref count 'dword) EVENT-BUFFER-COUNT)
                  (check-dinput-device dev (device-get-device-data dev (cffi:foreign-type-size '(:struct object-data)) state count 0))
@@ -453,7 +454,7 @@
             for i from 0 below 32
             for value = (cffi:mem-aref ptr 'long i)
             for label = (gethash i axis-map)
-            do (handle-axis i label (axis-to-float label (object-data-data state) -32768 32767)))
+            do (handle-axis i label (axis-to-float label value -32768 32767)))
       (loop with ptr = (cffi:foreign-slot-pointer state '(:struct joystate) 'pov)
             for i from 0 below 4
             do (handle-pov i (cffi:mem-aref ptr 'dword i)))

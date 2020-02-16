@@ -18,7 +18,6 @@
                (:file "protocol")
                (:file "mapping")
                (:file "configurator")
-               (:file "default-device-mappings")
                (:file "common")
                (:file "evdev-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux)
@@ -29,6 +28,7 @@
                (:file "corefoundation-cffi" :if-feature :darwin)
                (:file "iokit-cffi" :if-feature :darwin)
                (:file "darwin" :if-feature :darwin)
+               (:file "default-device-mappings")
                (:file "documentation"))
   :depends-on (:cffi
                :trivial-features

@@ -28,9 +28,10 @@
                    (and (= av bv)
                         (< ap bp))))))))
 
-(defun copyhash (from to)
+(defun copyhash (from &optional (to (make-hash-table :test (hash-table-test from))))
   (clrhash to)
-  (maphash (lambda (k v) (setf (gethash k to) v)) from))
+  (maphash (lambda (k v) (setf (gethash k to) v)) from)
+  to)
 
 (defun update-mapping-in-device (device mapping)
   (setf (button-map device) (or (getf mapping :buttons)
@@ -108,7 +109,7 @@
     (loop for (id . map) in (sort (loop for k being the hash-keys of *device-mappings*
                                         for v being the hash-values of *device-mappings*
                                         collect (cons k v))
-                                  #'mapping-id<)
+                                  #'mapping-id< :key #'car)
           do (format stream "~%(define-device-mapping ~s" id)
              (format stream "~%  :name ~s" (getf map :name))
              (format stream "~%  :buttons ~s" (map-plist (getf map :buttons)))

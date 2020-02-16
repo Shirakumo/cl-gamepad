@@ -196,10 +196,7 @@
              (T
               (let* ((label (gethash code axis-map))
                      (value (clamp min int max))
-                     (float-value (case label
-                                    ((:l2 :r2) (float (/ (- value min) range)))
-                                    ((:l-v :r-v) (- 1f0 (* 2f0 (/ (- value min) range))))
-                                    (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
+                     (float-value (axis-to-float label value min max)))
                 (signal-axis-move *event-handler* device time code label float-value))))))))))
 
 (defun ensure-device (dev)

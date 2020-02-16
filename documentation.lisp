@@ -17,6 +17,12 @@ corresponding to the prompted labels.
 You can use this to configure a device's button and axis mappings if
 the default mapping is not correct.
 
+You can pass the desired axis and button labels.
+
+If the device reports faulty axes that interfere with the axis mapping
+mechanism, you can ignore them by passing their IDs with the IGNORED-AXES
+argument.
+
 See +COMMON-BUTTONS+
 See +COMMON-AXES+
 See SAVE-DEVICE-MAPPINGS"))

@@ -57,8 +57,10 @@
          (known (device-mapping id)))
     (cond (known
            ;; Update the values in place to immediately update all
-           ;; devices using it, too.
-           (setf (getf known :name) (getf mapping :name))
+           ;; devices using it, too. Don't update the name unless
+           ;; necessary as the device default is probably less accurate
+           (unless (getf known :name)
+             (setf (getf known :name) (getf mapping :name)))
            (copyhash (getf mapping :axes) (getf known :axes))
            (copyhash (getf mapping :buttons) (getf known :buttons)))
           (T

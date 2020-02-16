@@ -205,7 +205,7 @@
           (make-instance 'device
                          :dev dev
                          :guid guid
-                         :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'instance-name))
+                         :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product-name))
                          :vendor (guid-vendor product-guid)
                          :product (guid-product product-guid)
                          :version 0

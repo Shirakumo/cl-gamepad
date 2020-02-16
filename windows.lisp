@@ -457,7 +457,7 @@
 
 (defun process-xinput-state (state device function)
   (let ((xbutton-state (xgamepad-buttons state))
-        (button-state (button-state device))
+        (button-state (button-states device))
         (time (get-internal-real-time)))
     (flet ((handle-button (label id new-state)
              (unless (eql (< 0 (sbit button-state id)) new-state)

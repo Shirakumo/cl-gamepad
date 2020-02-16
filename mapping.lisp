@@ -35,6 +35,8 @@
   to)
 
 (defun update-mapping-in-device (device mapping)
+  (when (getf mapping :name)
+    (setf (slot-value device 'name) (getf mapping :name)))
   (setf (button-map device) (or (getf mapping :buttons)
                                 (error "Malformed mapping, missing :BUTTONS")))
   (setf (axis-map device) (or (getf mapping :axes)

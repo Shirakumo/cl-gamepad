@@ -61,6 +61,19 @@
                         (setf (gethash (event-code event) button-map) :b)
                         (loop-finish))))
                (poll-events device #'process)))
+    (out "-> Determining faulty axes. Please do not touch your controller.")
+    ;; Sleep and discard to prevent user fudging
+    (sleep 1)
+    (poll-events device 'null)
+    ;; Now watch for bad axes and push them onto ignored.
+    (flet ((process (event)
+             (when (and (typep event 'axis-move)
+                        (< 0.8 (abs (event-value event)))
+                        (not (member (event-code event) ignored-axes)))
+               (out "  Ignoring ~a" (event-code event))
+               (push (event-code event) ignored-axes))))
+      (dotimes (i 4)
+        (poll-events device #'process :timeout 0.25)))
     (out "-> Mapping buttons.~%")
     (query-labels (remove :A (remove :B button-labels)) device button-map
                   (lambda (event) (typep event 'button-up)))

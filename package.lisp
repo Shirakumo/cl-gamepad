@@ -37,6 +37,7 @@
    #:event-code
    #:event-label
    #:event-value
+   #:event-old-value
    #:button-down
    #:button-up
    #:axis-move

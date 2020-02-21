@@ -163,7 +163,8 @@ See EVENT-DEVICE
 See EVENT-TIME
 See EVENT-CODE
 See EVENT-LABEL
-See EVENT-VALUE")
+See EVENT-VALUE
+See EVENT-OLD-VALUE")
   
   (function event-device
     "Returns the device the event came from.
@@ -212,6 +213,12 @@ For a vertical axis, -1 means down, +1 means up.
 This field is only accessible for AXIS-MOVEs.
 
 See AXIS-MOVE")
+
+  (function event-old-value
+    "Returns the previous axis value as a single-float in [-1,+1]
+
+See EVENT-VALUE
+See AXIS-MOVE")
   
   (type button-down
     "Event issued when a button is pressed down.
@@ -236,6 +243,7 @@ has a dead zone set and the axis falls within the dead zone.
 If a ramp is defined on the axis, the value is already ramp-adjusted.
 
 See EVENT-VALUE
+see EVENT-OLD-VALUE
 See EVENT")
   
   (type device

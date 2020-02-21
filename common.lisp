@@ -83,32 +83,36 @@
 
 (defun signal-axis-move (function device time code label value)
   (declare (optimize speed))
-  (%with-updated-event (+axis-move-event+)
-    (when label
-      (let ((id (label-id label))
-            (zones (axis-dead-zones device))
-            (raw-states (axis-raw-states device))
-            (states (axis-states device))
-            (ramps (axis-ramps device)))
-        (declare (type (simple-array single-float) zones raw-states states)
-                 (type (simple-array function) ramps))
-        ;; Update state
-        (setf (aref raw-states id) value)
-        ;; Square rezone
-        (setf value (square-rezone value (aref zones (+ 2 id))))
-        ;; Circular rezone
-        (case label
-          ((:l-h :l-v)
-           (setf value (circular-rezone value (aref zones 0) (aref raw-states (sibling-id id)))))
-          ((:r-h :r-v)
-           (setf value (circular-rezone value (aref zones 1) (aref raw-states (sibling-id id))))))
-        ;; Apply ramp
-        (setf value (the single-float (funcall (aref ramps id) value)))
-        ;; Exit out if state did not change. This enforces the dead-zone
-        (if (= value (aref states id))
-            (return-from signal-axis-move)
-            (setf (aref states id) value))))
-    (setf (gamepad:event-value event) value)))
+  (let ((old-value value))
+    ;; FIXME: ^ This is bad for obvious reasons.
+    (%with-updated-event (+axis-move-event+)
+      (when label
+        (let ((id (label-id label))
+              (zones (axis-dead-zones device))
+              (raw-states (axis-raw-states device))
+              (states (axis-states device))
+              (ramps (axis-ramps device)))
+          (declare (type (simple-array single-float) zones raw-states states)
+                   (type (simple-array function) ramps))
+          ;; Update raw state
+          (setf (aref raw-states id) value)
+          ;; Square rezone
+          (setf value (square-rezone value (aref zones (+ 2 id))))
+          ;; Circular rezone
+          (case label
+            ((:l-h :l-v)
+             (setf value (circular-rezone value (aref zones 0) (aref raw-states (sibling-id id)))))
+            ((:r-h :r-v)
+             (setf value (circular-rezone value (aref zones 1) (aref raw-states (sibling-id id))))))
+          ;; Apply ramp
+          (setf value (the single-float (funcall (aref ramps id) value)))
+          ;; Exit out if state did not change. This enforces the dead-zone
+          (when (= value (aref states id))
+            (return-from signal-axis-move))
+          (setf old-value (aref states id))
+          (setf (aref states id) value)))
+      (setf (gamepad:event-old-value event) old-value)
+      (setf (gamepad:event-value event) value))))
 
 (defmacro with-device-failures ((device) &body body)
   `(restart-case

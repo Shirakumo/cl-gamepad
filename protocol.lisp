@@ -50,7 +50,8 @@
 (defstruct (axis-move (:include event)
                       (:constructor make-axis-move (device time code label value))
                       (:conc-name event-))
-  (value 0f0 :type single-float))
+  (value 0f0 :type single-float)
+  (old-value 0f0 :type single-float))
 
 (defmethod print-object ((event axis-move) stream)
   (print-unreadable-object (event stream :type T)

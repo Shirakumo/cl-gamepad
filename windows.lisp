@@ -251,7 +251,7 @@
     (cffi:use-foreign-library ole32)
     (cffi:use-foreign-library user32)
     (check-return
-     (co-initialize (cffi:null-pointer) :multi-threaded))
+     (co-initialize (cffi:null-pointer) :multi-threaded) :ok :false)
     (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (string->wstring "ClGamepadPollEvent"))))
   (unless (boundp '*directinput*)
     (cffi:use-foreign-library xinput)

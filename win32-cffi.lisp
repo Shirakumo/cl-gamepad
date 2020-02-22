@@ -403,6 +403,12 @@
              (ldb (cl:byte 8 8) integer)
              (ldb (cl:byte 8 0) integer)))
 
+(defmacro define-guid (name &rest guid)
+  `(let (value)
+     (defun ,name ()
+       (or value (setf value (make-guid ,@guid))))
+     (define-symbol-macro ,name (,name))))
+
 (defmacro define-comfun ((struct method &rest options) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))
          (structg (gensym "STRUCT"))
@@ -433,4 +439,4 @@
                collect `(define-comfun (,name ,method) ,return
                           ,@args)))))
 
-(defvar GUID-DEVINTERFACE-HID (make-guid #x4D1E55B2 #xF16F #x11CF #x88 #xCB #x00 #x11 #x11 #x00 #x00 #x30))
+(define-guid GUID-DEVINTERFACE-HID #x4D1E55B2 #xF16F #x11CF #x88 #xCB #x00 #x11 #x11 #x00 #x00 #x30)

@@ -13,60 +13,60 @@
 (defvar DIPROP-BUFFERSIZE (cffi:make-pointer 1))
 (defvar DIPROP-RANGE (cffi:make-pointer 4))
 (defvar DIPROP-DEADZONE (cffi:make-pointer 5))
-(defvar IID-IDIRECTINPUT8
-  (make-guid #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00))
-(defvar IID-IDIRECTINPUTDEVICE8
-  (make-guid #x54D41081 #xDC15 #x4833 #xA4 #x1B #x74 #x8F #x73 #xA3 #x81 #x79))
-(defvar IID-VALVE-STREAMING-GAMEPAD
-  (make-guid #x28DE11FF #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
-(defvar IID-X360-WIRED-GAMEPAD
-  (make-guid #x045E02A1 #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
-(defvar IID-X360-WIRELESS-GAMEPAD
-  (make-guid #x045E028E #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44))
-(defvar GUID-XAXIS
-  (make-guid #xA36D02E0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-YAXIS
-  (make-guid #xA36D02E1 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-ZAXIS
-  (make-guid #xA36D02E2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-RXAXIS
-  (make-guid #xA36D02F4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-RYAXIS
-  (make-guid #xA36D02F5 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-RZAXIS
-  (make-guid #xA36D02E3 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-SLIDER
-  (make-guid #xA36D02E4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-BUTTON
-  (make-guid #xA36D02F0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-KEY
-  (make-guid #x55728220 #xD33C #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-POV
-  (make-guid #xA36D02F2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00))
-(defvar GUID-CONSTANT-FORCE
-  (make-guid #x13541C20 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-RAMP-FORCE
-  (make-guid #x13541C21 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-SQUARE
-  (make-guid #x13541C22 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-SINE
-  (make-guid #x13541C23 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-TRIANGLE
-  (make-guid #x13541C24 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-SAWTOOTH-UP
-  (make-guid #x13541C25 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-SAWTOOTH-DOWN
-  (make-guid #x13541C26 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-SPRING
-  (make-guid #x13541C27 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-DAMPER
-  (make-guid #x13541C28 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-INERTIA
-  (make-guid #x13541C29 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-FRICTION
-  (make-guid #x13541C2A #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
-(defvar GUID-CUSTOM-FORCE
-  (make-guid #x13541C2B #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35))
+(define-guid IID-IDIRECTINPUT8
+  #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00)
+(define-guid IID-IDIRECTINPUTDEVICE8
+  #x54D41081 #xDC15 #x4833 #xA4 #x1B #x74 #x8F #x73 #xA3 #x81 #x79)
+(define-guid IID-VALVE-STREAMING-GAMEPAD
+  #x28DE11FF #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
+(define-guid IID-X360-WIRED-GAMEPAD
+  #x045E02A1 #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
+(define-guid IID-X360-WIRELESS-GAMEPAD
+  #x045E028E #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
+(define-guid GUID-XAXIS
+  #xA36D02E0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-YAXIS
+  #xA36D02E1 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-ZAXIS
+  #xA36D02E2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-RXAXIS
+  #xA36D02F4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-RYAXIS
+  #xA36D02F5 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-RZAXIS
+  #xA36D02E3 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-SLIDER
+  #xA36D02E4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-BUTTON
+  #xA36D02F0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-KEY
+  #x55728220 #xD33C #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-POV
+  #xA36D02F2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
+(define-guid GUID-CONSTANT-FORCE
+  #x13541C20 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-RAMP-FORCE
+  #x13541C21 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-SQUARE
+  #x13541C22 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-SINE
+  #x13541C23 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-TRIANGLE
+  #x13541C24 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-SAWTOOTH-UP
+  #x13541C25 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-SAWTOOTH-DOWN
+  #x13541C26 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-SPRING
+  #x13541C27 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-DAMPER
+  #x13541C28 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-INERTIA
+  #x13541C29 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-FRICTION
+  #x13541C2A #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
+(define-guid GUID-CUSTOM-FORCE
+  #x13541C2B #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
 
 (cffi:defcenum (device-type dword)
   (:all 0)
@@ -382,7 +382,10 @@
   (pov dword :count 4)
   (buttons byte :count 36))
 
-(defvar *joystate-format*
+
+(defvar *joystate-format*)
+
+(defun make-joystate-format ()
   (let ((fields (cffi:foreign-alloc '(:struct object-data-format) :count 72))
         (format (cffi:foreign-alloc '(:struct data-format)))
         (i 0) (offset 0))
@@ -408,3 +411,7 @@
           (data-format-object-count format) 72
           (data-format-object-data-format format) fields)
     format))
+
+(defun joystate-format ()
+  (or *joystate-format*
+      (setf *joystate-format* (make-joystate-format))))

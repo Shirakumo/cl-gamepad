@@ -183,7 +183,7 @@
     (check-return
      (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
     (check-return
-     (device-set-data-format dev *joystate-format*))
+     (device-set-data-format dev (joystate-format)))
     (check-return
      (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
     (let ((poll-device (eq :polled-device

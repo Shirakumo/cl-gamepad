@@ -9,9 +9,6 @@
 (cffi:define-foreign-library corefoundation
   (T (:framework "CoreFoundation")))
 
-;; Have to use early.
-(cffi:use-foreign-library corefoundation)
-
 (cffi:defcenum (hresult :uint32)
   (:ok                        #x00000000)
   (:false                     #x00000001)
@@ -225,3 +222,9 @@
                     collect `(setf ,name ,init))
             ,@body)
        (release ,@(nreverse (mapcar #'first bindings))))))
+
+(defmacro define-lazy-constant (name init)
+  `(let (value)
+     (defun ,name ()
+       (or value (setf value ,init)))
+     (define-symbol-macro ,name (,name))))

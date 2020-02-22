@@ -12,12 +12,12 @@
 (cffi:define-foreign-library forcefeedback
   (T (:framework "ForceFeedback")))
 
-(defvar DEVICE-USAGE-PAGE-KEY (cfstr "DeviceUsagePage"))
-(defvar DEVICE-USAGE-KEY (cfstr "DeviceUsage"))
-(defvar PRODUCT-KEY (cfstr "Product"))
-(defvar PRODUCT-ID-KEY (cfstr "ProductID"))
-(defvar VENDOR-ID-KEY (cfstr "VendorID"))
-(defvar VERSION-NUMBER-KEY (cfstr "VersionNumber"))
+(define-lazy-constant DEVICE-USAGE-PAGE-KEY (cfstr "DeviceUsagePage"))
+(define-lazy-constant DEVICE-USAGE-KEY (cfstr "DeviceUsage"))
+(define-lazy-constant PRODUCT-KEY (cfstr "Product"))
+(define-lazy-constant PRODUCT-ID-KEY (cfstr "ProductID"))
+(define-lazy-constant VENDOR-ID-KEY (cfstr "VendorID"))
+(define-lazy-constant VERSION-NUMBER-KEY (cfstr "VersionNumber"))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun kio-err (x)
@@ -27,29 +27,29 @@
              (ash (logand x #xFFF) 14)))
       (logior (err-system #x38) (err-sub 0) x))))
 
-(defvar UUID-CONSTANT-FORCE
+(define-lazy-constant UUID-CONSTANT-FORCE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x60 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-RAMP-FORCE
+(define-lazy-constant UUID-RAMP-FORCE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x61 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-SQUARE
+(define-lazy-constant UUID-SQUARE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x62 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-SINE
+(define-lazy-constant UUID-SINE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x63 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-TRIANGLE
+(define-lazy-constant UUID-TRIANGLE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x64 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-SAWTOOTH-UP
+(define-lazy-constant UUID-SAWTOOTH-UP
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x65 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-SAWTOOTH-DOWN
+(define-lazy-constant UUID-SAWTOOTH-DOWN
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x66 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-SPRING
+(define-lazy-constant UUID-SPRING
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x67 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-DAMPER
+(define-lazy-constant UUID-DAMPER
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x68 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-INERTIA
+(define-lazy-constant UUID-INERTIA
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x69 #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-FRICTION
+(define-lazy-constant UUID-FRICTION
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x6A #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
-(defvar UUID-CUSTOM-FORCE
+(define-lazy-constant UUID-CUSTOM-FORCE
   (get-uuid (cffi:null-pointer) #xE5 #x59 #xC4 #x6B #xC5 #xCD #x11 #xD6 #x8A #x1C #x00 #x03 #x93 #x53 #xBD #x00))
 
 (cffi:defcenum io-return

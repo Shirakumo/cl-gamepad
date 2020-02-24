@@ -279,7 +279,7 @@
           (cffi:with-foreign-object (event '(:struct event))
             (setf (event-type event) :force-feedback)
             (setf (event-code event) (effect-id effect))
-            (setf (event-value event) (if (= 0 strength) 0 1))
+            (setf (event-value event) 1)
             (check-errno (< 0 (u-write (fd device) event (cffi:foreign-type-size '(:struct event)))))
             :ok)))
       :unsupported))

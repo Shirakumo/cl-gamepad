@@ -106,7 +106,7 @@
 
 (define-compiler-macro axis (&whole whole axis device &environment env)
   (if (constantp axis env)
-      `(< 0 (bit (axis-states ,device) (label-id ,axis)))
+      `(aref (axis-states ,device) (label-id ,axis))
       whole))
 
 (defun dead-zone (device axis)

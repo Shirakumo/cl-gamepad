@@ -383,7 +383,7 @@
   (buttons byte :count 36))
 
 
-(defvar *joystate-format*)
+(defvar *joystate-format* NIL)
 
 (defun make-joystate-format ()
   (let ((fields (cffi:foreign-alloc '(:struct object-data-format) :count 72))

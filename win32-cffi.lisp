@@ -58,7 +58,9 @@
   (:handle-exists #x80070005)
   (:unplugged #x80040209)
   (:device-full #x80040201)
-  (:device-not-reg #x80040154))
+  (:device-not-reg #x80040154)
+  ;; KLUDGE: for Xinput in win32-error
+  (:not-connected #x048F))
 
 (cffi:defcenum (wait-result dword)
   (:ok #x00)
@@ -404,10 +406,11 @@
              (ldb (cl:byte 8 0) integer)))
 
 (defmacro define-guid (name &rest guid)
-  `(let (value)
-     (defun ,name ()
-       (or value (setf value (make-guid ,@guid))))
-     (define-symbol-macro ,name (,name))))
+  `(eval-when (:compile-toplevel :load-toplevel :execute)
+     (let (value)
+       (defun ,name ()
+         (or value (setf value (make-guid ,@guid))))
+       (define-symbol-macro ,name (,name)))))
 
 (defmacro define-comfun ((struct method &rest options) return-type &body args)
   (let* ((*print-case* (readtable-case *readtable*))

@@ -7,7 +7,7 @@
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
 (cffi:define-foreign-library evdev
-  (T (:default "libevdev")))
+  (T (:or "libevdev.so.2" "libevdev.so.1" "libevdev.so")))
 
 (cffi:defctype fd :int)
 (cffi:defctype errno :int64)

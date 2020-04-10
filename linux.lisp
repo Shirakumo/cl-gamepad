@@ -243,18 +243,19 @@
 (defun call-with-device-events (function device)
   (let ((dev (dev device)))
     (cffi:with-foreign-object (event '(:struct event))
-      (let ((result (next-event dev :normal event)))
-        (case result
-          (:success
-           (translate-event function event device))
-          (:sync
-           (translate-event function event device)
-           (loop for next = (next-event dev :sync event)
-                 until (eq next :again)
-                 do (translate-event function event device)))
-          (:again)
-          (T
-           (linux-error result :message "Failed to read events.")))))))
+      (loop while (has-event-pending dev)
+            for result = (next-event dev :normal event)
+            do (case result
+                 (:success
+                  (translate-event function event device))
+                 (:sync
+                  (translate-event function event device)
+                  (loop for next = (next-event dev :sync event)
+                        until (eq next :again)
+                        do (translate-event function event device)))
+                 (:again)
+                 (T
+                  (linux-error result :message "Failed to read events.")))))))
 
 (defun poll-events (device function &key timeout)
   (with-device-failures (device)

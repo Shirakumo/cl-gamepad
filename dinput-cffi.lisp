@@ -13,59 +13,59 @@
 (defvar DIPROP-BUFFERSIZE (cffi:make-pointer 1))
 (defvar DIPROP-RANGE (cffi:make-pointer 4))
 (defvar DIPROP-DEADZONE (cffi:make-pointer 5))
-(define-guid IID-IDIRECTINPUT8
+(com:define-guid IID-IDIRECTINPUT8
   #xBF798031 #x483A #x4DA2 #xAA #x99 #x5D #x64 #xED #x36 #x97 #x00)
-(define-guid IID-IDIRECTINPUTDEVICE8
+(com:define-guid IID-IDIRECTINPUTDEVICE8
   #x54D41081 #xDC15 #x4833 #xA4 #x1B #x74 #x8F #x73 #xA3 #x81 #x79)
-(define-guid IID-VALVE-STREAMING-GAMEPAD
+(com:define-guid IID-VALVE-STREAMING-GAMEPAD
   #x28DE11FF #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
-(define-guid IID-X360-WIRED-GAMEPAD
+(com:define-guid IID-X360-WIRED-GAMEPAD
   #x045E02A1 #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
-(define-guid IID-X360-WIRELESS-GAMEPAD
+(com:define-guid IID-X360-WIRELESS-GAMEPAD
   #x045E028E #x0000 #x0000 #x00 #x00 #x50 #x49 #x44 #x56 #x49 #x44)
-(define-guid GUID-XAXIS
+(com:define-guid GUID-XAXIS
   #xA36D02E0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-YAXIS
+(com:define-guid GUID-YAXIS
   #xA36D02E1 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-ZAXIS
+(com:define-guid GUID-ZAXIS
   #xA36D02E2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-RXAXIS
+(com:define-guid GUID-RXAXIS
   #xA36D02F4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-RYAXIS
+(com:define-guid GUID-RYAXIS
   #xA36D02F5 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-RZAXIS
+(com:define-guid GUID-RZAXIS
   #xA36D02E3 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-SLIDER
+(com:define-guid GUID-SLIDER
   #xA36D02E4 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-BUTTON
+(com:define-guid GUID-BUTTON
   #xA36D02F0 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-KEY
+(com:define-guid GUID-KEY
   #x55728220 #xD33C #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-POV
+(com:define-guid GUID-POV
   #xA36D02F2 #xC9F3 #x11CF #xBF #xC7 #x44 #x45 #x53 #x54 #x00 #x00)
-(define-guid GUID-CONSTANT-FORCE
+(com:define-guid GUID-CONSTANT-FORCE
   #x13541C20 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-RAMP-FORCE
+(com:define-guid GUID-RAMP-FORCE
   #x13541C21 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-SQUARE
+(com:define-guid GUID-SQUARE
   #x13541C22 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-SINE
+(com:define-guid GUID-SINE
   #x13541C23 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-TRIANGLE
+(com:define-guid GUID-TRIANGLE
   #x13541C24 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-SAWTOOTH-UP
+(com:define-guid GUID-SAWTOOTH-UP
   #x13541C25 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-SAWTOOTH-DOWN
+(com:define-guid GUID-SAWTOOTH-DOWN
   #x13541C26 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-SPRING
+(com:define-guid GUID-SPRING
   #x13541C27 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-DAMPER
+(com:define-guid GUID-DAMPER
   #x13541C28 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-INERTIA
+(com:define-guid GUID-INERTIA
   #x13541C29 #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-FRICTION
+(com:define-guid GUID-FRICTION
   #x13541C2A #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
-(define-guid GUID-CUSTOM-FORCE
+(com:define-guid GUID-CUSTOM-FORCE
   #x13541C2B #x8E33 #x11D0 #x9A #xD0 #x00 #xA0 #xC9 #xA0 #x6E #x35)
 
 (cffi:defcenum (device-type dword)
@@ -323,17 +323,17 @@
   (interface :pointer)
   (aggregation :pointer))
 
-(define-comstruct directinput
-  (create-device hresult (guid :pointer) (device :pointer) (outer :pointer))
+(com:define-comstruct directinput
+  (create-device hresult (guid 'com:guid) (device :pointer) (outer :pointer))
   (enum-devices hresult (type device-type) (callback :pointer) (user :pointer) (flags device-flags))
   (get-device-status hresult (instance :pointer))
   (run-control-panel hresult (owner :pointer) (flags dword))
   (initialize hresult (instance :pointer) (version dword))
-  (find-device hresult (guid :pointer) (name :pointer) (instance :pointer))
+  (find-device hresult (guid 'com:guid) (name :pointer) (instance :pointer))
   (enum-devices-by-semantics hresult (user-name :pointer) (action-format :pointer) (callback :pointer) (user :pointer) (flags dword))
   (configure-devices hresult (callback :pointer) (params :pointer) (flags dword) (user :pointer)))
 
-(define-comstruct device
+(com:define-comstruct device
   (get-capabilities hresult (caps :pointer))
   (enum-objects hresult (callback :pointer) (user :pointer) (flags object-flags))
   (get-property hresult (property :pointer) (header :pointer))
@@ -348,10 +348,10 @@
   (get-object-info hresult (instance :pointer) (object dword) (how dword))
   (get-device-info hresult (instance :pointer))
   (run-control-panel hresult (owner :pointer) (flags dword))
-  (initialize hresult (instance :pointer) (version dword) (guid :pointer))
-  (create-effect hresult (guid :pointer) (effect :pointer) (input-effect :pointer) (user :pointer))
+  (initialize hresult (instance :pointer) (version dword) (guid 'com:guid))
+  (create-effect hresult (guid 'com:guid) (effect :pointer) (input-effect :pointer) (user :pointer))
   (enum-effects hresult (callback :pointer) (user :pointer) (type effect-types))
-  (get-effect-info hresult (info :pointer) (guid :pointer))
+  (get-effect-info hresult (info :pointer) (guid 'com:guid))
   (get-force-feedback-state hresult (out :pointer))
   (send-force-feedback-command hresult (flags dword))
   (enum-created-effect-objects hresult (callback :pointer) (user :pointer) (flags dword))
@@ -364,9 +364,9 @@
   (set-action-map hresult (format :pointer) (user-name :pointer) (flags dword))
   (get-image-info hresult (image-info :pointer)))
 
-(define-comstruct effect
-  (initialize hresult (hinstance :pointer) (version dword) (guid :pointer))
-  (get-effect-guid hresult (guid :pointer))
+(com:define-comstruct effect
+  (initialize hresult (hinstance :pointer) (version dword) (guid 'com:guid))
+  (get-effect-guid hresult (guid 'com:guid))
   (get-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
   (set-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
   (start hresult (times dword) (flags effect-start-flags))
@@ -381,7 +381,6 @@
   (axis long :count 32)
   (pov dword :count 4)
   (buttons byte :count 36))
-
 
 (defvar *joystate-format* NIL)
 

@@ -82,4 +82,5 @@
    #:drop-device
    #:rumble)
   (:local-nicknames
-   (#:gamepad #:org.shirakumo.fraf.gamepad)))
+   (#:gamepad #:org.shirakumo.fraf.gamepad)
+   #+win32 (#:com #:org.shirakumo.com-on)))

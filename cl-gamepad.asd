@@ -31,5 +31,6 @@
                (:file "default-device-mappings")
                (:file "documentation"))
   :depends-on (:cffi
+               (:feature :win32 :com-on)
                :trivial-features
                :documentation-utils))

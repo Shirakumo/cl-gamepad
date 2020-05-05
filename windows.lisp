@@ -7,12 +7,29 @@
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
 (defvar *devices-need-refreshing* T)
-(defvar *device-table* (make-hash-table :test 'eql))
+(defvar *device-table* (make-hash-table :test 'equal))
 (defvar *directinput*)
 (defvar *device-notifier*)
 (defvar *poll-event*)
 (defvar *xinput-taken* #*0000)
 (defconstant EVENT-BUFFER-COUNT 32)
+
+;;; error helpers
+(define-condition win32-error (com:win32-error gamepad:gamepad-error)
+  ())
+
+(defmacro check-errno (predicate &body cleanup)
+  `(unless ,predicate
+     ,@cleanup
+     (let ((errno (com:get-last-error)))
+       (com:win32-error errno :type 'win32-error))))
+
+(defmacro check-return (value-form &rest expected)
+  (let ((value (gensym "VALUE")))
+    `(let ((,value ,value-form))
+       (if (find ,value ',(or expected '(:ok)))
+           ,value
+           (com:win32-error ,value :function-name ',(first value-form) :type 'win32-error)))))
 
 (defstruct (device-notifier
             (:constructor make-device-notifier (class window notification))
@@ -34,7 +51,7 @@
 (cffi:defcallback enum-devices enumerate-flag ((device :pointer) (user :pointer))
   (let* ((idx (enum-user-data-device-count user))
          (source (cffi:foreign-slot-pointer device '(:struct device-instance) 'guid))
-         (target (cffi:mem-aptr (enum-user-data-device-array user) '(:struct guid) idx)))
+         (target (cffi:mem-aptr (enum-user-data-device-array user) '(:struct com:guid) idx)))
     ;; GUID is 128 bits, copy in two uint64 chunks.
     (setf (cffi:mem-aref target :uint64 0) (cffi:mem-aref source :uint64 0))
     (setf (cffi:mem-aref target :uint64 1) (cffi:mem-aref source :uint64 1))
@@ -66,16 +83,18 @@
   :continue)
 
 (defun guid-vendor (guid)
-  (ldb (cl:byte 16 0) (guid-data1 guid)))
+  (+ (aref (bytes guid) 0)
+     (ash (aref (bytes guid) 1) 8)))
 
 (defun guid-product (guid)
-  (ldb (cl:byte 16 16) (guid-data1 guid)))
+  (+ (aref (bytes guid) 2)
+     (ash (aref (bytes guid) 3) 8)))
 
 (defun dev-xinput-p (guid)
   (or (loop for known in (list IID-VALVE-STREAMING-GAMEPAD
                                IID-X360-WIRED-GAMEPAD
                                IID-X360-WIRELESS-GAMEPAD)
-            thereis (= 0 (memcmp known guid 16)))
+            thereis (com:guid= known guid))
       (cffi:with-foreign-object (count :uint)
         (when (<= 0 (get-raw-input-device-list (cffi:null-pointer) count (cffi:foreign-type-size '(:struct raw-input-device-list))))
           (cffi:with-foreign-objects ((list '(:struct raw-input-device-list) (cffi:mem-ref count :uint))
@@ -94,7 +113,7 @@
                                  ;; Check name to see if it contains IG_, an identifier for xbox gamepads.
                                  (setf (cffi:mem-ref size :uint) 256)
                                  (<= 0 (get-raw-input-device-info (getf entry 'device) :device-name name size))
-                                 (search "IG_" (wstring->string name))))))))))
+                                 (search "IG_" (com:wstring->string name))))))))))
 
 (defun guess-xinput-id (guid)
   (when (dev-xinput-p guid)
@@ -122,9 +141,9 @@
     (setf (slot-value device 'effect) NIL))
   (device-unacquire (dev device))
   (device-set-event-notification (dev device) (cffi:null-pointer))
-  (com-release (dev device))
+  (com:release (dev device))
   (slot-makunbound device 'dev)
-  (remhash (guid-integer (guid device)) *device-table*))
+  (remhash (com:guid-string (guid device)) *device-table*))
 
 (defun make-effect (dev)
   (cffi:with-foreign-objects ((ff-effect '(:struct ff-effect))
@@ -206,12 +225,12 @@
          (device-get-device-info dev instance))
         (check-return
          (device-acquire dev))
-        (let* ((product-guid (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product))
+        (let* ((product-guid (device-instance-product instance))
                (xinput (guess-xinput-id product-guid)))
           (make-instance 'device
                          :dev dev
                          :guid guid
-                         :name (wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product-name))
+                         :name (com:wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product-name))
                          :vendor (guid-vendor product-guid)
                          :product (guid-product product-guid)
                          :version 0
@@ -221,9 +240,9 @@
                          :driver (if xinput :xinput :dinput)))))))
 
 (defun ensure-device (guid)
-  (or (gethash (guid-integer guid) *device-table*)
-      (with-simple-restart (drop-device "Don't initialise ~a" (guid-string guid))
-        (setf (gethash (guid-integer guid) *device-table*)
+  (or (gethash (com:guid-string guid) *device-table*)
+      (with-simple-restart (drop-device "Don't initialise ~a" (com:guid-string guid))
+        (setf (gethash (com:guid-string guid) *device-table*)
               (make-device-from-guid guid)))))
 
 (defun list-devices ()
@@ -232,7 +251,7 @@
 
 (defun refresh-devices ()
   (let ((to-delete (list-devices)))
-    (cffi:with-foreign-objects ((devices '(:struct guid) 256)
+    (cffi:with-foreign-objects ((devices '(:struct com:guid) 256)
                                 (enum-data '(:struct enum-user-data)))
       (setf (enum-user-data-directinput enum-data) *directinput*)
       (setf (enum-user-data-device-array enum-data) devices)
@@ -240,7 +259,7 @@
       (check-return
        (directinput-enum-devices *directinput* :game-controller (cffi:callback enum-devices) enum-data :attached-only))
       (loop for i from 0 below (enum-user-data-device-count enum-data)
-            for device = (ensure-device (cffi:mem-aptr devices '(:struct guid) i))
+            for device = (ensure-device (cffi:mem-aref devices '(:struct com:guid) i))
             do (setf to-delete (delete device to-delete)))
       (mapc #'close-device to-delete)
       (setf *devices-need-refreshing* NIL)
@@ -248,11 +267,9 @@
 
 (defun init ()
   (unless (boundp '*poll-event*)
-    (cffi:use-foreign-library ole32)
+    (com:init)
     (cffi:use-foreign-library user32)
-    (check-return
-     (co-initialize (cffi:null-pointer) :multi-threaded) :ok :false)
-    (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (string->wstring "ClGamepadPollEvent"))))
+    (setf *poll-event* (create-event (cffi:null-pointer) NIL NIL (com:string->wstring "ClGamepadPollEvent"))))
   (unless (boundp '*directinput*)
     (cffi:use-foreign-library xinput)
     (cffi:use-foreign-library dinput)
@@ -269,12 +286,12 @@
     (makunbound '*device-notifier*))
   (when (boundp '*directinput*)
     (mapc #'close-device (list-devices))
-    (com-release *directinput*)
+    (com:release *directinput*)
     (makunbound '*directinput*))
   (when (boundp '*poll-event*)
     (close-handle *poll-event*)
     (makunbound '*poll-event*)
-    (co-uninitialize)
+    (com:shutdown)
     T))
 
 (defun init-dinput ()
@@ -291,7 +308,7 @@
     (setf (window-class-size window) (cffi:foreign-type-size '(:struct window-class)))
     (setf (window-class-procedure window) (cffi:callback device-change))
     (setf (window-class-instance window) (get-module-handle (cffi:null-pointer)))
-    (setf (window-class-class-name window) (string->wstring "cl-gamepad-messages"))
+    (setf (window-class-class-name window) (com:string->wstring "cl-gamepad-messages"))
     (memset broadcast 0 (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-size broadcast) (cffi:foreign-type-size '(:struct broadcast-device-interface)))
     (setf (broadcast-device-interface-device-type broadcast) :device-interface)

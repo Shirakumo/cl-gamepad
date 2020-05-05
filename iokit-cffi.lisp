@@ -106,7 +106,7 @@
   (:invalid           #.(kio-err   1)) ; should never be seen
   (:success                         0))
 
-(defcenum* (io-page :uint)
+(cffi:defcenum (io-page :uint :allow-undeclared-values T)
   (:undefined               #x00)
   (:generic-desktop         #x01)
   (:simulation              #x02)
@@ -141,7 +141,7 @@
   (:arcade                  #x91)
   (:vendor-defined-start    #xff00))
 
-(defcenum* (io-desktop-usage :uint)
+(cffi:defcenum (io-desktop-usage :uint :allow-undeclared-values T)
   (:undefined #x00)
   (:pointer #x01)   ; physical collection
   (:mouse #x02)   ; application collection
@@ -193,7 +193,7 @@
   (:dpad-left #x93)   ; on/off control
   (:reserved #xffff))
 
-(defcenum* (io-simulation-usage :uint)
+(cffi:defcenum (io-simulation-usage :uint :allow-undeclared-values T)
   (:undefined #x00)
   (:flight-simulation-device #x01)    ; application collection
   (:automobile-simulation-device #x02)    ; application collection
@@ -248,7 +248,7 @@
   (:rear-brake #xd0)    ; dynamic value
   (:reserved #xffff))
 
-(defcenum* (io-vr-usage :uint)
+(cffi:defcenum (io-vr-usage :uint :allow-undeclared-values T)
   (:undefined #x00)
   (:belt #x01) ; application collection
   (:body-suit #x02) ; application collection
@@ -264,7 +264,7 @@
   (:display-enable #x21) ; on/off control
   (:reserved #xffff))
 
-(defcenum* (io-game-usage :uint)
+(cffi:defcenum (io-game-usage :uint :allow-undeclared-values T)
   (:undefined #x00)
   (:3d-game-controller #x01) ; application collection
   (:pinball-device #x02) ; application collection

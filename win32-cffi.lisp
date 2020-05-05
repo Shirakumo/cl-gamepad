@@ -33,7 +33,7 @@
   (:disable-ole1dde #x4)
   (:speed-over-memory #x8))
 
-(defcenum* hresult
+(cffi:defcenum (hresult :int :allow-undeclared-values T)
   (:ok #x00000000)
   (:false #x00000001)
   (:polled-device #x00000002)
@@ -88,7 +88,7 @@
   (:device-interface #x00000005)
   (:handle           #x00000006))
 
-(defcenum* (wparam #+64-bit :uint64 #-64-bit :unsigned-long)
+(cffi:defcenum (wparam #+64-bit :uint64 #-64-bit :unsigned-long :allow-undeclared-values T)
   (:no-disk-space              #x0047)
   (:low-disk-space             #x0048)
   (:config-message-private     #x7fff)
@@ -100,7 +100,7 @@
   (:device-type-specific       #x8005)
   (:custom-event               #x8006))
 
-(defcenum* (window-message :uint)
+(cffi:defcenum (window-message :uint :allow-undeclared-values T)
   (:device-change #x0219))
 
 (cffi:defcstruct (com :conc-name ||)

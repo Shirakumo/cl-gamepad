@@ -25,7 +25,7 @@
   (:x      #x4000)
   (:y      #x8000))
 
-(defcenum* (xreturn dword)
+(cffi:defcenum (xreturn dword :allow-undeclared-values T)
   (:ok            #x0000)
   (:not-connected #x048F)
   (:empty         #x10D2))

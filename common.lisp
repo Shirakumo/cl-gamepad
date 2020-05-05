@@ -6,30 +6,6 @@
 
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
-;;; Weak enums do not signal errors when translating from unknown integers,
-;;; instead just returning the integer. This is useful if we are only interested
-;;; in a subset of enum values, or need to accept user/vendor defined codes that
-;;; we cannot know about in advance.
-
-(defclass weak-foreign-enum (cffi::foreign-enum)
-  ())
-
-(defmethod cffi:translate-from-foreign (value (type weak-foreign-enum))
-  (or (cffi::%foreign-enum-keyword type value :errorp NIL)
-      value))
-
-(defun make-weak-foreign-enum (type-name base-type values)
-  (multiple-value-bind (base-type keyword-values value-keywords)
-      (cffi::parse-foreign-enum-like type-name base-type values)
-    (make-instance 'weak-foreign-enum
-                   :name type-name
-                   :actual-type (cffi::parse-type base-type)
-                   :keyword-values keyword-values
-                   :value-keywords value-keywords)))
-
-(defmacro defcenum* (name-and-options &body enum-list)
-  (cffi::%defcenum-like name-and-options enum-list 'make-weak-foreign-enum))
-
 ;;; Allow relaying events to the user without allocating fresh event instances
 (gamepad::define-global +button-down-event+ (gamepad::make-button-down NIL 0 0 NIL))
 (gamepad::define-global +button-up-event+ (gamepad::make-button-up NIL 0 0 NIL))

@@ -52,7 +52,7 @@
   (:pointing-stick #x5)
   (:accelerometer  #x6))
 
-(defcenum* (event-type :uint16)
+(cffi:defcenum (event-type :uint16 :allow-undeclared-values T)
   (:synchronization #x00)
   (:key             #x01)
   (:relative-axis   #x02)

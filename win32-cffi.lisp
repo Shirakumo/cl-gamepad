@@ -10,7 +10,7 @@
   (T (:default "User32")))
 
 (defconstant MAX-PATH 260)
-(defvar HWND-MESSAGE (cffi:make-pointer (- (ash 1 #+64-bit 64 #-64-bit 32) 3)))
+(defvar HWND-MESSAGE (- (ash 1 #+64-bit 64 #-64-bit 32) 3))
 
 (cffi:defctype dword :uint32)
 (cffi:defctype word :uint16)
@@ -152,7 +152,7 @@
   (y :int)
   (w :int)
   (h :int)
-  (parent :pointer)
+  (parent uint-ptr) ;; KLUDGE: constructing the HWND-MESSAGE pointer runs into issues on some impls.
   (menu :pointer)
   (instance :pointer)
   (param :pointer))

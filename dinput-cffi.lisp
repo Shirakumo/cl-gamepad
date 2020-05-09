@@ -163,12 +163,12 @@
 
 (cffi:defcstruct (device-instance :conc-name device-instance-)
   (size dword)
-  (guid (:struct guid))
-  (product (:struct guid))
+  (guid com:guid)
+  (product com:guid)
   (type dword)
   (instance-name wchar :count #.MAX-PATH)
   (product-name wchar :count #.MAX-PATH)
-  (ff-driver (:struct guid))
+  (ff-driver com:guid)
   (usage-page word)
   (usage word))
 
@@ -236,7 +236,7 @@
 
 (cffi:defcstruct (device-object-instance :conc-name device-object-instance-)
   (size dword)
-  (guid (:struct guid))
+  (guid com:guid)
   (ofs dword)
   (type dword)
   (flags dword)
@@ -255,7 +255,7 @@
   (size dword)
   (device-type win-device-type)
   (reserved dword)
-  (guid (:struct guid))
+  (guid com:guid)
   (name wchar))
 
 (cffi:defcstruct (ff-envelope :conc-name ff-envelope-)
@@ -310,7 +310,7 @@
 
 (cffi:defcstruct (effect-info :conc-name effect-info-)
   (size dword)
-  (guid (:struct guid))
+  (guid com:guid)
   (type effect-types)
   (static dword)
   (dynamic dword)
@@ -319,17 +319,17 @@
 (cffi:defcfun (create-direct-input "DirectInput8Create") hresult
   (instance :pointer)
   (version dword)
-  (refiid :pointer)
+  (refiid com:guid)
   (interface :pointer)
   (aggregation :pointer))
 
 (com:define-comstruct directinput
-  (create-device hresult (guid 'com:guid) (device :pointer) (outer :pointer))
+  (create-device hresult (guid com:guid) (device :pointer) (outer :pointer))
   (enum-devices hresult (type device-type) (callback :pointer) (user :pointer) (flags device-flags))
   (get-device-status hresult (instance :pointer))
   (run-control-panel hresult (owner :pointer) (flags dword))
   (initialize hresult (instance :pointer) (version dword))
-  (find-device hresult (guid 'com:guid) (name :pointer) (instance :pointer))
+  (find-device hresult (guid com:guid) (name :pointer) (instance :pointer))
   (enum-devices-by-semantics hresult (user-name :pointer) (action-format :pointer) (callback :pointer) (user :pointer) (flags dword))
   (configure-devices hresult (callback :pointer) (params :pointer) (flags dword) (user :pointer)))
 
@@ -348,10 +348,10 @@
   (get-object-info hresult (instance :pointer) (object dword) (how dword))
   (get-device-info hresult (instance :pointer))
   (run-control-panel hresult (owner :pointer) (flags dword))
-  (initialize hresult (instance :pointer) (version dword) (guid 'com:guid))
-  (create-effect hresult (guid 'com:guid) (effect :pointer) (input-effect :pointer) (user :pointer))
+  (initialize hresult (instance :pointer) (version dword) (guid com:guid))
+  (create-effect hresult (guid com:guid) (effect :pointer) (input-effect :pointer) (user :pointer))
   (enum-effects hresult (callback :pointer) (user :pointer) (type effect-types))
-  (get-effect-info hresult (info :pointer) (guid 'com:guid))
+  (get-effect-info hresult (info :pointer) (guid com:guid))
   (get-force-feedback-state hresult (out :pointer))
   (send-force-feedback-command hresult (flags dword))
   (enum-created-effect-objects hresult (callback :pointer) (user :pointer) (flags dword))
@@ -365,8 +365,8 @@
   (get-image-info hresult (image-info :pointer)))
 
 (com:define-comstruct effect
-  (initialize hresult (hinstance :pointer) (version dword) (guid 'com:guid))
-  (get-effect-guid hresult (guid 'com:guid))
+  (initialize hresult (hinstance :pointer) (version dword) (guid com:guid))
+  (get-effect-guid hresult (guid com:guid))
   (get-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
   (set-parameters hresult (ff-effect :pointer) (flags effect-parameter-types))
   (start hresult (times dword) (flags effect-start-flags))

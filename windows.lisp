@@ -21,7 +21,7 @@
 (defmacro check-errno (predicate &body cleanup)
   `(unless ,predicate
      ,@cleanup
-     (let ((errno (com:get-last-error)))
+     (let ((errno (com-cffi:get-last-error)))
        (com:win32-error errno :type 'win32-error))))
 
 (defmacro check-return (value-form &rest expected)
@@ -51,7 +51,7 @@
 (cffi:defcallback enum-devices enumerate-flag ((device :pointer) (user :pointer))
   (let* ((idx (enum-user-data-device-count user))
          (source (cffi:foreign-slot-pointer device '(:struct device-instance) 'guid))
-         (target (cffi:mem-aptr (enum-user-data-device-array user) '(:struct com:guid) idx)))
+         (target (cffi:mem-aptr (enum-user-data-device-array user) 'com:guid idx)))
     ;; GUID is 128 bits, copy in two uint64 chunks.
     (setf (cffi:mem-aref target :uint64 0) (cffi:mem-aref source :uint64 0))
     (setf (cffi:mem-aref target :uint64 1) (cffi:mem-aref source :uint64 1))
@@ -83,12 +83,12 @@
   :continue)
 
 (defun guid-vendor (guid)
-  (+ (aref (bytes guid) 0)
-     (ash (aref (bytes guid) 1) 8)))
+  (+ (aref (com:bytes guid) 0)
+     (ash (aref (com:bytes guid) 1) 8)))
 
 (defun guid-product (guid)
-  (+ (aref (bytes guid) 2)
-     (ash (aref (bytes guid) 3) 8)))
+  (+ (aref (com:bytes guid) 2)
+     (ash (aref (com:bytes guid) 3) 8)))
 
 (defun dev-xinput-p (guid)
   (or (loop for known in (list IID-VALVE-STREAMING-GAMEPAD
@@ -182,7 +182,7 @@
                  (:ok (cffi:mem-ref effect :pointer))
                  ;;(:device-full) ; FIXME: Empty device and retry.
                  (:not-implemented)
-                 (T (win32-error value :function-name 'device-create-effect))))))
+                 (T (com:win32-error value :function-name 'device-create-effect :type 'win32-error))))))
       (or (try-effect GUID-CONSTANT-FORCE ff-constant)
           (try-effect GUID-RAMP-FORCE ff-ramp)
           (try-effect GUID-SINE ff-periodic)))))
@@ -192,12 +192,12 @@
                (check-return
                 (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
                (cffi:mem-ref dev :pointer))))
-    ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
-    (cffi:with-foreign-object (dev2 :pointer)
-      (check-return
-       (device-query-interface dev IID-IDIRECTINPUTDEVICE8 dev2))
-      (device-release dev)
-      (setf dev (cffi:mem-ref dev2 :pointer)))
+    ;; ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
+    ;; (cffi:with-foreign-object (dev2 :pointer)
+    ;;   (check-return
+    ;;    (device-query-interface dev IID-IDIRECTINPUTDEVICE8 dev2))
+    ;;   (device-release dev)
+    ;;   (setf dev (cffi:mem-ref dev2 :pointer)))
     (device-unacquire dev)
     (check-return
      (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
@@ -251,15 +251,17 @@
 
 (defun refresh-devices ()
   (let ((to-delete (list-devices)))
-    (cffi:with-foreign-objects ((devices '(:struct com:guid) 256)
+    (cffi:with-foreign-objects ((devices 'com:guid 256)
                                 (enum-data '(:struct enum-user-data)))
       (setf (enum-user-data-directinput enum-data) *directinput*)
       (setf (enum-user-data-device-array enum-data) devices)
       (setf (enum-user-data-device-count enum-data) 0)
       (check-return
        (directinput-enum-devices *directinput* :game-controller (cffi:callback enum-devices) enum-data :attached-only))
+      (dotimes (i 16)
+        (print (cffi:mem-aref devices :uint8 i)))
       (loop for i from 0 below (enum-user-data-device-count enum-data)
-            for device = (ensure-device (cffi:mem-aref devices '(:struct com:guid) i))
+            for device = (ensure-device (cffi:mem-aref devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
       (mapc #'close-device to-delete)
       (setf *devices-need-refreshing* NIL)
@@ -333,7 +335,7 @@
               ((real 0) (floor (* 1000 timeout))))))
     (loop (let ((result (wait-for-single-object handle ms)))
             (when (eq :failed result)
-              (win32-error (get-last-error)))
+              (com:win32-error (com-cffi:get-last-error) :type 'win32-error))
             (funcall function)
             (if (eql T timeout)
                 ;; This is required to get SBCL/etc to process interrupts.

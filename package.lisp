@@ -83,4 +83,5 @@
    #:rumble)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)
-   #+win32 (#:com #:org.shirakumo.com-on)))
+   #+windows (#:com #:org.shirakumo.com-on)
+   #+windows (#:com-cffi #:org.shirakumo.com-on.cffi)))

@@ -187,11 +187,13 @@
           (try-effect GUID-RAMP-FORCE ff-ramp)
           (try-effect GUID-SINE ff-periodic)))))
 
-(defun make-device-from-guid (guid)
+(defun make-device-from-guid (guid-ptr)
   (let ((dev (cffi:with-foreign-object (dev :pointer)
-               (check-return
-                (directinput-create-device *directinput* guid dev (cffi:null-pointer)))
-               (cffi:mem-ref dev :pointer))))
+               (let ((ret (directinput-create-device *directinput* guid-ptr dev (cffi:null-pointer))))
+                 (case ret
+                   (:ok (cffi:mem-ref dev :pointer))
+                   (:device-not-reg (break) (return-from make-device-from-guid))
+                   (T (com:win32-error ret :function-name 'directinput-create-device :type 'win32-error)))))))
     ;; ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
     ;; (cffi:with-foreign-object (dev2 :pointer)
     ;;   (check-return
@@ -229,7 +231,7 @@
                (xinput (guess-xinput-id product-guid)))
           (make-instance 'device
                          :dev dev
-                         :guid guid
+                         :guid (cffi:mem-ref guid-ptr 'com:guid)
                          :name (com:wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product-name))
                          :vendor (guid-vendor product-guid)
                          :product (guid-product product-guid)
@@ -239,11 +241,13 @@
                          :xinput xinput
                          :driver (if xinput :xinput :dinput)))))))
 
-(defun ensure-device (guid)
-  (or (gethash (com:guid-string guid) *device-table*)
-      (with-simple-restart (drop-device "Don't initialise ~a" (com:guid-string guid))
-        (setf (gethash (com:guid-string guid) *device-table*)
-              (make-device-from-guid guid)))))
+(defun ensure-device (guid-ptr)
+  (let ((guid-str (com:guid-string guid-ptr)))
+    (or (gethash guid-str *device-table*)
+        (with-simple-restart (drop-device "Don't initialise ~a" guid-str)
+          (let ((device (make-device-from-guid guid-ptr)))
+            (when device
+              (setf (gethash guid-str *device-table*) device)))))))
 
 (defun list-devices ()
   (loop for device being the hash-values of *device-table*
@@ -258,10 +262,8 @@
       (setf (enum-user-data-device-count enum-data) 0)
       (check-return
        (directinput-enum-devices *directinput* :game-controller (cffi:callback enum-devices) enum-data :attached-only))
-      (dotimes (i 16)
-        (print (cffi:mem-aref devices :uint8 i)))
       (loop for i from 0 below (enum-user-data-device-count enum-data)
-            for device = (ensure-device (cffi:mem-aref devices 'com:guid i))
+            for device = (ensure-device (cffi:mem-aptr devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
       (mapc #'close-device to-delete)
       (setf *devices-need-refreshing* NIL)

@@ -139,9 +139,10 @@
   (when (effect device)
     (effect-unload (effect device))
     (setf (slot-value device 'effect) NIL))
-  (device-unacquire (dev device))
-  (device-set-event-notification (dev device) (cffi:null-pointer))
-  (com:release (dev device))
+  (when (dev device)
+    (device-unacquire (dev device))
+    (device-set-event-notification (dev device) (cffi:null-pointer))
+    (com:release (dev device)))
   (slot-makunbound device 'dev)
   (remhash (com:guid-string (guid device)) *device-table*))
 
@@ -188,11 +189,11 @@
           (try-effect GUID-SINE ff-periodic)))))
 
 (defun make-device-from-guid (guid-ptr)
-  (let ((dev (cffi:with-foreign-object (dev :pointer)
+  (let ((dev (cffi:with-foreign-objects ((dev :pointer))
                (let ((ret (directinput-create-device *directinput* guid-ptr dev (cffi:null-pointer))))
                  (case ret
                    (:ok (cffi:mem-ref dev :pointer))
-                   (:device-not-reg (break) (return-from make-device-from-guid))
+                   (:device-not-reg (return-from make-device-from-guid))
                    (T (com:win32-error ret :function-name 'directinput-create-device :type 'win32-error)))))))
     ;; ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
     ;; (cffi:with-foreign-object (dev2 :pointer)
@@ -241,6 +242,17 @@
                          :xinput xinput
                          :driver (if xinput :xinput :dinput)))))))
 
+(defun make-device-from-xinput (xinput)
+  (let ((guid (com:guid (com:bytes IID-X360-WIRED-GAMEPAD))))
+    (setf (aref (com:bytes guid) 4) xinput)
+    (setf (gethash (com:guid-string guid) *device-table*)
+          (make-instance 'device
+                         :dev NIL :guid guid
+                         :name "Xbox 360 Gamepad"
+                         :vendor 0 :product 0 :version 0
+                         :poll-device NIL :effect NIL
+                         :xinput xinput :driver :xinput))))
+
 (defun ensure-device (guid-ptr)
   (let ((guid-str (com:guid-string guid-ptr)))
     (or (gethash guid-str *device-table*)
@@ -256,7 +268,8 @@
 (defun refresh-devices ()
   (let ((to-delete (list-devices)))
     (cffi:with-foreign-objects ((devices 'com:guid 256)
-                                (enum-data '(:struct enum-user-data)))
+                                (enum-data '(:struct enum-user-data))
+                                (xstate '(:struct xstate)))
       (setf (enum-user-data-directinput enum-data) *directinput*)
       (setf (enum-user-data-device-array enum-data) devices)
       (setf (enum-user-data-device-count enum-data) 0)
@@ -265,6 +278,13 @@
       (loop for i from 0 below (enum-user-data-device-count enum-data)
             for device = (ensure-device (cffi:mem-aptr devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
+      ;; In case DirectInput fails completely we scan for Xbox controllers manually.
+      (loop for i from 0 below 4
+            for device = (find i (list-devices) :key #'xinput)
+            do (when (eq :ok (get-xstate i xstate))
+                 (if device
+                     (setf to-delete (delete device to-delete))
+                     (make-device-from-xinput i))))
       (mapc #'close-device to-delete)
       (setf *devices-need-refreshing* NIL)
       (list-devices))))

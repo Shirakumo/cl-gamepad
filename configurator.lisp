@@ -39,13 +39,14 @@
 
 (defun configure-device (device &key (button-labels +common-buttons+)
                                      (axis-labels +common-axes+)
-                                     ignored-axes)
+                                     ignored-axes
+                                     (mappings-file *default-mappings-file*))
   (let* ((button-map (button-map device))
          (axis-map (axis-map device))
          (button-copy (copyhash button-map))
          (axis-copy (copyhash axis-map)))
     ;; Drop events until now.
-    (out "-> Mapping ~s" (name device))
+    (out "-> Mapping controller ~s" (name device))
     (clrhash button-map)
     (clrhash axis-map)
     (poll-events device 'null)
@@ -90,21 +91,22 @@
                                     (eql :low (gethash (event-code event) states)))
                                (setf (gethash (event-code event) states) :high)
                                NIL))))))
-    (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
-    (loop do (flet ((process (event)
-                      (when (typep event 'button-up)
-                        (case (event-label event)
-                          (:A
-                           (setf (device-mapping device) device)
-                           (save-device-mappings)
-                           (out "-> Saved.")
-                           (loop-finish))
-                          (:B
-                           (copyhash button-copy button-map)
-                           (copyhash axis-copy axis-map)
-                           (out "-> Reverted.")
-                           (loop-finish))))))
-               (poll-events device #'process)))
+    (when mappings-file
+      (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
+      (loop do (flet ((process (event)
+                        (when (typep event 'button-up)
+                          (case (event-label event)
+                            (:A
+                             (setf (device-mapping device) device)
+                             (save-device-mappings mappings-file)
+                             (out "-> Saved.")
+                             (loop-finish))
+                            (:B
+                             (copyhash button-copy button-map)
+                             (copyhash axis-copy axis-map)
+                             (out "-> Reverted.")
+                             (loop-finish))))))
+                 (poll-events device #'process))))
     device))
 
 (defun note-event (ev)
@@ -114,3 +116,22 @@
     (axis-move
      (when (<= 0.8 (abs (event-value ev)))
        (format T "~& Axis   ~4a ~6a ~f" (event-code ev) (event-label ev) (event-value ev))))))
+
+(defun configurator-main ()
+  (handler-bind ((gamepad-error (lambda (e)
+                                  (declare (ignore e))
+                                  (invoke-restart 'drop-device))))
+    (init))
+  (loop
+     (out "-> Detected the following controllers:")
+     (loop for device in (list-devices)
+           for i from 1
+           do (out "~d) ~a" i (name device)))
+     (out "-> Please enter the number of a controller to map, or nothing to exit.~%")
+     (let ((input (ignore-errors (parse-integer (read-line *query-io*)))))
+       (if input
+           (configure-device (nth (1- input) (list-devices)) :mappings-file NIL)
+           (return))))
+  (out "-> Saving device mappings to ~s" "device-maps.lisp")
+  (save-device-mappings "device-maps.lisp")
+  (shutdown))

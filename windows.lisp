@@ -188,9 +188,9 @@
           (try-effect GUID-RAMP-FORCE ff-ramp)
           (try-effect GUID-SINE ff-periodic)))))
 
-(defun make-device-from-guid (guid-ptr)
+(defun make-device-from-guid (guid)
   (let ((dev (cffi:with-foreign-objects ((dev :pointer))
-               (let ((ret (directinput-create-device *directinput* guid-ptr dev (cffi:null-pointer))))
+               (let ((ret (directinput-create-device *directinput* guid dev (cffi:null-pointer))))
                  (case ret
                    (:ok (cffi:mem-ref dev :pointer))
                    (:device-not-reg (return-from make-device-from-guid))
@@ -232,7 +232,7 @@
                (xinput (guess-xinput-id product-guid)))
           (make-instance 'device
                          :dev dev
-                         :guid (cffi:mem-ref guid-ptr 'com:guid)
+                         :guid guid
                          :name (com:wstring->string (cffi:foreign-slot-pointer instance '(:struct device-instance) 'product-name))
                          :vendor (guid-vendor product-guid)
                          :product (guid-product product-guid)
@@ -253,11 +253,11 @@
                          :poll-device NIL :effect NIL
                          :xinput xinput :driver :xinput))))
 
-(defun ensure-device (guid-ptr)
-  (let ((guid-str (com:guid-string guid-ptr)))
+(defun ensure-device (guid)
+  (let ((guid-str (com:guid-string guid)))
     (or (gethash guid-str *device-table*)
         (with-simple-restart (drop-device "Don't initialise ~a" guid-str)
-          (let ((device (make-device-from-guid guid-ptr)))
+          (let ((device (make-device-from-guid guid)))
             (when device
               (setf (gethash guid-str *device-table*) device)))))))
 
@@ -276,7 +276,7 @@
       (check-return
        (directinput-enum-devices *directinput* :game-controller (cffi:callback enum-devices) enum-data :attached-only))
       (loop for i from 0 below (enum-user-data-device-count enum-data)
-            for device = (ensure-device (cffi:mem-aptr devices 'com:guid i))
+            for device = (ensure-device (cffi:mem-aref devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
       ;; In case DirectInput fails completely we scan for Xbox controllers manually.
       (loop for i from 0 below 4

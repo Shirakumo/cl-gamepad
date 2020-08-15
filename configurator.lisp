@@ -91,22 +91,24 @@
                                     (eql :low (gethash (event-code event) states)))
                                (setf (gethash (event-code event) states) :high)
                                NIL))))))
-    (when mappings-file
-      (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
-      (loop do (flet ((process (event)
-                        (when (typep event 'button-up)
-                          (case (event-label event)
-                            (:A
-                             (setf (device-mapping device) device)
-                             (save-device-mappings mappings-file)
-                             (out "-> Saved.")
-                             (loop-finish))
-                            (:B
-                             (copyhash button-copy button-map)
-                             (copyhash axis-copy axis-map)
-                             (out "-> Reverted.")
-                             (loop-finish))))))
-                 (poll-events device #'process))))
+    (cond (mappings-file
+           (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
+           (loop do (flet ((process (event)
+                             (when (typep event 'button-up)
+                               (case (event-label event)
+                                 (:A
+                                  (setf (device-mapping device) device)
+                                  (save-device-mappings mappings-file)
+                                  (out "-> Saved.")
+                                  (loop-finish))
+                                 (:B
+                                  (copyhash button-copy button-map)
+                                  (copyhash axis-copy axis-map)
+                                  (out "-> Reverted.")
+                                  (loop-finish))))))
+                      (poll-events device #'process))))
+          (T
+           (setf (device-mapping device) device)))
     device))
 
 (defun note-event (ev)
@@ -135,6 +137,6 @@
        (if input
            (configure-device (nth (1- input) (list-devices)) :mappings-file NIL)
            (return))))
-  (out "-> Saving device mappings to ~s" "device-maps.lisp")
+  (out "-> Saving device mappings to ~s~%" "device-maps.lisp")
   (save-device-mappings "device-maps.lisp")
   (shutdown))

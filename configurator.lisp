@@ -122,8 +122,11 @@
                                   (declare (ignore e))
                                   (invoke-restart 'drop-device))))
     (init))
+  (ignore-errors
+   (load "device-maps.lisp"))
   (loop
      (out "-> Detected the following controllers:")
+     (poll-devices)
      (loop for device in (list-devices)
            for i from 1
            do (out "~d) ~a" i (name device)))

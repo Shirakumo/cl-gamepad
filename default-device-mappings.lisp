@@ -11,6 +11,17 @@
 ;;;
 (in-package "ORG.SHIRAKUMO.FRAF.GAMEPAD")
 
+(define-device-mapping (:DINPUT 121 6)
+  :name "JPD-UDV-01"
+  :buttons (2 :A 1 :B 3 :X 0 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            9 :START)
+  :axes (0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V))
+
+(define-device-mapping (:DINPUT 1133 49690)
+  :name "Logitech G-UG15"
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 5 :R1 7 :R2 8 :SELECT 9 :START)
+  :axes (0 :DPAD-H 1 :DPAD-V))
+
 (define-device-mapping (:DINPUT 1356 616)
   :name "Sony Dual Shock 3"
   :buttons (2 :A 1 :B 3 :X 0 :Y 6 :L1 4 :L2 10 :L3 7 :R1 5 :R2 11 :R3 9 :SELECT

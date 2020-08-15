@@ -389,7 +389,8 @@
         (format (cffi:foreign-alloc '(:struct data-format)))
         (i 0) (offset 0))
     (flet ((set-field (guid type size)
-             (let ((ptr (cffi:mem-aptr fields '(:struct object-data-format) i)))
+             (let ((ptr (cffi:mem-aptr fields '(:struct object-data-format) i))
+                   (guid (cffi:translate-to-foreign guid 'com:guid)))
                (setf (object-data-format-guid ptr) guid
                      (object-data-format-offset ptr) offset
                      (object-data-format-type ptr) (cffi:foreign-bitfield-value 'object-flags (list type :optional :any-instance))

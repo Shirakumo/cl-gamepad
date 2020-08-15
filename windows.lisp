@@ -195,12 +195,12 @@
                    (:ok (cffi:mem-ref dev :pointer))
                    (:device-not-reg (return-from make-device-from-guid))
                    (T (com:win32-error ret :function-name 'directinput-create-device :type 'win32-error)))))))
-    ;; ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
-    ;; (cffi:with-foreign-object (dev2 :pointer)
-    ;;   (check-return
-    ;;    (device-query-interface dev IID-IDIRECTINPUTDEVICE8 dev2))
-    ;;   (device-release dev)
-    ;;   (setf dev (cffi:mem-ref dev2 :pointer)))
+    (ignore-errors ;; I don't know why we do this, but SDL2 seems to. I didn't notice any difference in capabilities.
+     (cffi:with-foreign-object (dev2 :pointer)
+       (check-return
+        (device-query-interface dev IID-IDIRECTINPUTDEVICE8 dev2))
+       (device-release dev)
+       (setf dev (cffi:mem-ref dev2 :pointer))))
     (device-unacquire dev)
     (check-return
      (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))

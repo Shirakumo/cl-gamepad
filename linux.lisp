@@ -182,9 +182,9 @@
 
 (defun call-with-polling (function fd &key timeout)
   (let ((tsec (etypecase timeout
-                ((eql T) 1)
+                ((eql T) 0.5)
                 ((eql NIL) 0)
-                ((integer 0) timeout))))
+                ((float 0) timeout))))
     (cffi:with-foreign-objects ((pollfd '(:struct pollfd)))
       (setf (pollfd-fd pollfd) fd)
       (setf (pollfd-events pollfd) :in)

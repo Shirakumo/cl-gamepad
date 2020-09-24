@@ -243,7 +243,7 @@
 (defun call-with-device-events (function device)
   (let ((dev (dev device)))
     (cffi:with-foreign-object (event '(:struct event))
-      (loop while (has-event-pending dev)
+      (loop while (/= 0 (has-event-pending dev))
             for result = (next-event dev :normal event)
             do (case result
                  (:success

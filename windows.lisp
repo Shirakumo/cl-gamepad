@@ -69,8 +69,7 @@
     ;; One byte of range
     (setf (property-range-min range) -32768)
     (setf (property-range-max range) +32767)
-    (check-return
-     (device-set-property device DIPROP-RANGE range)))
+    (device-set-property device DIPROP-RANGE range))
   (cffi:with-foreign-object (dword '(:struct property-dword))
     (setf (property-dword-size dword) (cffi:foreign-type-size '(:struct property-dword)))
     (setf (property-dword-header-size dword) (cffi:foreign-type-size '(:struct property-header)))
@@ -78,8 +77,7 @@
     (setf (property-dword-type dword) (device-object-instance-type object))
     ;; No dead zone, handled in user code
     (setf (property-dword-data dword) 0)
-    (check-return
-     (device-set-property device DIPROP-DEADZONE dword)))
+    (device-set-property device DIPROP-DEADZONE dword))
   :continue)
 
 (defun guid-vendor (guid)
@@ -204,8 +202,8 @@
     (device-unacquire dev)
     (check-return
      (device-set-cooperative-level dev (device-notifier-window *device-notifier*) '(:background :exclusive)))
-    (check-return
-     (device-set-data-format dev (joystate-format)))
+    ;; If we can't set the format then oh well.
+    (device-set-data-format dev (joystate-format))
     (check-return
      (device-enum-objects dev (cffi:callback enum-objects) dev :axis))
     (let ((poll-device (eq :polled-device

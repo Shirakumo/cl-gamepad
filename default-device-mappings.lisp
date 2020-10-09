@@ -39,24 +39,61 @@
   :buttons (1 :A 0 :B 3 :X 2 :Y 4 :L1 5 :R1 6 :SELECT 7 :START)
   :axes (0 :DPAD-H 1 :DPAD-V))
 
+(define-device-mapping (:EVDEV 1118 736)
+  :name "8BitDo SN30 Pro+"
+  :buttons (304 :A 305 :B 306 :X 307 :Y 308 :L1 312 :L3 309 :R1 313 :R3 310
+            :SELECT 139 :HOME 311 :START)
+  :axes (2 :L2 5 :L-H 0 :L-H 1 :R-H 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V))
+
+(define-device-mapping (:EVDEV 1133 49693)
+  :name "Logitech Gamepad F310"
+  :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
+            :SELECT 316 :HOME 315 :START)
+  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V))
+
 (define-device-mapping (:EVDEV 1356 616)
   :name "Sony Dual Shock 3"
-  :buttons (304 :A 305 :B 308 :X 307 :Y 312 :L2 310 :L1 311 :R1 313 :R2 317 :L3
+  :buttons (304 :A 305 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
             318 :R3 546 :DPAD-L 547 :DPAD-R 544 :DPAD-U 545 :DPAD-D 314 :SELECT
             316 :HOME 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V))
 
+(define-device-mapping (:EVDEV 1356 1476)
+  :name "Sony Computer Entertainment Wireless Controller"
+  :buttons (304 :A 305 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
+            318 :R3 314 :SELECT 316 :HOME 315 :START)
+  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 4 :R-H 3 :R-V 16 :DPAD-H 17 :DPAD-V))
+
 (define-device-mapping (:EVDEV 1356 2508)
   :name "Sony Dual Shock 4"
   :buttons (304 :A 305 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
-            318 :R3 314 :SELECT 316 :HOME 315 :START)
-  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V))
+                318 :R3 314 :SELECT 316 :HOME 315 :START)
+  :axes (2 :L2 5 :R2 16 :DPAD-H 17 :DPAD-V 0 :L-H 1 :L-V 3 :R-H 4 :R-V))
+
+(define-device-mapping (:EVDEV 1406 8201)
+  :name "Pro Controller"
+  :buttons (304 :A 305 :B 306 :X 307 :Y 308 :L1 310 :L2 314 :L3 309 :R1 311 :R2
+            315 :R3 312 :SELECT 316 :HOME 313 :START)
+  :axes (16 :DPAD-H 17 :DPAD-V 0 :L-H 1 :L-V 3 :R-H 4 :R-V))
 
 (define-device-mapping (:EVDEV 10462 4354)
   :name "Steam Controller"
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
             318 :R3 290 :DPAD-L 289 :SELECT 314 :HOME 316 :HOME 315 :START)
   :axes (21 :L2 20 :R2 0 :L-H 1 :R-H 4 :R-V 3 :R-H))
+
+(define-device-mapping (:EVDEV 10462 4418)
+  :name "Wireless Steam Controller"
+  :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
+            318 :R3 290 :DPAD-L 289 :SELECT 546 :DPAD-L 547 :DPAD-R 544 :DPAD-U
+            545 :DPAD-D 314 :SELECT 316 :HOME 315 :START)
+  :axes (21 :L2 20 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V))
+
+(define-device-mapping (:EVDEV 11720 24834)
+  :name "8BitDo SN30 Pro+"
+  :buttons (305 :A 304 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
+            318 :R3 314 :SELECT 306 :HOME 315 :START)
+  :axes (0 :L-H 1 :R-H 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V))
 
 (define-device-mapping (:IOKIT 1133 49674)
   :name "WingMan RumblePad"

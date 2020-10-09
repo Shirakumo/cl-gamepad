@@ -255,7 +255,7 @@
 (defun shutdown ()
   (when (boundp '*hid-manager*)
     (let ((manager *hid-manager*))
-      (makunbound *hid-manager*)
+      (makunbound '*hid-manager*)
       (manager-unschedule-from-run-loop manager (get-current-run-loop) (cffi:null-pointer))
       (mapc #'close-device (list-devices))
       (close-manager manager 0)

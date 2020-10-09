@@ -22,6 +22,42 @@
                           :move-x :move-y :move-z
                           :wheel :gas :brake :throttle :rudder))
 
+(define-global +label-descriptions+
+    '(:a "Lower button"
+      :b "Right button"
+      :x "Left button"
+      :y "Upper button"
+      :l1 "Upper left shoulder button"
+      :l2 "Lower left shoulder button/trigger"
+      :l3 "Left stick press in button"
+      :r1 "Upper right shoulder button"
+      :r2 "Lower right shoulder button/trigger"
+      :r3 "Right stick press in button"
+      :dpad-l "Left DPAD button"
+      :dpad-r "Right DPAD button"
+      :dpad-u "Up DPAD button"
+      :dpad-d "Down DPAD button"
+      :select "Left center button (select/share/minus)"
+      :home "Middle center button (logo/home)"
+      :start "Right center button (start/options/plus)"
+      :l-h "Left stick horizontal axis"
+      :l-v "Left stick vertical axis"
+      :r-h "Right stick horizontal axis"
+      :r-v "Right stick vertical axis"
+      :dpad-h "DPAD horizontal axis"
+      :dpad-v "DPAD vertical axis"
+      :tilt-x "Tilt forward/backward"
+      :tilt-y "Rotate flat"
+      :tilt-z "Tilt left/right"
+      :move-x "Move left/right"
+      :move-y "Move up/down"
+      :move-z "Move forward/backward"
+      :wheel "Steering wheel rotation"
+      :gas "Gas pedal"
+      :brake "Brake pedal"
+      :throttle "Throttle slider"
+      :rudder "Rudder slider"))
+
 (define-global +common-buttons+ #(:a :b :x :y :l1 :l2 :l3 :r1 :r2 :r3
                                   :dpad-l :dpad-r :dpad-u :dpad-d
                                   :select :home :start))

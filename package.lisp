@@ -30,6 +30,7 @@
   ;; protocol.lisp
   (:export
    #:+labels+
+   #:+label-descriptions+
    #:gamepad-error
    #:event
    #:event-device

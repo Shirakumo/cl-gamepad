@@ -37,7 +37,13 @@
 (define-device-mapping (:DINPUT 1356 2508)
   :name "Sony DualShock 4"
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
-              12 :HOME 9 :START)
+            12 :HOME 9 :START)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V))
+
+(define-device-mapping (:DINPUT 1356 3302)
+  :name "Sony DualSense"
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            12 :HOME 9 :START)
   :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V))
 
 (define-device-mapping (:DINPUT 1411 8288)
@@ -73,8 +79,14 @@
 (define-device-mapping (:EVDEV 1356 2508)
   :name "Sony DualShock 4"
   :buttons (304 :A 305 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
-                318 :R3 314 :SELECT 316 :HOME 315 :START)
+            318 :R3 314 :SELECT 316 :HOME 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V))
+
+(define-device-mapping (:EVDEV 1356 3302)
+  :name "Sony DualSense"
+  :buttons (305 :A 306 :B 304 :X 307 :Y 308 :L1 310 :L2 314 :L3 309 :R1 311 :R2
+            315 :R3 312 :SELECT 316 :HOME 313 :START)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V))
 
 (define-device-mapping (:EVDEV 1406 8201)
   :name "Pro Controller"
@@ -122,18 +134,26 @@
             589835 :L3 589830 :R1 589832 :R2 589836 :R3 589833 :SELECT 589837
             :HOME 589834 :START)
   :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
-               :DPAD-H 65651 :DPAD-V))
+         :DPAD-H 65651 :DPAD-V))
 
 (define-device-mapping (:IOKIT 1356 2508)
   :name "Sony DualShock 4"
   :buttons (589826 :A 589827 :B 589825 :X 589828 :Y 589829 :L1 589831 :L2
-                   589835 :L3 589830 :R1 589832 :R2 589836 :R3 589833 :SELECT 589837
-                   :HOME 589834 :START)
+            589835 :L3 589830 :R1 589832 :R2 589836 :R3 589833 :SELECT 589837
+            :HOME 589834 :START)
   :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
-               :DPAD-H 65651 :DPAD-V))
+         :DPAD-H 65651 :DPAD-V))
+
+(define-device-mapping (:IOKIT 1356 3302)
+  :name "Sony DualSense"
+  :buttons (589826 :A 589827 :B 589825 :X 589828 :Y 589829 :L1 589831 :L2
+            589830 :R1 589835 :L3 589832 :R2 589836 :R3 589833 :SELECT 589837
+            :HOME 589834 :START)
+  :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
+         :DPAD-H 65651 :DPAD-V))
 
 (define-device-mapping (:IOKIT 1411 8288)
   :name "Buffalo BSGP801"
   :buttons (589826 :A 589825 :B 589828 :X 589827 :Y 589829 :L1 589830 :R1
-                   589831 :SELECT 589832 :START)
+            589831 :SELECT 589832 :START)
   :axes (65584 :DPAD-H 65585 :DPAD-V))

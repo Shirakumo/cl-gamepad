@@ -180,3 +180,10 @@
             589831 :SELECT 589832 :START)
   :axes (65584 :DPAD-H 65585 :DPAD-V)
   :orientations NIL)
+
+(define-device-mapping (:XINPUT 1118 767)
+  :name "Controller (Xbox One For Windows)"
+  :buttons (0 :A 1 :B 3 :X 4 :Y 6 :L1 8 :L3 9 :R1 11 :R3 12 :DPAD-L 13 :DPAD-R
+            14 :DPAD-U 15 :DPAD-D 16 :SELECT 18 :START)
+  :axes (7 :L2 10 :R2 19 :L-H 20 :L-V 21 :R-H 22 :R-V)
+  :orientations (7 1.0 10 1.0 19 1.0 20 1.0 21 1.0 22 1.0))

@@ -101,6 +101,7 @@
    (driver :initarg :driver :initform NIL :reader driver)
    (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :accessor button-map)
    (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :accessor axis-map)
+   (orientation-map :initarg :orientation-map :initform (make-hash-table :test 'eql) :accessor orientation-map)
    (button-states :initform (make-array (length +labels+) :element-type 'bit :initial-element 0) :accessor button-states)
    (axis-states :initform (make-array (length +labels+) :element-type 'single-float :initial-element 0f0) :accessor axis-states)
    (axis-raw-states :initform (make-array (length +labels+) :element-type 'single-float :initial-element 0f0) :accessor axis-raw-states)

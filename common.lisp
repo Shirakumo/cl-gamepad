@@ -59,7 +59,10 @@
 
 (defun signal-axis-move (function device time code label value)
   (declare (optimize speed))
-  (let ((old-value value))
+  (declare (type single-float value))
+  (let* ((orientation (the single-float (gethash code (gamepad::orientation-map device) 1f0)))
+         (value (* orientation value))
+         (old-value value))
     ;; FIXME: ^ This is bad for obvious reasons.
     (%with-updated-event (+axis-move-event+)
       (when label

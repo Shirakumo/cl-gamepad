@@ -40,7 +40,9 @@
   (setf (button-map device) (or (getf mapping :buttons)
                                 (error "Malformed mapping, missing :BUTTONS")))
   (setf (axis-map device) (or (getf mapping :axes)
-                              (error "Malformed mapping, missing :AXES"))))
+                              (error "Malformed mapping, missing :AXES")))
+  (setf (orientation-map device) (or (getf mapping :orientations)
+                                     (make-hash-table :test 'eql))))
 
 (defmethod initialize-instance :after ((device device) &key)
   (let ((mapping (device-mapping device)))
@@ -55,7 +57,8 @@
                     (cons mapping)
                     (device (list :name (name mapping)
                                   :buttons (button-map mapping)
-                                  :axes (axis-map mapping)))))
+                                  :axes (axis-map mapping)
+                                  :orientations (orientation-map mapping)))))
          (known (device-mapping id)))
     (cond (known
            ;; Update the values in place to immediately update all
@@ -64,7 +67,8 @@
            (unless (getf known :name)
              (setf (getf known :name) (getf mapping :name)))
            (copyhash (getf mapping :axes) (getf known :axes))
-           (copyhash (getf mapping :buttons) (getf known :buttons)))
+           (copyhash (getf mapping :buttons) (getf known :buttons))
+           (copyhash (getf mapping :orientations) (getf known :orientations)))
           (T
            (setf (gethash id *device-mappings*) mapping)
            ;; Need to go through all devices to see if they match
@@ -91,7 +95,8 @@
   `(setf (device-mapping '(,driver ,vendor ,product))
          (list :name ,(getf plist :name)
                :buttons (plist-map ',(getf plist :buttons))
-               :axes (plist-map ',(getf plist :axes)))))
+               :axes (plist-map ',(getf plist :axes))
+               :orientations (plist-map ',(getf plist :orientations)))))
 
 (defun save-device-mappings (&optional (file *default-mappings-file*))
   (with-open-file (stream file :direction :output
@@ -118,4 +123,5 @@
           do (format stream "~%(define-device-mapping ~s" id)
              (format stream "~%  :name ~s" (getf map :name))
              (format stream "~%  :buttons ~s" (map-plist (getf map :buttons)))
-             (format stream "~%  :axes ~s)~%" (map-plist (getf map :axes))))))
+             (format stream "~%  :axes ~s" (map-plist (getf map :axes)))
+             (format stream "~%  :orientations ~s)~%" (map-plist (getf map :orientations))))))

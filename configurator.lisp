@@ -44,14 +44,18 @@
                                      (mappings-file *default-mappings-file*))
   (let* ((button-map (button-map device))
          (axis-map (axis-map device))
+         (orientation-map (orientation-map device))
          (button-copy (copyhash button-map))
-         (axis-copy (copyhash axis-map)))
-    ;; Drop events until now.
+         (axis-copy (copyhash axis-map))
+         (orientation-copy (copyhash orientation-map)))
     (out "-> Mapping controller ~s" (name device))
     (out " Please follow XBOX controller conventions.")
+    (out " For axes, please only press the axis upwards for vertical axes, or to the right for horizontal axes.")
     (out " Particularly, A is the lower button, B the right button, X the left button, and Y the top button.")
     (clrhash button-map)
     (clrhash axis-map)
+    (clrhash orientation-map)
+    ;; Drop events until now.
     (poll-events device 'null)
     (out "Press <A> (~a)" (getf +label-descriptions+ :a))
     (loop do (flet ((process (event)
@@ -93,6 +97,7 @@
                               ((and (< 0.7 (abs (event-value event)))
                                     (eql :low (gethash (event-code event) states)))
                                (setf (gethash (event-code event) states) :high)
+                               (setf (gethash (event-code event) orientation-map) (signum (event-value event)))
                                NIL))))))
     (cond (mappings-file
            (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
@@ -107,6 +112,7 @@
                                  (:B
                                   (copyhash button-copy button-map)
                                   (copyhash axis-copy axis-map)
+                                  (copyhash orientation-copy orientation-map)
                                   (out "-> Reverted.")
                                   (loop-finish))))))
                       (poll-events device #'process))))

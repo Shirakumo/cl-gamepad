@@ -35,28 +35,35 @@
   :name "Sony DualShock 4"
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
             12 :HOME 9 :START)
-  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V)
-  :orientations NIL)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
 
 (define-device-mapping (:DINPUT 1356 2508)
   :name "Sony DualShock 4"
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
             12 :HOME 9 :START)
-  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V)
-  :orientations NIL)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
 
 (define-device-mapping (:DINPUT 1356 3302)
   :name "Sony DualSense"
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
             12 :HOME 9 :START)
-  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-V)
-  :orientations NIL)
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
+
+(define-device-mapping (:DINPUT 1406 8201)
+  :name "Pro Controller"
+  :buttons (0 :A 1 :B 2 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            12 :HOME 9 :START)
+  :axes (0 :L-H 1 :L-V 3 :R-H 4 :R-V 7 :DPAD-H 8 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 8 1.0))
 
 (define-device-mapping (:DINPUT 1411 8288)
   :name "Buffalo BSGP801"
   :buttons (1 :A 0 :B 3 :X 2 :Y 4 :L1 5 :R1 6 :SELECT 7 :START)
   :axes (0 :DPAD-H 1 :DPAD-V)
-  :orientations NIL)
+  :orientations (0 1.0 1 -1.0))
 
 (define-device-mapping (:EVDEV 1118 736)
   :name "8BitDo SN30 Pro+"
@@ -184,6 +191,13 @@
 (define-device-mapping (:XINPUT 1118 767)
   :name "Xbox One"
   :buttons (0 :A 1 :B 3 :X 4 :Y 6 :L1 8 :L3 9 :R1 11 :R3 12 :DPAD-L 13 :DPAD-R
+            14 :DPAD-U 15 :DPAD-D 16 :SELECT 18 :START)
+  :axes (7 :L2 10 :R2 19 :L-H 20 :L-V 21 :R-H 22 :R-V)
+  :orientations (7 1.0 10 1.0 19 1.0 20 1.0 21 1.0 22 1.0))
+
+(define-device-mapping (:XINPUT 1133 49693)
+  :name "Logitech F310"
+  :buttons (0 :A 1 :B 3 :X 4 :Y 6 :L1 8 :L3 9 :R1 11 :R3 13 :DPAD-L 12 :DPAD-R
             14 :DPAD-U 15 :DPAD-D 16 :SELECT 18 :START)
   :axes (7 :L2 10 :R2 19 :L-H 20 :L-V 21 :R-H 22 :R-V)
   :orientations (7 1.0 10 1.0 19 1.0 20 1.0 21 1.0 22 1.0))

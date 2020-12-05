@@ -81,9 +81,15 @@
   (remhash (normalize-mapping-id id) *device-mappings*))
 
 (defun map-plist (table)
-  (loop for k being the hash-keys of table
-        for v being the hash-values of table
-        collect k collect v))
+  (flet ((label-pos (thing)
+           (if (symbolp (second thing))
+               (position (second thing) +labels+)
+               (first thing))))
+    (loop for (k v) in (sort (loop for k being the hash-keys of table
+                                   for v being the hash-values of table
+                                   collect (list k v))
+                             #'< :key #'label-pos)
+          collect k collect v)))
 
 (defun plist-map (plist)
   (let ((map (make-hash-table :test 'eql)))

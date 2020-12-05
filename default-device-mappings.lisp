@@ -137,6 +137,14 @@
   :axes (0 :L-H 1 :L-V 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 5 -1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:IOKIT 1118 736)
+  :name "8BitDo SN30 Pro+"
+  :buttons (589825 :A 589826 :B 589827 :X 589828 :Y 589829 :L1 589833 :L3
+            589830 :R1 589834 :R3 589831 :SELECT 65669 :HOME 589832 :START)
+  :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
+               :DPAD-H 65651 :DPAD-V)
+  :orientations (65584 1.0 65585 -1.0 65586 1.0 65589 -1.0))
+
 (define-device-mapping (:IOKIT 1133 49674)
   :name "WingMan RumblePad"
   :buttons (589825 :A 589826 :B 589827 :C 589828 :X 589829 :Y 589830 :Z 589831
@@ -151,8 +159,8 @@
             589826 :L3 589836 :R1 589834 :R2 589827 :R3 589832 :DPAD-L 589830
             :DPAD-R 589829 :DPAD-U 589831 :DPAD-D 589825 :SELECT 589841 :HOME
             589828 :START)
-  :axes (65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V)
-  :orientations NIL)
+  :axes (65584 :L-H 65585 :L-V 65586 :R-V 65589 :R-V)
+  :orientations (65584 1.0 65585 -1.0 65586 1.0 65589 -1.0))
 
 (define-device-mapping (:IOKIT 1356 1476)
   :name "Sony DualShock 4"
@@ -181,12 +189,21 @@
          :DPAD-H 65651 :DPAD-V)
   :orientations NIL)
 
+(define-device-mapping (:IOKIT 1406 8201)
+  :name "Pro Controller"
+  :buttons (589825 :A 589826 :B 589827 :X 589828 :Y 589829 :L1 589831 :L2
+            589835 :L3 589830 :R1 589832 :R2 589836 :R3 589833 :SELECT 589837
+            :HOME 589834 :START)
+  :axes (65584 :L-H 65585 :L-V 65587 :R-H 65588 :R-V 65650 :DPAD-H 65651
+         :DPAD-V)
+  :orientations (65584 1.0 65585 -1.0 65587 1.0 65588 -1.0 65650 1.0 65651 1.0))
+
 (define-device-mapping (:IOKIT 1411 8288)
   :name "Buffalo BSGP801"
   :buttons (589826 :A 589825 :B 589828 :X 589827 :Y 589829 :L1 589830 :R1
             589831 :SELECT 589832 :START)
   :axes (65584 :DPAD-H 65585 :DPAD-V)
-  :orientations NIL)
+  :orientations (65584 1.0 65585 -1.0))
 
 (define-device-mapping (:XINPUT 1118 767)
   :name "Xbox One"

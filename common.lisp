@@ -110,5 +110,4 @@
   (let ((range (- max min)))
     (case label
       ((:l2 :r2) (float (/ (- value min) range)))
-      ((:l-v :r-v :dpad-v) (- 1f0 (* 2f0 (/ (- value min) range))))
       (T (- (* 2f0 (/ (- value min) range)) 1f0)))))

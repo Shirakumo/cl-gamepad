@@ -17,26 +17,27 @@
   (finish-output *query-io*))
 
 (defun query-labels (labels device map confirm)
-  (loop with i = 0
-        for label = (aref labels i)
-        for id = (inverse-gethash label map)
-        do (out "Press <~a>~@[ (~a)~]~@[ ~a~] ~60t(<A> to skip, <B> to undo)"
-                label (getf +label-descriptions+ label) id)
-           (loop do (flet ((process (event)
-                             (when (or (when (typep event 'button-up)
-                                         (case (event-label event)
-                                           (:A
-                                            (out "  Skipped")
-                                            (when id (remhash id map))
-                                            (incf i))
-                                           (:B (decf i))))
-                                       (when (funcall confirm event)
-                                         (out "  Mapped to ~d" (event-code event))
-                                         (incf i)
-                                         (setf (gethash (event-code event) map) label)))
-                               (loop-finish))))
-                      (poll-events device #'process)))
-        while (<= 0 i (1- (length labels)))))
+  (when (< 0 (length labels))
+    (loop with i = 0
+          for label = (aref labels i)
+          for id = (inverse-gethash label map)
+          do (out "Press <~a>~@[ (~a)~]~@[ ~a~] ~60t(<A> to skip, <B> to undo)"
+                  label (getf +label-descriptions+ label) id)
+             (loop do (flet ((process (event)
+                               (when (or (when (typep event 'button-up)
+                                           (case (event-label event)
+                                             (:A
+                                              (out "  Skipped")
+                                              (when id (remhash id map))
+                                              (incf i))
+                                             (:B (decf i))))
+                                         (when (funcall confirm event)
+                                           (out "  Mapped to ~d" (event-code event))
+                                           (incf i)
+                                           (setf (gethash (event-code event) map) label)))
+                                 (loop-finish))))
+                        (poll-events device #'process)))
+          while (<= 0 i (1- (length labels))))))
 
 (defun configure-device (device &key (button-labels +common-buttons+)
                                      (axis-labels +common-axes+)
@@ -97,7 +98,8 @@
                               ((and (< 0.7 (abs (event-value event)))
                                     (eql :low (gethash (event-code event) states)))
                                (setf (gethash (event-code event) states) :high)
-                               (setf (gethash (event-code event) orientation-map) (signum (event-value event)))
+                               (unless (gethash (event-code event) orientation-map)
+                                 (setf (gethash (event-code event) orientation-map) (signum (event-value event))))
                                NIL))))))
     (cond (mappings-file
            (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")

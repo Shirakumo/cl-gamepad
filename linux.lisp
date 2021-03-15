@@ -270,11 +270,17 @@
               (strength (floor (* #x7FFF (clamp 0 strength 1)))))
           (ecase (effect-type effect)
             (:constant
+             (when (= strength (ff-constant-level (effect-data effect)))
+               (return-from rumble))
              (setf (ff-constant-level (effect-data effect)) strength))
             (:rumble
+             (when (= strength (ff-rumble-strong-magnitude (effect-data effect)))
+               (return-from rumble))
              (setf (ff-rumble-strong-magnitude (effect-data effect)) strength)
              (setf (ff-rumble-weak-magnitude (effect-data effect)) strength))
             (:periodic
+             (when (= strength (ff-periodic-magnitude (effect-data effect)))
+               (return-from rumble))
              (setf (ff-periodic-magnitude (effect-data effect)) strength)))
           (check-errno (<= 0 (ioctl (fd device) :send-effect effect)))
           (cffi:with-foreign-object (event '(:struct event))

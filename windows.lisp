@@ -263,6 +263,10 @@
   (loop for device being the hash-values of *device-table*
         collect device))
 
+(defun call-with-devices (function)
+  (loop for device being the hash-values of *device-table*
+        do (funcall function device)))
+
 (defun refresh-devices ()
   (let ((to-delete (list-devices)))
     (cffi:with-foreign-objects ((devices 'com:guid 256)

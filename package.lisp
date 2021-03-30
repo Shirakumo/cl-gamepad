@@ -53,6 +53,7 @@
    #:init
    #:shutdown
    #:list-devices
+   #:call-with-devices
    #:poll-devices
    #:poll-events
    #:drop-device
@@ -78,6 +79,7 @@
    #:init
    #:shutdown
    #:list-devices
+   #:call-with-devices
    #:poll-devices
    #:poll-events
    #:drop-device

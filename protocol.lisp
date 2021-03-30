@@ -177,6 +177,9 @@
   (defun shutdown ()
     (error "Unsupported platform."))
 
+  (defun call-with-devices (function)
+    ())
+
   (defun list-devices ()
     ())
 

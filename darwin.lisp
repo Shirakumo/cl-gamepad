@@ -269,6 +269,10 @@
 (defun list-devices ()
   (loop for v being the hash-values of *device-table* collect v))
 
+(defun call-with-devices (function)
+  (loop for device being the hash-values of *device-table*
+        do (funcall function device)))
+
 (defun call-with-polling (function mode timeout)
   (let ((s (etypecase timeout
              ((eql NIL) 0d0)

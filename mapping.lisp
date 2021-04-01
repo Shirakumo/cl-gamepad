@@ -109,8 +109,7 @@
                                :if-exists :supersede
                                :if-does-not-exist :create
                                :external-format :utf-8)
-    (format stream "~
-;;;; Device mapping definitions
+    (format stream ";;;; Device mapping definitions
 ;;; This file is auto-generated. Do not edit it manually
 ;;; unless you know what you are doing. You can generate
 ;;; the file from current mappings in your Lisp image via

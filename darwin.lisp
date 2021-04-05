@@ -299,7 +299,7 @@
 (defun rumble (device strength &key pan)
   (let ((effect (effect device))
         (strength (clamp 0 strength 1))
-        (pan (clamp -1 pan +1)))
+        (pan (clamp -1 (or pan 0) +1)))
     (when effect
       (with-device-failures (device)
         (cffi:with-foreign-objects ((definition '(:struct ff-effect))

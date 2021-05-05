@@ -370,32 +370,33 @@
   `(call-with-polling (lambda () ,@body) ,handle ,timeout))
 
 (defun poll-devices (&key timeout)
-  (let* ((ms (etypecase timeout
-               ((eql T) 1000)
-               ((eql NIL) 0)
-               ((real 0) (floor (* 1000 timeout)))))
-         (window (device-notifier-window *device-notifier*))
-         (timer (when timeout (set-timer window 0 ms (cffi:null-pointer)))))
-    (unwind-protect
-         (cffi:with-foreign-object (message '(:struct message))
-           (flet ((process ()
-                    (when (get-message message window 0 0)
-                      (translate-message message)
-                      (dispatch-message message))))
-             (loop
-               ;; First block with the timer if we have one
-               (when timer (process))
-               ;; Then remove remaining messages if there are any
-               (loop while (peek-message message window 0 0 0)
-                     do (process))
-               ;; If we got a HID message we can now refresh.
-               (when *devices-need-refreshing*
-                 (refresh-devices))
-                (if (eql T timeout)
-                    ;; This is required to get SBCL/etc to process interrupts.
-                    (finish-output)
-                    (return)))))
-      (when timer (kill-timer window timer)))))
+  (when (boundp '*device-notifier*)
+    (let* ((ms (etypecase timeout
+                 ((eql T) 1000)
+                 ((eql NIL) 0)
+                 ((real 0) (floor (* 1000 timeout)))))
+           (window (device-notifier-window *device-notifier*))
+           (timer (when timeout (set-timer window 0 ms (cffi:null-pointer)))))
+      (unwind-protect
+           (cffi:with-foreign-object (message '(:struct message))
+             (flet ((process ()
+                      (when (get-message message window 0 0)
+                        (translate-message message)
+                        (dispatch-message message))))
+               (loop
+                  ;; First block with the timer if we have one
+                  (when timer (process))
+                  ;; Then remove remaining messages if there are any
+                  (loop while (peek-message message window 0 0 0)
+                        do (process))
+                  ;; If we got a HID message we can now refresh.
+                  (when *devices-need-refreshing*
+                    (refresh-devices))
+                  (if (eql T timeout)
+                      ;; This is required to get SBCL/etc to process interrupts.
+                      (finish-output)
+                      (return)))))
+        (when timer (kill-timer window timer))))))
 
 (defmacro check-dinput-device (dev form)
   (let ((value (gensym "value")))

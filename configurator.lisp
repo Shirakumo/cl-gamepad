@@ -43,7 +43,10 @@
                                      (axis-labels +common-axes+)
                                      ignored-axes
                                      (mappings-file *default-mappings-file*))
-  (let* ((button-map (button-map device))
+  (let* ((device (etypecase device
+                   (device device)
+                   ((eql T) (first (list-devices)))))
+         (button-map (button-map device))
          (axis-map (axis-map device))
          (orientation-map (orientation-map device))
          (button-copy (copyhash button-map))

@@ -65,6 +65,13 @@
   :axes (0 :DPAD-H 1 :DPAD-V)
   :orientations (0 1.0 1 -1.0))
 
+(define-device-mapping (:EVDEV 1118 654)
+  :name "Microsoft X-Box 360 pad"
+  :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
+            :SELECT 316 :HOME 315 :START)
+  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
+
 (define-device-mapping (:EVDEV 1118 736)
   :name "8BitDo SN30 Pro+"
   :buttons (304 :A 305 :B 306 :X 307 :Y 308 :L1 312 :L3 309 :R1 313 :R3 310
@@ -142,7 +149,7 @@
   :buttons (589825 :A 589826 :B 589827 :X 589828 :Y 589829 :L1 589833 :L3
             589830 :R1 589834 :R3 589831 :SELECT 65669 :HOME 589832 :START)
   :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
-               :DPAD-H 65651 :DPAD-V)
+         :DPAD-H 65651 :DPAD-V)
   :orientations (65584 1.0 65585 -1.0 65586 1.0 65589 -1.0))
 
 (define-device-mapping (:IOKIT 1133 49674)

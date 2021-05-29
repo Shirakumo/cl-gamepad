@@ -14,7 +14,10 @@
   :bug-tracker "https://github.com/Shirakumo/cl-gamepad/issues"
   :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
   :build-operation "program-op"
-  :build-pathname #+windows "gamepad-configurator.exe" #-windows "gamepad-configurator"
+  :build-pathname
+  #+windows "gamepad-configurator.exe"
+  #+linux "gamepad-configurator.run"
+  #-(or windows linux) "gamepad-configurator.o"
   :entry-point "org.shirakumo.fraf.gamepad::configurator-main"
   :serial T
   :components ((:file "package")

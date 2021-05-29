@@ -141,23 +141,30 @@
        (format T "~& Axis   ~4a ~6a ~f" (event-code ev) (event-label ev) (event-value ev))))))
 
 (defun configurator-main ()
-  (handler-bind ((gamepad-error (lambda (e)
-                                  (declare (ignore e))
-                                  (invoke-restart 'drop-device))))
-    (init))
-  (ignore-errors
-   (load "device-maps.lisp"))
-  (loop
-     (out "-> Detected the following controllers:")
-     (poll-devices)
-     (loop for device in (list-devices)
-           for i from 1
-           do (out "~d) ~a" i (name device)))
-     (out "-> Please enter the number of a controller to map, or nothing to exit.~%")
-     (let ((input (ignore-errors (parse-integer (read-line *query-io*)))))
-       (if input
-           (configure-device (nth (1- input) (list-devices)) :mappings-file NIL)
-           (return))))
-  (out "-> Saving device mappings to ~s~%" "device-maps.lisp")
-  (save-device-mappings "device-maps.lisp")
-  (shutdown))
+  (with-simple-restart (quit "Quit.")
+    (handler-bind (#+sbcl
+                   (sb-sys:interactive-interrupt (lambda (e)
+                                                   (declare (ignore e))
+                                                   (invoke-restart 'quit))))
+      (handler-bind ((gamepad-error (lambda (e)
+                                      (declare (ignore e))
+                                      (invoke-restart 'drop-device))))
+        (init))
+      (ignore-errors
+       (load "device-maps.lisp"))
+      (unwind-protect
+           (progn
+             (loop
+                (out "-> Detected the following controllers:")
+                (poll-devices)
+                (loop for device in (list-devices)
+                      for i from 1
+                      do (out "~d) ~a" i (name device)))
+                (out "-> Please enter the number of a controller to map, or nothing to exit.~%")
+                (let ((input (ignore-errors (parse-integer (read-line *query-io*)))))
+                  (if input
+                      (configure-device (nth (1- input) (list-devices)) :mappings-file NIL)
+                      (return))))
+             (out "-> Saving device mappings to ~s~%" "device-maps.lisp")
+             (save-device-mappings "device-maps.lisp"))
+        (shutdown)))))

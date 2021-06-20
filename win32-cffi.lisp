@@ -46,7 +46,8 @@
 (cffi:defcenum (hid-device-type dword)
   (:mouse 0)
   (:keyboard 1)
-  (:hid 2))
+  (:hid 2)
+  (:unknown 3))
 
 (cffi:defcenum (hid-device-info-command :uint)
   (:device-name    #x20000007)

@@ -140,6 +140,15 @@
      (when (<= 0.8 (abs (event-value ev)))
        (format T "~& Axis   ~4a ~6a ~f" (event-code ev) (event-label ev) (event-value ev))))))
 
+(defun monitor-device (device)
+  (let ((device (etypecase device
+                  (device device)
+                  ((eql T) (first (list-devices))))))
+    (out "-> Monitoring controller ~s" (name device))
+    (loop do (flet ((process (event)
+                      (note-event event)))
+               (poll-events device #'process)))))
+
 (defun configurator-main ()
   (with-simple-restart (quit "Quit.")
     (handler-bind (#+sbcl
@@ -160,11 +169,15 @@
                 (loop for device in (list-devices)
                       for i from 1
                       do (out "~d) ~a" i (name device)))
-                (out "-> Please enter the number of a controller to map, or nothing to exit.~%")
+                (out "-> Please enter the number of a controller to configure, or nothing to exit.~%")
                 (let ((input (ignore-errors (parse-integer (read-line *query-io*)))))
-                  (if input
-                      (configure-device (nth (1- input) (list-devices)) :mappings-file NIL)
-                      (return))))
+                  (unless input
+                    (return))
+                  (out "-> Enter 1 to configure the device, 2 to monitor the device, or nothing to exit.~%")
+                  (case (ignore-errors (parse-integer (read-line *query-io*)))
+                    (1 (configure-device (nth (1- input) (list-devices)) :mappings-file NIL))
+                    (2 (monitor-device (nth (1- input) (list-devices))))
+                    (T (return)))))
              (out "-> Saving device mappings to ~s~%" "device-maps.lisp")
              (save-device-mappings "device-maps.lisp"))
         (shutdown)))))

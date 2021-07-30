@@ -19,7 +19,8 @@
    #:id-label)
   ;; configurator.lisp
   (:export
-   #:configure-device)
+   #:configure-device
+   #:monitor-device)
   ;; mapping.lisp
   (:export
    #:*default-mappings-file*

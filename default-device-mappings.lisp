@@ -129,6 +129,13 @@
   :axes (0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:EVDEV 8406 8203)
+  :name "Generic X-Box pad"
+  :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
+            :SELECT 315 :START)
+  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
+
 (define-device-mapping (:EVDEV 10462 4354)
   :name "Steam Controller"
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2

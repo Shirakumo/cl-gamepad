@@ -194,7 +194,7 @@
 
 (cffi:defcstruct (effect :conc-name effect-)
   (type effect-type)
-  (id :int16)
+  (id :uint16)
   (direction effect-direction)
   (trigger (:struct ff-trigger))
   (replay (:struct ff-replay))

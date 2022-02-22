@@ -72,7 +72,7 @@
     (memset effect 0 (cffi:foreign-type-size '(:struct effect)))
     (let ((replay (cffi:foreign-slot-pointer effect '(:struct effect) 'replay))
           (data (cffi:foreign-slot-pointer effect '(:struct effect) 'data)))
-      (setf (effect-id effect) -1)
+      (setf (effect-id effect) 65535)
       (setf (effect-direction effect) :up)
       (setf (ff-replay-length replay) 100)
       (block NIL

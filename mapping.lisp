@@ -37,6 +37,8 @@
 (defun update-mapping-in-device (device mapping)
   (when (getf mapping :name)
     (setf (slot-value device 'name) (getf mapping :name)))
+  (when (getf mapping :icon-type)
+    (setf (icon-type device) (getf mapping :icon-type)))
   (setf (button-map device) (or (getf mapping :buttons)
                                 (error "Malformed mapping, missing :BUTTONS")))
   (setf (axis-map device) (or (getf mapping :axes)
@@ -58,7 +60,8 @@
                     (device (list :name (name mapping)
                                   :buttons (button-map mapping)
                                   :axes (axis-map mapping)
-                                  :orientations (orientation-map mapping)))))
+                                  :orientations (orientation-map mapping)
+                                  :icon-type (icon-type mapping)))))
          (known (device-mapping id)))
     (cond (known
            ;; Update the values in place to immediately update all
@@ -66,6 +69,8 @@
            ;; necessary as the device default is probably less accurate
            (unless (getf known :name)
              (setf (getf known :name) (getf mapping :name)))
+           (when (getf mapping :icon-type)
+             (setf (getf known :icon-type) (getf mapping :icon-type)))
            (copyhash (getf mapping :axes) (getf known :axes))
            (copyhash (getf mapping :buttons) (getf known :buttons))
            (copyhash (getf mapping :orientations) (getf known :orientations)))
@@ -102,7 +107,8 @@
          (list :name ,(getf plist :name)
                :buttons (plist-map ',(getf plist :buttons))
                :axes (plist-map ',(getf plist :axes))
-               :orientations (plist-map ',(getf plist :orientations)))))
+               :orientations (plist-map ',(getf plist :orientations))
+               :icon-type ,(getf plist :icon-type :generic-xbox))))
 
 (defun save-device-mappings (&optional (file *default-mappings-file*))
   (with-open-file (stream file :direction :output
@@ -127,6 +133,7 @@
                                   #'mapping-id< :key #'car)
           do (format stream "~%(define-device-mapping ~s" id)
              (format stream "~%  :name ~s" (getf map :name))
+             (format stream "~%  :icon-type ~s" (getf map :icon-type :generic-xbox))
              (format stream "~%  :buttons ~s" (map-plist (getf map :buttons)))
              (format stream "~%  :axes ~s" (map-plist (getf map :axes)))
              (format stream "~%  :orientations ~s)~%" (map-plist (getf map :orientations))))))

@@ -256,7 +256,8 @@ See NAME
 See VENDOR
 See PRODUCT
 See VERSION
-See DRIVER")
+See DRIVER
+See ICON-TYPE")
   
   (function name
     "Returns a human-readable name for the device.
@@ -290,6 +291,22 @@ May be one of:
   :DINPUT  --- (Windows DirectInput)
   :XINPUT  --- (Windows XInput)
   :IOKIT   --- (Apple IOKit)
+
+See DEVICE")
+
+  (function icon-type
+   "Returns a symbol identifying what icons to use for the buttons.
+
+May be one of:
+
+  :GENERIC-NINTENDO
+  :GENERIC-XBOX
+  :GENERIC-PLAYSTATION
+  :NINTENDO-SWITCH
+  :DUALSHOCK-4
+
+or another kind of label. You should be prepared to default to
+:GENERIC-XBOX on encountering an unknown icon type.
 
 See DEVICE")
 

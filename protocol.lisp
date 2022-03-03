@@ -58,6 +58,12 @@
       :throttle "Throttle slider"
       :rudder "Rudder slider"))
 
+(define-global +icon-types+ #(:generic-nintendo
+                              :generic-xbox
+                              :generic-playstation
+                              :nintendo-switch
+                              :dualshock-4))
+
 (define-global +common-buttons+ #(:a :b :x :y :l1 :l2 :l3 :r1 :r2 :r3
                                   :dpad-l :dpad-r :dpad-u :dpad-d
                                   :select :home :start))
@@ -99,6 +105,7 @@
    (product :initarg :product :initform NIL :reader product)
    (version :initarg :version :initform NIL :reader version)
    (driver :initarg :driver :initform NIL :reader driver)
+   (icon-type :initarg :icon-type :initform :generic-xbox :accessor icon-type)
    (button-map :initarg :button-map :initform (make-hash-table :test 'eql) :accessor button-map)
    (axis-map :initarg :axis-map :initform (make-hash-table :test 'eql) :accessor axis-map)
    (orientation-map :initarg :orientation-map :initform (make-hash-table :test 'eql) :accessor orientation-map)

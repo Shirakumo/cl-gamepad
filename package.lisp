@@ -32,6 +32,7 @@
   (:export
    #:+labels+
    #:+label-descriptions+
+   #:+icon-types+
    #:gamepad-error
    #:event
    #:event-device
@@ -49,6 +50,7 @@
    #:product
    #:version
    #:driver
+   #:icon-type
    #:button
    #:axis
    #:init

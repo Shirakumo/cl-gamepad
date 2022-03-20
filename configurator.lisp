@@ -80,6 +80,7 @@
                         (setf (gethash (event-code event) button-map) :b)
                         (loop-finish))))
                (poll-events device #'process)))
+    
     (out "-> Determining faulty axes. Please do not touch your controller.")
     ;; Sleep and discard to prevent user fudging
     (sleep 1)
@@ -93,9 +94,11 @@
                (push (event-code event) ignored-axes))))
       (dotimes (i 4)
         (poll-events device #'process :timeout 0.25)))
+    
     (out "-> Mapping buttons.~%")
     (query-labels (remove :A (remove :B button-labels)) device button-map
                   (lambda (event) (typep event 'button-up)))
+    
     (out "-> Mapping axes.~%")
     (let ((states (make-hash-table :test 'eql)))
       (query-labels axis-labels device axis-map
@@ -111,6 +114,23 @@
                                (unless (gethash (event-code event) orientation-map)
                                  (setf (gethash (event-code event) orientation-map) (signum (event-value event))))
                                NIL))))))
+    
+    (out "-> What type of labels are found on the gamepad?~@[ [~a]~]"
+         (when (icon-type device) (getf +label-descriptions+ (icon-type device))))
+    (loop for icon-type in +icon-types+
+          for i from 1
+          do (out "~2d) ~a~%" i (getf +label-descriptions+ icon-type)))
+    (let ((int (parse-integer (read-line *query-io*) :junk-allowed T)))
+      (when int
+        (if (<= 0 int (1- (length +icon-types+)))
+            (setf (icon-type device) (aref +icon-types+ int))
+            (out "-> ~d is not a valid type. Try again." int))))
+
+    (out "-> What should the human-readable name be?~@[ [~a]~]" (name device))
+    (let ((name (string-trim '(#\Return #\Linefeed #\Space #\Tab) (read-line *query-io*))))
+      (when (string/= "" name)
+        (setf (name device) name)))
+    
     (cond (mappings-file
            (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")
            (loop do (flet ((process (event)

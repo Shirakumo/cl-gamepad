@@ -56,9 +56,16 @@
       :gas "Gas pedal"
       :brake "Brake pedal"
       :throttle "Throttle slider"
-      :rudder "Rudder slider"))
+      :rudder "Rudder slider"
+      :unknown "Unknown / Other"
+      :generic-nintendo "Generic Nintendo (B A Y X)"
+      :generic-xbox "Generic Xbox (A B X Y)"
+      :generic-playstation "Generic Playstation (✕ ◯ □ △)"
+      :nintendo-switch "Nintendo Switch (A B X Y + -)"
+      :dualshock-4 "DualShock 4+ (✕ ◯ □ △ share touchpad options)"))
 
-(define-global +icon-types+ #(:generic-nintendo
+(define-global +icon-types+ #(:unknown
+                              :generic-nintendo
                               :generic-xbox
                               :generic-playstation
                               :nintendo-switch

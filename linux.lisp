@@ -41,20 +41,35 @@
                  (setf (gethash id map) label))))
     map))
 
+;; See /usr/include/linux/input-event-codes.h
 (defun dev-gamepad-p (dev)
+  (flet ((gamepad-p ()
+           (and
+            ;; Check if it at least has A / B
+            (has-event-code dev :key #x130)
+            (has-event-code dev :key #x131)
+            ;; Check if it at least has a digital or analog DPAD or an axis
+            (or (and (has-event-code dev :key #x222)
+                     (has-event-code dev :key #x223)
+                     (has-event-code dev :key #x220)
+                     (has-event-code dev :key #x221))
+                (and (has-event-type dev :absolute-axis)
+                     (has-event-code dev :absolute-axis #x10)
+                     (has-event-code dev :absolute-axis #x11))
+                (and (has-event-type dev :absolute-axis)
+                     (has-event-code dev :absolute-axis #x00)
+                     (has-event-code dev :absolute-axis #x01)))))
+         (joystick-p ()
+           (and
+            (has-event-code dev :key #x120) ; trigger
+            (has-event-code dev :key #x121) ; thumb
+            (has-event-type dev :absolute-axis)
+            (and (has-event-code dev :absolute-axis #x00)
+                 (has-event-code dev :absolute-axis #x01))))))
   ;; KLUDGE: Heuristics
   (and (has-event-type dev :key)
-       ;; Check if it at least has A / B
-       (has-event-code dev :key #x130)
-       (has-event-code dev :key #x131)
-       ;; Check if it at least has a digital or analog DPAD
-       (or (and (has-event-code dev :key #x222)
-                (has-event-code dev :key #x223)
-                (has-event-code dev :key #x220)
-                (has-event-code dev :key #x221))
-           (and (has-event-type dev :absolute-axis)
-                (has-event-code dev :absolute-axis #x10)
-                (has-event-code dev :absolute-axis #x11)))))
+       (or (gamepad-p)
+           (joystick-p))))
 
 (defun probe-device-effect (fd)
   ;; We want to create an effect that lasts up to a tenth of a second of constant volume.

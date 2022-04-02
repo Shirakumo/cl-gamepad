@@ -65,11 +65,11 @@
             (has-event-code dev :key #x121) ; thumb
             (has-event-type dev :absolute-axis)
             (and (has-event-code dev :absolute-axis #x00)
-                 (has-event-code dev :absolute-axis #x01))))))
-  ;; KLUDGE: Heuristics
-  (and (has-event-type dev :key)
-       (or (gamepad-p)
-           (joystick-p))))
+                 (has-event-code dev :absolute-axis #x01)))))
+    ;; KLUDGE: Heuristics
+    (and (has-event-type dev :key)
+         (or (gamepad-p)
+             (joystick-p)))))
 
 (defun probe-device-effect (fd)
   ;; We want to create an effect that lasts up to a tenth of a second of constant volume.

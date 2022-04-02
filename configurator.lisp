@@ -117,7 +117,7 @@
     
     (out "-> What type of labels are found on the gamepad?~@[ [~a]~]"
          (when (icon-type device) (getf +label-descriptions+ (icon-type device))))
-    (loop for icon-type in +icon-types+
+    (loop for icon-type across +icon-types+
           for i from 1
           do (out "~2d) ~a~%" i (getf +label-descriptions+ icon-type)))
     (let ((int (parse-integer (read-line *query-io*) :junk-allowed T)))
@@ -129,7 +129,7 @@
     (out "-> What should the human-readable name be?~@[ [~a]~]" (name device))
     (let ((name (string-trim '(#\Return #\Linefeed #\Space #\Tab) (read-line *query-io*))))
       (when (string/= "" name)
-        (setf (name device) name)))
+        (setf (slot-value device 'name) name)))
     
     (cond (mappings-file
            (out "-> Complete. Save configuration? (<A> to confirm, <B> to revert)")

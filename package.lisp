@@ -62,7 +62,8 @@
    #:drop-device
    #:rumble
    #:dead-zone
-   #:ramp))
+   #:ramp
+   #:ensure-device))
 
 (defpackage #:org.shirakumo.fraf.gamepad.impl
   (:use #:cl)

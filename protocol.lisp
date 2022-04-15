@@ -183,6 +183,15 @@
   (check-type ramp function)
   (setf (aref (axis-ramps device) (label-id axis)) ramp))
 
+(defun ensure-device (device-ish)
+  (init)
+  (etypecase device-ish
+    (device device-ish)
+    ((eql T) (first (list-devices)))
+    (integer (nth device-ish (list-devices)))
+    (string (or (find device-ish (list-devices) :key #'name :test #'string-equal)
+                (error "No such device ~s" device-ish)))))
+
 #-(or linux win32 darwin)
 (progn
   (defun init ()

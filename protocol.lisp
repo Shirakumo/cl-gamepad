@@ -145,7 +145,7 @@
       whole))
 
 (defun button (button device)
-  (< 0 (bit (button-states device)) (label-id button)))
+  (< 0 (bit (button-states device) (label-id button))))
 
 (define-compiler-macro button (&whole whole button device &environment env)
   (if (constantp button env)

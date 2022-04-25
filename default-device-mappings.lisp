@@ -157,8 +157,8 @@
 (define-device-mapping (:EVDEV 1406 8201)
   :name "Pro Controller"
   :icon-type :NINTENDO-SWITCH
-  :buttons (304 :A 305 :B 306 :X 307 :Y 308 :L1 310 :L2 314 :L3 309 :R1 311 :R2
-            315 :R3 312 :SELECT 316 :HOME 313 :START)
+  :buttons (304 :A 305 :B 308 :X 307 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
+            318 :R3 314 :SELECT 316 :HOME 315 :START)
   :axes (0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 16 1.0 17 -1.0))
 

@@ -131,6 +131,10 @@
    ;; Need extra space since POVs take up twice as much room.
    (private-axis-state :initform (make-array (+ 4 (length +labels+)) :element-type 'single-float) :reader private-axis-state)))
 
+(defmethod initialize-instance :after ((device device) &key)
+  (when (xinput device)
+    (setf (sbit *xinput-taken* (xinput device)) 1)))
+
 (defun close-device (device)
   (when (xinput device)
     (setf (sbit *xinput-taken* (xinput device)) 0))
@@ -281,6 +285,8 @@
             for device = (ensure-device (cffi:mem-aref devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
       ;; In case DirectInput fails completely we scan for Xbox controllers manually.
+      (dolist (device (list-devices))
+        (describe device))
       (loop for i from 0 below 4
             for device = (find i (list-devices) :key #'xinput)
             do (when (eq :ok (get-xstate i xstate))
@@ -305,6 +311,7 @@
   (refresh-devices))
 
 (defun shutdown ()
+  (fill *xinput-taken* 0)
   (when (boundp '*device-notifier*)
     (unregister-device-notification (device-notifier-notification *device-notifier*))
     (destroy-window (device-notifier-window *device-notifier*))

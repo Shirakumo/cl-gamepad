@@ -170,13 +170,15 @@
     device))
 
 (defun init ()
-  (unless *device-notify*
-    (cffi:use-foreign-library evdev)
-    (let ((inotify (new-inotify :nonblock)))
-      (assert (<= 0 inotify))
-      (add-watch inotify "/dev/input" '(:create :delete))
-      (setf *device-notify* inotify))
-    (refresh-devices)))
+  (cond (*device-notify*
+         (list-devices))
+        (T
+         (cffi:use-foreign-library evdev)
+         (let ((inotify (new-inotify :nonblock)))
+           (assert (<= 0 inotify))
+           (add-watch inotify "/dev/input" '(:create :delete))
+           (setf *device-notify* inotify))
+         (refresh-devices))))
 
 (defun shutdown ()
   (when *device-notify*

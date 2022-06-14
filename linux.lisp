@@ -23,7 +23,8 @@
     map))
 
 (defun device-axis-map (dev)
-  (let ((map (make-hash-table :test 'eql :size (length +labels+))))
+  (let ((map (make-hash-table :test 'eql :size (length +labels+)))
+        (orientation (make-hash-table :test 'eql :size (length +labels+))))
     (loop for label across +labels+
           for id across #(NIL NIL NIL
                           NIL NIL NIL
@@ -38,8 +39,9 @@
                           #x08 #x09 #x0A #x06 #x07)
           do (dolist (id (if (listp id) id (list id)))
                (when (and id (has-event-code dev :absolute-axis id))
+                 (setf (gethash id orientation) (if (find label '(:l-v :r-v :dpad-v)) -1.0 1.0))
                  (setf (gethash id map) label))))
-    map))
+    (values map orientation)))
 
 ;; See /usr/include/linux/input-event-codes.h
 (defun dev-gamepad-p (dev)
@@ -130,17 +132,19 @@
       (cffi:with-foreign-object (dev :pointer)
         (assert (<= 0 (new-from-fd fd dev)))
         (let ((dev (cffi:mem-ref dev :pointer)))
-          (make-instance 'device :id (parse-integer (subseq path (length "/dev/input/event")))
-                                 :fd fd
-                                 :dev dev
-                                 :name (get-name dev)
-                                 :vendor (get-id-vendor dev)
-                                 :product (get-id-product dev)
-                                 :version (get-id-version dev)
-                                 :driver :evdev
-                                 :effect (probe-device-effect fd)
-                                 :button-map (device-button-map dev)
-                                 :axis-map (device-axis-map dev)))))))
+          (multiple-value-bind (axis-map orientation-map) (device-axis-map dev)
+            (make-instance 'device :id (parse-integer (subseq path (length "/dev/input/event")))
+                                   :fd fd
+                                   :dev dev
+                                   :name (get-name dev)
+                                   :vendor (get-id-vendor dev)
+                                   :product (get-id-product dev)
+                                   :version (get-id-version dev)
+                                   :driver :evdev
+                                   :effect (probe-device-effect fd)
+                                   :button-map (device-button-map dev)
+                                   :axis-map axis-map
+                                   :orientation-map orientation-map)))))))
 
 (defun close-device (device)
   (when (slot-boundp device 'dev)

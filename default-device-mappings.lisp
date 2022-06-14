@@ -176,16 +176,15 @@
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
             318 :R3 290 :DPAD-L 289 :SELECT 314 :HOME 316 :HOME 315 :START)
   :axes (21 :L2 20 :R2 0 :L-H 1 :R-H 3 :R-H 4 :R-V)
-  :orientations NIL)
+  :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 20 -1.0 21 -1.0))
 
 (define-device-mapping (:EVDEV 10462 4418)
   :name "Wireless Steam Controller"
   :icon-type :GENERIC-XBOX
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
-            318 :R3 290 :DPAD-L 547 :DPAD-L 546 :DPAD-R 544 :DPAD-U 545 :DPAD-D
-            289 :SELECT 314 :SELECT 316 :HOME 315 :START)
-  :axes (21 :L2 0 :L-H 20 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
-  :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 16 1.0 17 -1.0 20 1.0 21 1.0))
+            318 :R3 290 :DPAD-L 289 :DPAD-D 314 :SELECT 316 :HOME 315 :START)
+  :axes (21 :L2 20 :L-H 0 :L-H 1 :L-V 3 :R-H 4 :R-V)
+  :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 20 -1.0 21 -1.0))
 
 (define-device-mapping (:EVDEV 11720 24834)
   :name "8BitDo SN30 Pro+"

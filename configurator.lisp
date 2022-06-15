@@ -118,7 +118,7 @@
     (loop for icon-type across +icon-types+
           for i from 1
           do (out "~2d) ~a~%" i (getf +label-descriptions+ icon-type)))
-    (loop (let ((int (parse-integer (read-line *query-io*) :junk-allowed T)))
+    (loop (let ((int (1- (parse-integer (read-line *query-io*) :junk-allowed T))))
             (when int
               (if (<= 0 int (1- (length +icon-types+)))
                   (return (setf (icon-type device) (aref +icon-types+ int)))

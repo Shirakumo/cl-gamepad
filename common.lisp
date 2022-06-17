@@ -108,6 +108,8 @@
 
 (defun axis-to-float (label value min max)
   (let ((range (- max min)))
-    (case label
-      ((:l2 :r2) (float (/ (- value min) range)))
-      (T (- (* 2f0 (/ (- value min) range)) 1f0)))))
+    (if (= range 0)
+        0.0
+        (case label
+          ((:l2 :r2) (float (/ (- value min) range)))
+          (T (- (* 2f0 (/ (- value min) range)) 1f0))))))

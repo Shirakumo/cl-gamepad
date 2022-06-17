@@ -29,32 +29,32 @@
 (define-device-mapping (:DINPUT 1356 616)
   :name "Sony DualShock 3"
   :icon-type :GENERIC-PLAYSTATION
-  :buttons (2 :A 1 :B 3 :X 0 :Y 6 :L1 4 :L2 10 :L3 7 :R1 5 :R2 11 :R3 9 :SELECT
-            12 :HOME 8 :START)
+  :buttons (2 :A 1 :B 3 :X 0 :Y 6 :L1 10 :L3 7 :R1 11 :R3 9 :SELECT 12 :HOME 8
+            :START)
   :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 32 :DPAD-H 33 :DPAD-V)
   :orientations NIL)
 
 (define-device-mapping (:DINPUT 1356 1476)
   :name "Sony DualShock 4"
   :icon-type :DUALSHOCK-4
-  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
-            12 :HOME 9 :START)
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 10 :L3 5 :R1 11 :R3 8 :SELECT 12 :HOME 9
+            :START)
   :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
 
 (define-device-mapping (:DINPUT 1356 2508)
   :name "Sony DualShock 4"
   :icon-type :DUALSHOCK-4
-  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
-            12 :HOME 9 :START)
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 10 :L3 5 :R1 11 :R3 8 :SELECT 12 :HOME 9
+            :START)
   :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
 
 (define-device-mapping (:DINPUT 1356 3302)
   :name "Sony DualSense"
   :icon-type :DUALSHOCK-4
-  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
-            12 :HOME 9 :START)
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 10 :L3 5 :R1 11 :R3 8 :SELECT 12 :HOME 9
+            :START)
   :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
 

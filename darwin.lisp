@@ -201,8 +201,10 @@
 
 (defun ensure-device (dev)
   (or (gethash (cffi:pointer-address dev) *device-table*)
-      (setf (gethash (cffi:pointer-address dev) *device-table*)
-            (create-device-from-dev dev))))
+      (let ((dev (create-device-from-dev dev)))
+        (unless (blacklisted-p dev)
+          (setf (gethash (cffi:pointer-address dev) *device-table*) dev))
+        dev)))
 
 (defun close-device (device)
   (device-unschedule-from-run-loop (dev device) (get-current-run-loop) (run-loop-mode device))

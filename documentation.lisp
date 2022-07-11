@@ -35,6 +35,12 @@ See SAVE-DEVICE-MAPPINGS"))
 This file is loaded when the library is loaded.
 
 See SAVE-DEVICE-MAPPINGS")
+
+  (function blacklisted-p
+    "A place accessing whether the device is blacklisted or not.
+
+If T, the device will not be recognised on future initialisations
+of the library or future POLL-DEVICES calls.")
   
   (function device-mapping
     "A place accessing the device mapping associated with the given ID.

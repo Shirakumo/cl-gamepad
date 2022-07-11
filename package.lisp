@@ -24,6 +24,7 @@
   ;; mapping.lisp
   (:export
    #:*default-mappings-file*
+   #:blacklisted-p
    #:device-mapping
    #:remove-device-mapping
    #:define-device-mapping
@@ -87,7 +88,8 @@
    #:poll-devices
    #:poll-events
    #:drop-device
-   #:rumble)
+   #:rumble
+   #:blacklisted-p)
   (:local-nicknames
    (#:gamepad #:org.shirakumo.fraf.gamepad)
    #+windows (#:com #:org.shirakumo.com-on)

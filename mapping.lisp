@@ -10,6 +10,7 @@
                                                                   (error "You must COMPILE-FILE or LOAD this file."))))
 (defvar *default-mappings-file* (make-pathname :name "default-device-mappings" :type "lisp" :defaults *here*))
 (defvar *device-mappings* (make-hash-table :test 'equalp))
+(defvar *blacklist* (make-hash-table :test 'equalp))
 
 (defun normalize-mapping-id (id)
   (etypecase id
@@ -18,6 +19,12 @@
     (cons
      (check-type id (cons keyword (cons integer (cons integer null))))
      id)))
+
+(defun blacklisted-p (id)
+  (gethash (normalize-mapping-id id) *blacklist*))
+
+(defun (setf blacklisted-p) (value id)
+  (setf (gethash (normalize-mapping-id id) *blacklist*) value))
 
 (defun mapping-id< (a b)
   (destructuring-bind (ad av ap) a
@@ -127,6 +134,11 @@
 ;;;   (org.shirakumo.fraf.gamepad:configure-device device)
 ;;;
 \(in-package ~s)~%" (package-name #.*package*))
+    (loop for (id . black) in (sort (loop for k being the hash-keys of *blacklist*
+                                          for v being the hash-values of *blacklist*
+                                          collect (cons k v))
+                                    #'mapping-id< :key #'car)
+          do (when black (format stream "~%(setf (blacklisted-p '~s) T)~%" id)))
     (loop for (id . map) in (sort (loop for k being the hash-keys of *device-mappings*
                                         for v being the hash-values of *device-mappings*
                                         collect (cons k v))

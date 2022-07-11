@@ -165,7 +165,9 @@
          (device (gethash id *device-table*)))
     (unless device
       (setf device (make-device-from-path path))
-      (when (and device (dev-gamepad-p (dev device)))
+      (when (and device
+                 (dev-gamepad-p (dev device))
+                 (not (blacklisted-p device)))
         (setf (gethash id *device-table*) device)))
     device))
 

@@ -260,7 +260,7 @@
     (or (gethash guid-str *device-table*)
         (with-simple-restart (drop-device "Don't initialise ~a" guid-str)
           (let ((device (make-device-from-guid guid)))
-            (when device
+            (when (and device (not (blacklisted-p device)))
               (setf (gethash guid-str *device-table*) device)))))))
 
 (defun list-devices ()

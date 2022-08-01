@@ -285,8 +285,6 @@
             for device = (ensure-device (cffi:mem-aref devices 'com:guid i))
             do (setf to-delete (delete device to-delete)))
       ;; In case DirectInput fails completely we scan for Xbox controllers manually.
-      (dolist (device (list-devices))
-        (describe device))
       (loop for i from 0 below 4
             for device = (find i (list-devices) :key #'xinput)
             do (when (eq :ok (get-xstate i xstate))

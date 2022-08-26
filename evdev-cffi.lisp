@@ -314,8 +314,9 @@
   (error 'linux-error :code code :function-name function-name
                       :message (or message (error-message code))))
 
-(defmacro check-errno (predicate &body cleanup)
+(defmacro check-errno (predicate &body case-forms)
   `(unless ,predicate
-     ,@cleanup
      (let ((code errno))
-       (linux-error code))))
+       (case code
+         ,@case-forms
+         (T (linux-error code))))))

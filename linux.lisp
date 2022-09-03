@@ -197,12 +197,18 @@
   (loop for device being the hash-values of *device-table*
         do (funcall function device)))
 
-(defun refresh-devices ()
-  (let ((to-delete (list-devices)))
+(defun refresh-devices (&optional function)
+  (let ((to-delete (list-devices))
+        (previous (list-devices))
+        (function (ensure-function function)))
     (loop for path in (directory "/dev/input/event*")
           for device = (ensure-device path)
           do (setf to-delete (delete device to-delete)))
-    (mapc #'close-device to-delete)
+    (dolist (device to-delete)
+      (funcall function :remove device)
+      (close-device device))
+    (dolist (device (set-difference (list-devices) previous))
+      (funcall function :add device))
     (list-devices)))
 
 (defun prefix-p (prefix string)
@@ -229,7 +235,7 @@
                ;; Force interrupt handling
                (finish-output)))))
 
-(defun process-connect-events ()
+(defun process-connect-events (function)
   (cffi:with-foreign-objects ((buffer '(:struct inotify) 32))
     (loop for read = (u-read *device-notify* buffer (* 1024 (cffi:foreign-type-size '(:struct inotify))))
           while (< 0 read)
@@ -241,14 +247,19 @@
                         (incf i (+ (inotify-length struct) (cffi:foreign-type-size '(:struct inotify))))
                         (when (prefix-p "event" path)
                           (cond ((find :create (inotify-mask struct))
-                                 (ensure-device (format NIL "/dev/input/~a" path)))
+                                 (let ((device (ensure-device (format NIL "/dev/input/~a" path))))
+                                   (when device (funcall function :add device))))
                                 ((find :delete (inotify-mask struct))
                                  (let* ((id (parse-integer (subseq path (length "event"))))
                                         (device (gethash id *device-table*)))
-                                   (when device (close-device device)))))))))))
+                                   (when device
+                                     (unwind-protect
+                                          (funcall function :remove device)
+                                       (close-device device))))))))))))
 
-(defun poll-devices (&key timeout)
-  (call-with-polling #'process-connect-events *device-notify* :timeout timeout))
+(defun poll-devices (&key timeout function)
+  (let ((function (ensure-function function)))
+    (call-with-polling (lambda () (process-connect-events function)) *device-notify* :timeout timeout)))
 
 (defun translate-event (function event device)
   (let ((time (logand (+ (* 1000 (event-sec event))

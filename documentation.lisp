@@ -410,6 +410,14 @@ TIMEOUT can be a one of the following:
             noticed. Returns as soon as a change happened, or some
             time until the timeout runs out.
 
+FUNCTION can be a function designator, which is called with two
+arguments:
+   ACTION --- Either :ADD or :REMOVE.
+   DEVICE --- The DEVICE object that has been changed. If ACTION was
+              :REMOVE, you should not query the device anymore, and
+              instead ensure that it is no longer referenced from
+              your program.
+
 You should call this function whenever you want to allow changing the
 connected devices, or whenever an existing device is disconnected.
 

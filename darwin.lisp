@@ -10,6 +10,7 @@
 (defvar *run-loop-mode*)
 (defvar *device-table* (make-hash-table :test 'eql))
 (defvar *event-handler*)
+(defvar *device-handler* NIL)
 
 (defun one-of (thing &rest choices)
   (member thing choices))
@@ -22,13 +23,18 @@
 
 (cffi:defcallback device-match :void ((user :pointer) (result io-return) (sender :pointer) (dev :pointer))
   (declare (ignore user result sender))
-  (ensure-device dev))
+  (let ((device (ensure-device dev)))
+    (when *device-handler*
+      (funcall *device-handler* :add device))))
 
 (cffi:defcallback device-remove :void ((user :pointer) (result io-return) (sender :pointer) (dev :pointer))
   (declare (ignore user result sender))
   (let ((device (gethash (cffi:pointer-address dev) *device-table*)))
     (when device
-      (close-device device))))
+      (unwind-protect
+           (when *device-handler*
+             (funcall *device-handler* :remove device))
+        (close-device device)))))
 
 (cffi:defcallback device-changed :void ((dev :pointer) (result io-return) (sender :pointer) (value :pointer))
   (declare (ignore result sender))
@@ -214,8 +220,10 @@
   (remhash (cffi:pointer-address (dev device)) *device-table*)
   (slot-makunbound device 'dev))
 
-(defun refresh-devices ()
-  (let ((to-delete (list-devices)))
+(defun refresh-devices (&optional function)
+  (let ((to-delete (list-devices))
+        (previous (list-devices))
+        (function (ensure-function function)))
     (with-cf-objects ((set (manager-device-set *hid-manager*)))
       (cond ((cffi:null-pointer-p set) ;; Apparently this can just be null on some OS X versions. Great...
              (poll-devices))
@@ -226,7 +234,11 @@
                  (loop for i from 0 below size
                        for dev = (cffi:mem-aref devices :pointer i)
                        do (setf to-delete (delete (ensure-device dev) to-delete)))))
-             (mapc #'close-device to-delete))))
+             (dolist (device to-delete)
+               (funcall function :remove device)
+               (close-device device))
+             (dolist (device (set-difference (list-devices) previous))
+               (funcall function :add device)))))
     (list-devices)))
 
 (defun init ()
@@ -290,8 +302,9 @@
 (defmacro with-polling ((mode timeout) &body body)
   `(call-with-polling (lambda () ,@body) ,mode ,timeout))
 
-(defun poll-devices (&key timeout)
-  (with-polling (*run-loop-mode* timeout)))
+(defun poll-devices (&key timeout function)
+  (let ((*device-handler* function))
+    (with-polling (*run-loop-mode* timeout))))
 
 (defun poll-events (device function &key timeout)
   (let ((*event-handler* function))

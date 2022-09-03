@@ -271,8 +271,10 @@
   (loop for device being the hash-values of *device-table*
         do (funcall function device)))
 
-(defun refresh-devices ()
-  (let ((to-delete (list-devices)))
+(defun refresh-devices (&optional function)
+  (let ((to-delete (list-devices))
+        (previous (list-devices))
+        (function (ensure-function function)))
     (cffi:with-foreign-objects ((devices 'com:guid 256)
                                 (enum-data '(:struct enum-user-data))
                                 (xstate '(:struct xstate)))
@@ -291,7 +293,11 @@
                  (if device
                      (setf to-delete (delete device to-delete))
                      (make-device-from-xinput i))))
-      (mapc #'close-device to-delete)
+      (dolist (device to-delete)
+        (funcall function :remove device)
+        (close-device device))
+      (dolist (device (set-difference (list-devices) previous))
+        (funcall function :add device))
       (setf *devices-need-refreshing* NIL)
       (list-devices))))
 
@@ -374,13 +380,14 @@
 (defmacro with-polling ((handle timeout) &body body)
   `(call-with-polling (lambda () ,@body) ,handle ,timeout))
 
-(defun poll-devices (&key timeout)
+(defun poll-devices (&key timeout function)
   (when (boundp '*device-notifier*)
     (let* ((ms (etypecase timeout
                  ((eql T) 1000)
                  ((eql NIL) 0)
                  ((real 0) (floor (* 1000 timeout)))))
            (window (device-notifier-window *device-notifier*))
+           (function (ensure-function function))
            (timer (when timeout (set-timer window 0 ms (cffi:null-pointer)))))
       (unwind-protect
            (cffi:with-foreign-object (message '(:struct message))
@@ -396,7 +403,7 @@
                         do (process))
                   ;; If we got a HID message we can now refresh.
                   (when *devices-need-refreshing*
-                    (refresh-devices))
+                    (refresh-devices function))
                   (if (eql T timeout)
                       ;; This is required to get SBCL/etc to process interrupts.
                       (finish-output)

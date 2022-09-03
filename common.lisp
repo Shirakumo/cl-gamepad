@@ -113,3 +113,9 @@
         (case label
           ((:l2 :r2) (float (/ (- value min) range)))
           (T (- (* 2f0 (/ (- value min) range)) 1f0))))))
+
+(defun ensure-function (function)
+  (etypecase function
+    (null (constantly NIL))
+    (function function)
+    (symbol (fdefinition function))))

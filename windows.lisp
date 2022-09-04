@@ -137,7 +137,8 @@
 
 (defun close-device (device)
   (when (xinput device)
-    (setf (sbit *xinput-taken* (xinput device)) 0))
+    (setf (sbit *xinput-taken* (xinput device)) 0)
+    (setf (slot-value device 'xinput) NIL))
   (when (effect device)
     (effect-unload (effect device))
     (setf (slot-value device 'effect) NIL))
@@ -145,8 +146,9 @@
     (device-unacquire (dev device))
     (device-set-event-notification (dev device) (cffi:null-pointer))
     (com:release (dev device)))
-  (slot-makunbound device 'dev)
-  (remhash (com:guid-string (guid device)) *device-table*))
+  ;; NOTE: We do **not** unhook the device from its *device-table* here, as we expect
+  ;;       it to be cleaned up the next time REFRESH-DEVICES is called, instead.
+  (setf (slot-value device 'dev) NIL))
 
 (defun make-effect (dev)
   (cffi:with-foreign-objects ((ff-effect '(:struct ff-effect))
@@ -295,7 +297,8 @@
                      (make-device-from-xinput i))))
       (dolist (device to-delete)
         (funcall function :remove device)
-        (close-device device))
+        (close-device device)
+        (remhash (com:guid-string (guid device)) *device-table*))
       (dolist (device (set-difference (list-devices) previous))
         (funcall function :add device))
       (setf *devices-need-refreshing* NIL)
@@ -323,6 +326,7 @@
     (makunbound '*device-notifier*))
   (when (boundp '*directinput*)
     (mapc #'close-device (list-devices))
+    (clrhash *device-table*)
     (com:release *directinput*)
     (makunbound '*directinput*))
   (when (boundp '*poll-event*)
@@ -433,6 +437,7 @@
                        while (/= packet (xstate-packet state))
                        do (setf packet (xstate-packet state))
                           (process-xinput-state (cffi:foreign-slot-pointer state '(:struct xstate) 'gamepad) device function)))))
+            ((null dev))
             ((poll-device-p device)
              (cffi:with-foreign-objects ((state '(:struct joystate)))
                (loop do (check-dinput-device dev (device-poll dev))

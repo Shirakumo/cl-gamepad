@@ -155,9 +155,10 @@
     (setf (slot-value device 'effect) NIL)
     (when (slot-boundp device 'fd)
       (u-close (fd device))))
+  ;; NOTE: we do **not** unhook the device from its *device-table* here, as we expect
+  ;;       it to be cleaned up the next time POLL-DEVICES is called, instead.
   (slot-makunbound device 'dev)
-  (slot-makunbound device 'fd)
-  (remhash (id device) *device-table*))
+  (setf (slot-value device 'fd) NIL))
 
 (defun ensure-device (path)
   (let* ((path (namestring path))
@@ -187,6 +188,7 @@
     (u-close *device-notify*)
     (setf *device-notify* NIL)
     (mapc #'close-device (list-devices))
+    (clrhash *device-table*)
     T))
 
 (defun list-devices ()
@@ -206,7 +208,8 @@
           do (setf to-delete (delete device to-delete)))
     (dolist (device to-delete)
       (funcall function :remove device)
-      (close-device device))
+      (close-device device)
+      (remhash (id device) *device-table*))
     (dolist (device (set-difference (list-devices) previous))
       (funcall function :add device))
     (list-devices)))
@@ -255,7 +258,8 @@
                                    (when device
                                      (unwind-protect
                                           (funcall function :remove device)
-                                       (close-device device))))))))))))
+                                       (close-device device)
+                                       (remhash (id device) *device-table*))))))))))))
 
 (defun poll-devices (&key timeout function)
   (let ((function (ensure-function function)))
@@ -299,8 +303,9 @@
 
 (defun poll-events (device function &key timeout)
   (with-device-failures (device)
-    (call-with-polling (lambda () (call-with-device-events function device))
-                       (fd device) :timeout timeout)))
+    (when (fd device)
+      (call-with-polling (lambda () (call-with-device-events function device))
+                         (fd device) :timeout timeout))))
 
 (defun rumble (device strength &key pan)
   (declare (ignore pan))

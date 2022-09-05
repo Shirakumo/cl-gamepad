@@ -480,8 +480,8 @@
       ((< offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons))
        (let ((code (+ 8 (* 2 (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'pov)) (cffi:foreign-type-size 'dword))))))
          (multiple-value-bind (x y) (pov-to-cartesian (object-data-data state))
-           (signal-axis-move function device time code (gethash (+ 0 code) (axis-map device)) x)
-           (signal-axis-move function device time code (gethash (+ 1 code) (axis-map device)) y))))
+           (signal-axis-move function device time (+ 0 code) (gethash (+ 0 code) (axis-map device)) x)
+           (signal-axis-move function device time (+ 1 code) (gethash (+ 1 code) (axis-map device)) y))))
       ;; Button
       (T
        (let* ((code (/ (- offset (cffi:foreign-slot-offset '(:struct joystate) 'buttons)) (cffi:foreign-type-size 'byte)))

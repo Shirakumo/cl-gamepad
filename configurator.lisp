@@ -153,10 +153,10 @@
 (defun note-event (ev)
   (typecase ev
     (button-up
-     (format T "~& Button ~4a ~6a" (event-code ev) (event-label ev)))
+     (format T "~& Button ~4a ~6a~%" (event-code ev) (event-label ev)))
     (axis-move
      (when (<= 0.8 (abs (event-value ev)))
-       (format T "~& Axis   ~4a ~6a ~f" (event-code ev) (event-label ev) (event-value ev))))))
+       (format T "~& Axis   ~4a ~6a ~f~%" (event-code ev) (event-label ev) (event-value ev))))))
 
 (defun monitor-device (device)
   (let ((device (ensure-device device)))

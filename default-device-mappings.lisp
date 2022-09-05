@@ -57,8 +57,8 @@
   :icon-type :DUALSHOCK-4
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 10 :L3 5 :R1 11 :R3 8 :SELECT 12 :HOME 9
             :START)
-  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 7 :DPAD-H 8 :DPAD-V)
-  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 7 1.0 8 1.0))
+  :axes (3 :L2 4 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 8 :DPAD-H 9 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 1.0 5 -1.0 8 1.0 9 1.0))
 
 (define-device-mapping (:DINPUT 1406 8201)
   :name "Pro Controller"

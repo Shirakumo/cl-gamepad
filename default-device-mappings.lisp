@@ -93,7 +93,7 @@
 
 (define-device-mapping (:EVDEV 1118 2816)
   :name "Xbox Elite Series 2"
-  :icon-type :GENERIC-XBOX
+  :icon-type :XBOX-ONE
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
             :SELECT 316 :HOME 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
@@ -101,7 +101,7 @@
 
 (define-device-mapping (:EVDEV 1118 2821)
   :name "Xbox Elite Wireless Controller"
-  :icon-type :GENERIC-XBOX
+  :icon-type :XBOX-ONE
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 158
             :SELECT 316 :HOME 315 :START)
   :axes (10 :L2 9 :R2 0 :L-H 1 :L-V 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V)
@@ -109,7 +109,7 @@
 
 (define-device-mapping (:EVDEV 1118 2834)
   :name "Microsoft X-Box One pad"
-  :icon-type :GENERIC-XBOX
+  :icon-type :XBOX-ONE
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
             :SELECT 167 :HOME 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
@@ -206,7 +206,7 @@
 
 (define-device-mapping (:EVDEV 10462 4607)
   :name "Steam Deck"
-  :icon-type :GENERIC-XBOX
+  :icon-type :XBOX-ONE
   :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
             :SELECT 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)

@@ -69,7 +69,8 @@
                               :generic-xbox
                               :generic-playstation
                               :nintendo-switch
-                              :dualshock-4))
+                              :dualshock-4
+                              :xbox-one))
 
 (define-global +common-buttons+ #(:a :b :x :y :l1 :l2 :l3 :r1 :r2 :r3
                                   :dpad-l :dpad-r :dpad-u :dpad-d

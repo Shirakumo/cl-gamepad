@@ -164,6 +164,14 @@
   :axes (0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:EVDEV 2064 3)
+  :name "Sony DualShock 2"
+  :icon-type :GENERIC-PLAYSTATION
+  :buttons (290 :A 289 :B 291 :X 288 :Y 294 :L1 292 :L2 298 :L3 295 :R1 293 :R2
+            299 :R3 296 :SELECT 297 :START)
+  :axes (0 :L-H 1 :L-V 5 :R-H 2 :R-V 16 :DPAD-H 17 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 -1.0 5 1.0 16 1.0 17 -1.0))
+
 (define-device-mapping (:EVDEV 3853 95)
   :name "HORI CO.,LTD. Fighting Commander 4"
   :icon-type :DUALSHOCK-4

@@ -176,19 +176,22 @@
   (cond (*device-notify*
          (list-devices))
         (T
-         (cffi:use-foreign-library evdev)
+         (unless (cffi:foreign-library-loaded-p 'evdev)
+           (cffi:use-foreign-library evdev))
          (let ((inotify (new-inotify :nonblock)))
-           (assert (<= 0 inotify))
-           (add-watch inotify "/dev/input" '(:create :delete))
-           (setf *device-notify* inotify))
+           (cond ((<= 0 inotify)
+                  (add-watch inotify "/dev/input" '(:create :delete))
+                  (setf *device-notify* inotify))
+                 (T
+                  (warn "Failed to initialize inotify, won't be able to detect new gamepads at runtime!"))))
          (refresh-devices))))
 
 (defun shutdown ()
+  (mapc #'close-device (list-devices))
+  (clrhash *device-table*)
   (when *device-notify*
     (u-close *device-notify*)
     (setf *device-notify* NIL)
-    (mapc #'close-device (list-devices))
-    (clrhash *device-table*)
     T))
 
 (defun list-devices ()
@@ -262,8 +265,9 @@
                                        (remhash (id device) *device-table*))))))))))))
 
 (defun poll-devices (&key timeout function)
-  (let ((function (ensure-function function)))
-    (call-with-polling (lambda () (process-connect-events function)) *device-notify* :timeout timeout)))
+  (when *device-notify*
+    (let ((function (ensure-function function)))
+      (call-with-polling (lambda () (process-connect-events function)) *device-notify* :timeout timeout))))
 
 (defun translate-event (function event device)
   (let ((time (logand (+ (* 1000 (event-sec event))

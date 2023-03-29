@@ -13,6 +13,7 @@
 
 (setf (blacklisted-p '(:EVDEV 1386 244)) T) ;; Wacom Cintiq 24HD Pad
 (setf (blacklisted-p '(:EVDEV 1386 817)) T) ;; Wacom Express Key Remote Pad
+(setf (blacklisted-p '(:EVDEV 9580 109)) T) ;; Huion Kamvas Pro 16
 
 (define-device-mapping (:DINPUT 121 6)
   :name "JPD-UDV-01"

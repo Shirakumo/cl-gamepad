@@ -28,6 +28,8 @@
                (:file "corefoundation-cffi" :if-feature :darwin)
                (:file "iokit-cffi" :if-feature :darwin)
                (:file "darwin" :if-feature :darwin)
+               (:file "nx-cffi" :if-feature :nx)
+               (:file "nx" :if-feature :nx)
                (:file "default-device-mappings")
                (:file "documentation"))
   :defsystem-depends-on (:trivial-features)

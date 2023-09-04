@@ -1,0 +1,129 @@
+(in-package #:org.shirakumo.fraf.gamepad.impl)
+
+(defvar *device-list* (make-array MAX-DEVICES))
+(defvar *device-count* 0)
+
+(defclass device (gamepad:device)
+  ((id :initarg :id :accessor id)
+   (index :initarg :index :accessor index)
+   (pointer :initarg :pointer :accessor pointer)))
+
+(defun init (&optional multiplayer)
+  (unless (cffi:foreign-library-loaded-p 'nxgamepad)
+    (cffi:use-foreign-library nxgamepad))
+  (direct-init multiplayer)
+  (refresh-devices))
+
+(defun shutdown ()
+  (direct-shutdown)
+  (setf *device-count* 0))
+
+(defun call-with-devices (function)
+  (loop for device across *device-list*
+        do (funcall function device)))
+
+(defun list-devices ()
+  (coerce *devicte-list* 'list))
+
+(defun call-with-polling (function timeout)
+  (typecase timeout
+    (null
+     (funcall function))
+    ((eql T)
+     (loop (funcall function)
+           (sleep 0.0001)))
+    (real
+     (loop with start = (get-internal-real-time)
+           with end = (* INTERNAL-TIME-UNITS-PER-SECOND timeout)
+           for duration = (- (get-internal-real-time) start)
+           for value = (funcall function)
+           do (cond (value
+                     (return value))
+                    ((<= timeout duration)
+                     (return)))))))
+
+(defun make-label-table (labels)
+  (let ((table (make-hash-table :test 'eql :size (length labels))))
+    (dotimes (i (length labels) table)
+      (setf (gethash (aref labels i) table) i))))
+
+(defun make-device (index pointer)
+  (make-instance 'device
+                 :id (device-id pointer)
+                 :index index
+                 :pointer pointer
+                 :name (device-name pointer)
+                 :vendor 1406 ; Nintendo
+                 :product (case (device-style pointer)
+                            (:pro-controller 8201)
+                            (:handheld 8192)
+                            (:joy-dual 8206)
+                            (:joy-left 8198)
+                            (:joy-right 8199)
+                            (T 8201))
+                 :version 0
+                 :driver :nx
+                 :axis-map (make-label-table *nx-axis-labels*)
+                 :button-map (make-label-table *nx-button-labels*)
+                 :icon-type :intendo-switch))
+
+(defun refresh-devices (&optional function)
+  (cffi:with-foreign-object (list :pointer MAX-DEVICES)
+    (let ((count (direct-list list MAX-DEVICES))
+          (new-list (make-array MAX-DEVICES))
+          (function (ensure-function function)))
+      (declare (dynamic-extent new-list))
+      (loop for i from 0 below count
+            for pointer = (cffi:mem-aref list :pointer i)
+            for id = (device-id pointer)
+            for existing = (find id *device-list* :key #'id)
+            do (cond (existing
+                      (setf (index existing) i)
+                      (setf (pointer existing) pointer)
+                      (setf (aref new-list i) existing))
+                     (T
+                      (let ((dev (make-device i pointer)))
+                        (setf (aref new-list i) dev)
+                        (funcall function :add dev)))))
+      (loop for i from 0 below *device-count*
+            for dev = (aref *device-list* i)
+            do (unless (find dev new-list)
+                 (funcall function :remove dev)))
+      (replace *device-list* new-list)
+      (setf *device-count* count))))
+
+(defun poll-devices (&key timeout function)
+  (call-with-polling (lambda ()
+                       (when (direct-refresh-devices)
+                         (refresh-devices function)))
+                     timeout))
+
+(defun update-device (device &optional function)
+  (let ((function (ensure-function function))
+        (new-buttons (device-buttons (pointer device)))
+        (new-axes (cffi:foreign-slot-pointer (pointer device) '(:struct device) 'analog))
+        (existing-buttons (button-states device))
+        (existing-axes (axis-states device))
+        (button-labels *NX-BUTTON-LABELS*)
+        (axis-labels *NX-AXIS-LABELS*))
+    (dotimes (i BUTTON-COUNT)
+      (unless (eql (logbitp i new-buttons) (< 0 (sbit existing-buttons i)))
+        (if (logbitp i new-buttons)
+            (signal-button-down* function device 0 i (aref button-labels i))
+            (signal-button-up* function device 0 i (aref button-labels i)))))
+    (dotimes (i AXIS-COUNT)
+      (let ((val (cffi:mem-aref new-axes i)))
+        (unless (= val (aref existing-axes i))
+          (signal-axis-move function device 0 i (aref axis-labels i) val))))))
+
+(defun poll-events (device function &key timeout)
+  (call-with-polling (lambda ()
+                       (when (direct-poll-device (index device))
+                         (update-device device function)))
+                     timeout))
+
+(defun rumble (device strength &key pan low)
+  (declare (ignore pan))
+  (if (< 0 (device-rumble (index device) (or low strength) strength))
+      :ok
+      :unsupported))

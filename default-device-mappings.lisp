@@ -158,6 +158,15 @@
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:EVDEV 1406 816)
+  :name "Wii U Pro Controller"
+  :icon-type :NINTENDO-SWITCH
+  :buttons (305 :A 304 :B 307 :X 308 :Y 310 :L1 312 :L2 317 :L3 311 :R1 313 :R2
+            318 :R3 546 :DPAD-L 547 :DPAD-R 544 :DPAD-U 545 :DPAD-D 314 :SELECT
+            316 :HOME 315 :START)
+  :axes (0 :L-H 1 :L-V 3 :R-H 4 :R-V)
+  :orientations (0 1.0 1 -1.0 3 1.0 4 -1.0))
+
 (define-device-mapping (:EVDEV 1406 8201)
   :name "Pro Controller"
   :icon-type :NINTENDO-SWITCH
@@ -189,6 +198,14 @@
             :SELECT 315 :START)
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
+
+(define-device-mapping (:EVDEV 8406 42769)
+  :name "PowerA Wired GameCube-style Switch Controller"
+  :icon-type :GENERIC-NINTENDO
+  :buttons (306 :A 307 :B 305 :X 304 :Y 308 :L1 310 :L2 314 :L3 309 :R1 311 :R2
+            315 :R3 312 :SELECT 316 :HOME 313 :START)
+  :axes (0 :L-H 1 :L-V 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 5 -1.0 16 1.0 17 -1.0))
 
 (define-device-mapping (:EVDEV 9571 1397)
   :name "Retro Fighters Defender"
@@ -321,11 +338,3 @@
             14 :DPAD-U 15 :DPAD-D 16 :SELECT 18 :START)
   :axes (7 :L2 10 :R2 19 :L-H 20 :L-V 21 :R-H 22 :R-V)
   :orientations (7 1.0 10 1.0 19 1.0 20 1.0 21 1.0 22 1.0))
-
-(define-device-mapping (:EVDEV 8406 42769)
-  :name "PowerA Wired GameCube-style Switch Controller"
-  :icon-type :GENERIC-NINTENDO
-  :buttons (306 :A 307 :B 305 :X 304 :Y 308 :L1 310 :L2 314 :L3 309 :R1 311 :R2
-                315 :R3 312 :SELECT 316 :HOME 313 :START)
-  :axes (0 :L-H 1 :L-V 2 :R-H 5 :R-V 16 :DPAD-H 17 :DPAD-V)
-  :orientations (0 1.0 1 -1.0 2 1.0 5 -1.0 16 1.0 17 -1.0))

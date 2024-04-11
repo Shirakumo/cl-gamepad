@@ -77,6 +77,30 @@
   :axes (0 :DPAD-H 1 :DPAD-V)
   :orientations (0 1.0 1 -1.0))
 
+(define-device-mapping (:DINPUT 3853 146)
+  :name "Hori Pokken Controller"
+  :icon-type :GENERIC-NINTENDO
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            12 :HOME 9 :START 13 :CAPTURE)
+  :axes (8 :DPAD-H 9 :DPAD-V)
+  :orientations NIL)
+
+(define-device-mapping (:DINPUT 4292 33472)
+  :name "Multi-Platform Gamepad GP2040-CE (D-Input)"
+  :icon-type :GENERIC-XBOX
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            9 :START 12 :HOME 13 :CAPTURE)
+  :axes (8 :DPAD-H 9 :DPAD-V)
+  :orientations NIL)
+
+(define-device-mapping (:DINPUT 5426 1025)
+  :name "Multi-Platform Gamepad GP2040-CE (PS4)"
+  :icon-type :GENERIC-PLAYSTATION
+  :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
+            12 :HOME 9 :START 13 :CAPTURE)
+  :axes (3 :L2 4 :R2 8 :DPAD-H 9 :DPAD-V)
+  :orientations NIL)
+
 (define-device-mapping (:EVDEV 1118 654)
   :name "Microsoft X-Box 360 pad"
   :icon-type :GENERIC-XBOX

@@ -9,7 +9,7 @@
                           :l1 :l2 :l3
                           :r1 :r2 :r3
                           :dpad-l :dpad-r :dpad-u :dpad-d
-                          :select :home :start
+                          :select :home :start :capture
                           :l-h :l-v :r-h :r-v
                           :dpad-h :dpad-v
                           :tilt-x :tilt-y :tilt-z
@@ -34,6 +34,7 @@
       :select "Left center button (select/share/minus)"
       :home "Middle center button (logo/home)"
       :start "Right center button (start/options/plus)"
+      :capture "Lower center button (capture/touchpad)"
       :l-h "Left stick horizontal axis"
       :l-v "Left stick vertical axis"
       :r-h "Right stick horizontal axis"

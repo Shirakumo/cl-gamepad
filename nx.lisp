@@ -1,6 +1,6 @@
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
-(defvar *device-list* (make-array MAX-DEVICES))
+(defvar *device-list* (make-array MAX-DEVICES :initial-element NIL))
 (defvar *device-count* 0)
 
 (defclass device (gamepad:device)
@@ -19,11 +19,12 @@
   (setf *device-count* 0))
 
 (defun call-with-devices (function)
-  (loop for device across *device-list*
-        do (funcall function device)))
+  (loop for i from 0 below *device-count*
+        do (funcall function (aref *device-list* i))))
 
 (defun list-devices ()
-  (coerce *devicte-list* 'list))
+  (loop for i from 0 below *device-count*
+        collect (aref *device-list* i)))
 
 (defun call-with-polling (function timeout)
   (typecase timeout
@@ -70,13 +71,15 @@
 (defun refresh-devices (&optional function)
   (cffi:with-foreign-object (list :pointer MAX-DEVICES)
     (let ((count (direct-list list MAX-DEVICES))
-          (new-list (make-array MAX-DEVICES))
+          (new-list (make-array MAX-DEVICES :initial-element NIL))
           (function (ensure-function function)))
       (declare (dynamic-extent new-list))
       (loop for i from 0 below count
             for pointer = (cffi:mem-aref list :pointer i)
             for id = (device-id pointer)
-            for existing = (find id *device-list* :key #'id)
+            for existing = (loop for i from 0 below *device-count*
+                                 for device = (aref *device-list* i)
+                                 do (when (eql id device) (return device)))
             do (cond (existing
                       (setf (index existing) i)
                       (setf (pointer existing) pointer)
@@ -109,8 +112,8 @@
     (dotimes (i BUTTON-COUNT)
       (unless (eql (logbitp i new-buttons) (< 0 (sbit existing-buttons i)))
         (if (logbitp i new-buttons)
-            (signal-button-down* function device 0 i (aref button-labels i))
-            (signal-button-up* function device 0 i (aref button-labels i)))))
+            (signal-button-down function device 0 i (aref button-labels i))
+            (signal-button-up function device 0 i (aref button-labels i)))))
     (dotimes (i AXIS-COUNT)
       (let ((val (cffi:mem-aref new-axes i)))
         (unless (= val (aref existing-axes i))

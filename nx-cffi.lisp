@@ -52,7 +52,7 @@
   (id :int)
   (style device-style)
   (analog :float :count 4)
-  (buttons buttons)
+  (buttons :uint32)
   (player :int)
   (name :string))
 

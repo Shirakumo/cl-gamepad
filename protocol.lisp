@@ -188,7 +188,7 @@
     (string (or (find device-ish (list-devices) :key #'name :test #'string-equal)
                 (error "No such device ~s" device-ish)))))
 
-#-(or linux win32 darwin)
+#-(or linux win32 darwin nx)
 (progn
   (defun init ()
     (error "Unsupported platform."))

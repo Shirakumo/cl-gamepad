@@ -15,7 +15,8 @@
   (refresh-devices))
 
 (defun shutdown ()
-  (direct-shutdown)
+  (when (cffi:foreign-library-loaded-p 'nxgamepad)
+    (direct-shutdown))
   (setf *device-count* 0))
 
 (defun call-with-devices (function)

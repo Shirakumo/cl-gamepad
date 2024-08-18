@@ -11,7 +11,7 @@
 (defun init (&optional multiplayer)
   (unless (cffi:foreign-library-loaded-p 'nxgamepad)
     (cffi:use-foreign-library nxgamepad))
-  (direct-init multiplayer)
+  (direct-init (if multiplayer 1 0))
   (refresh-devices))
 
 (defun shutdown ()
@@ -94,7 +94,8 @@
             do (unless (find dev new-list)
                  (funcall function :remove dev)))
       (replace *device-list* new-list)
-      (setf *device-count* count))))
+      (setf *device-count* count)
+      (list-devices))))
 
 (defun poll-devices (&key timeout function)
   (call-with-polling (lambda ()
@@ -116,7 +117,7 @@
             (signal-button-down function device 0 i (aref button-labels i))
             (signal-button-up function device 0 i (aref button-labels i)))))
     (dotimes (i AXIS-COUNT)
-      (let ((val (cffi:mem-aref new-axes i)))
+      (let ((val (cffi:mem-aref new-axes :float i)))
         (unless (= val (aref existing-axes i))
           (signal-axis-move function device 0 i (aref axis-labels i) val))))))
 

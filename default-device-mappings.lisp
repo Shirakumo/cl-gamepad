@@ -207,6 +207,13 @@
   :axes (0 :L-H 1 :L-V 5 :R-H 2 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 -1.0 5 1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:EVDEV 2079 58369)
+  :name "Generic SNES-style USB Gamepad"
+  :icon-type :GENERIC-NINTENDO
+  :buttons (290 :A 289 :B 291 :X 288 :Y 292 :L1 293 :R1 296 :SELECT 297 :START)
+  :axes (0 :DPAD-H 1 :DPAD-V)
+  :orientations (0 1.0 1 -1.0))
+
 (define-device-mapping (:EVDEV 3853 95)
   :name "HORI CO.,LTD. Fighting Commander 4"
   :icon-type :DUALSHOCK-4

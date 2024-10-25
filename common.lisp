@@ -2,7 +2,7 @@
 
 (defvar *here* #.(or *compile-file-pathname* *load-pathname* *default-pathname-defaults*))
 (defvar *static* (make-pathname :name NIL :type NIL :defaults (merge-pathnames "static/" *here*)))
-(pushnew *static* cffi:*foreign-library-directories*)
+#+cffi (pushnew *static* cffi:*foreign-library-directories*)
 
 ;;; Allow relaying events to the user without allocating fresh event instances
 (gamepad::define-global +button-down-event+ (gamepad::make-button-down NIL 0 0 NIL))

@@ -33,6 +33,6 @@
                (:file "default-device-mappings")
                (:file "documentation"))
   :defsystem-depends-on (:trivial-features)
-  :depends-on (:cffi
+  :depends-on ((:feature (:or :linux :windows :darwin :nx) :cffi)
                (:feature :windows :com-on)
                :documentation-utils))

@@ -5,7 +5,7 @@
 (defvar *directinput*)
 (defvar *device-notifier*)
 (defvar *poll-event*)
-(defvar *xinput-taken* #*0000)
+(defvar *xinput-taken* (make-array 4 :element-type 'bit))
 (defconstant EVENT-BUFFER-COUNT 32)
 
 ;;; error helpers

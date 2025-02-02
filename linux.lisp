@@ -219,7 +219,7 @@
   (let ((tsec (etypecase timeout
                 ((eql T) 0.5)
                 ((eql NIL) 0)
-                ((float 0) timeout))))
+                ((real 0) timeout))))
     (cffi:with-foreign-objects ((pollfd '(:struct pollfd)))
       (setf (pollfd-fd pollfd) fd)
       (setf (pollfd-events pollfd) :in)

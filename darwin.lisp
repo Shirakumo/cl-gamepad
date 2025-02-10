@@ -1,5 +1,10 @@
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
+(set 'cl-user::*foreign-system-libraries*
+     (union (when (boundp 'cl-user::*foreign-system-libraries*)
+              (symbol-value 'cl-user::*foreign-system-libraries*))
+            '(corefoundation iokit forcefeedback)))
+
 (defvar *hid-manager*)
 (defvar *run-loop-mode*)
 (defvar *device-table* (make-hash-table :test 'eql))

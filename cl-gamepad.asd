@@ -21,6 +21,7 @@
                (:file "common")
                (:file "evdev-cffi" :if-feature :linux)
                (:file "linux" :if-feature :linux)
+               (:file "freebsd" :if-feature :freebsd)
                (:file "win32-cffi" :if-feature :windows)
                (:file "xinput-cffi" :if-feature :windows)
                (:file "dinput-cffi" :if-feature :windows)

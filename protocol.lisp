@@ -99,8 +99,16 @@
 (defstruct (button-down (:include event)
                         (:constructor make-button-down (device time code label))))
 
+(defmethod print-object ((event button-down) stream)
+  (print-unreadable-object (event stream :type T)
+    (format stream "~a" (or (event-label event) (event-code event)))))
+
 (defstruct (button-up (:include event)
                       (:constructor make-button-up (device time code label))))
+
+(defmethod print-object ((event button-up) stream)
+  (print-unreadable-object (event stream :type T)
+    (format stream "~a" (or (event-label event) (event-code event)))))
 
 (defstruct (axis-move (:include event)
                       (:constructor make-axis-move (device time code label value))

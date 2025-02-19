@@ -14,7 +14,9 @@
                           :dpad-h :dpad-v
                           :tilt-x :tilt-y :tilt-z
                           :move-x :move-y :move-z
-                          :wheel :gas :brake :throttle :rudder))
+                          :wheel :gas :brake :throttle :rudder
+                          :l-l :l-r :l-u :l-d
+                          :r-l :r-r :r-u :r-d))
 
 (define-global +label-descriptions+
     '(:a "Lower button"
@@ -57,7 +59,15 @@
       :generic-xbox "Generic Xbox (A B X Y)"
       :generic-playstation "Generic Playstation (✕ ◯ □ △)"
       :nintendo-switch "Nintendo Switch (A B X Y + -)"
-      :dualshock-4 "DualShock 4+ (✕ ◯ □ △ share touchpad options)"))
+      :dualshock-4 "DualShock 4+ (✕ ◯ □ △ share touchpad options)"
+      :l-r "Left stick right"
+      :l-l "Left stick left"
+      :l-u "Left stick up"
+      :l-d "Left stick down"
+      :r-r "Right stick right"
+      :r-l "Right stick left"
+      :r-u "Right stick up"
+      :r-d "Right stick down"))
 
 (define-global +icon-types+ #(:unknown
                               :generic-nintendo

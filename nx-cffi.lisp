@@ -46,7 +46,9 @@
   :joy-dual
   :joy-left
   :joy-right
-  :pro-controller)
+  :pro-controller
+  :debug-pad
+  :unknown)
 
 (cffi:defcstruct (device :conc-name device-)
   (id :int)

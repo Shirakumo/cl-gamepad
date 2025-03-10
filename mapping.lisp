@@ -132,12 +132,12 @@
                                           for v being the hash-values of *blacklist*
                                           collect (cons k v))
                                     #'mapping-id< :key #'car)
-          do (when black (format stream "~%(setf (blacklisted-p '~s) T)~%" id)))
+          do (when black (format stream "~%(setf (blacklisted-p '~s) ~s)" id black)))
     (loop for (id . map) in (sort (loop for k being the hash-keys of *device-mappings*
                                         for v being the hash-values of *device-mappings*
                                         collect (cons k v))
                                   #'mapping-id< :key #'car)
-          do (format stream "~%(define-device-mapping ~s" id)
+          do (format stream "~&~%(define-device-mapping ~s" id)
              (format stream "~%  :name ~s" (getf map :name))
              (format stream "~%  :icon-type ~s" (getf map :icon-type :generic-xbox))
              (format stream "~%  :buttons ~s" (map-plist (getf map :buttons)))

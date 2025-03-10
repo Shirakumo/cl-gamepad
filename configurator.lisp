@@ -131,7 +131,7 @@
                                  (:A
                                   (setf (device-mapping device) device)
                                   (save-device-mappings mappings-file)
-                                  (out "-> Saved.")
+                                  (out "-> Saved to ~a" (namestring mappings-file))
                                   (loop-finish))
                                  (:B
                                   (copyhash button-copy button-map)

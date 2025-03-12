@@ -89,7 +89,7 @@
   :name "Multi-Platform Gamepad GP2040-CE (D-Input)"
   :icon-type :GENERIC-XBOX
   :buttons (1 :A 2 :B 0 :X 3 :Y 4 :L1 6 :L2 10 :L3 5 :R1 7 :R2 11 :R3 8 :SELECT
-            9 :START 12 :HOME 13 :CAPTURE)
+            12 :HOME 9 :START 13 :CAPTURE)
   :axes (8 :DPAD-H 9 :DPAD-V)
   :orientations NIL)
 

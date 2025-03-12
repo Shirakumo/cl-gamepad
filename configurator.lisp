@@ -118,7 +118,7 @@
                   (return (setf (icon-type device) (aref +icon-types+ int)))
                   (out "-> ~d is not a valid type. Try again." int)))))
 
-    (out "-> What should the human-readable name be?~@[ [~a]~]" (name device))
+    (out "-> What should the human-readable name be?~@[ [~a]~]~%" (name device))
     (let ((name (string-trim '(#\Return #\Linefeed #\Space #\Tab) (read-line *query-io*))))
       (when (string/= "" name)
         (setf (slot-value device 'name) name)))

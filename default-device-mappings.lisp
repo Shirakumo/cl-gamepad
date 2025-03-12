@@ -278,6 +278,14 @@
   :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
   :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
 
+(define-device-mapping (:EVDEV 11720 12555)
+  :name "8BitDo Ultimate 2"
+  :icon-type :GENERIC-XBOX
+  :buttons (304 :A 305 :B 307 :X 308 :Y 310 :L1 317 :L3 311 :R1 318 :R3 314
+            :SELECT 316 :HOME 315 :START)
+  :axes (2 :L2 5 :R2 0 :L-H 1 :L-V 3 :R-H 4 :R-V 16 :DPAD-H 17 :DPAD-V)
+  :orientations (0 1.0 1 -1.0 2 1.0 3 1.0 4 -1.0 5 1.0 16 1.0 17 -1.0))
+
 (define-device-mapping (:EVDEV 11720 24834)
   :name "8BitDo SN30 Pro+"
   :icon-type :GENERIC-NINTENDO

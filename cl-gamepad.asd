@@ -7,7 +7,7 @@
   :homepage "https://Shirakumo.github.io/cl-gamepad/"
   :bug-tracker "https://github.com/Shirakumo/cl-gamepad/issues"
   :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
-  :build-operation "program-op"
+  :build-operation "deploy-console-op"
   :build-pathname
   #+windows "gamepad-configurator.exe"
   #+linux "gamepad-configurator.run"
@@ -32,7 +32,7 @@
                (:file "nx" :if-feature :nx)
                (:file "default-device-mappings")
                (:file "documentation"))
-  :defsystem-depends-on (:trivial-features)
+  :defsystem-depends-on (:trivial-features :deploy)
   :depends-on ((:feature (:or :linux :windows :darwin :nx) :cffi)
                (:feature :windows :com-on)
                :documentation-utils))

@@ -159,6 +159,46 @@
                       (note-event event)))
                (poll-events device #'process)))))
 
+(defun %query-for-device ()
+  (loop
+    (poll-devices)
+    (unless (list-devices)
+      (out "-> No controllers detected. Polling...")
+      (loop until (list-devices)
+            do (poll-devices)
+               (sleep 0.1)))
+    (out "-> Detected the following controllers:")
+    (loop for device in (list-devices)
+          for i from 1
+          do (out "~d) ~a" i (name device)))
+    (out "-> Please enter the number of a controller to configure, or q to exit.~%")
+    (let* ((input (read-line *query-io*))
+           (num (ignore-errors (parse-integer input))))
+      (cond ((string-equal "q" input)
+             (return))
+            ((string-equal "" input)
+             (return (first (list-devices))))
+            ((null num)
+             (out "-> Please enter a proper command."))
+            ((not (< 0 num (1+ (length (list-devices)))))
+             (out "-> Please enter a proper controller ID."))
+            (T
+             (return (nth (1- num) (list-devices))))))))
+
+(defun %query-device-action ()
+  (loop
+    (out "-> Enter 1 to configure the device, 2 to monitor the device, or q to go back.~%")
+    (let* ((input (read-line *query-io*))
+           (num (ignore-errors (parse-integer input))))
+      (cond ((string-equal "q" input)
+             (return))
+            ((string-equal "" input)
+             (return 1))
+            ((or (null num) (not (<= 1 num 2)))
+             (out "-> Please enter a proper command."))
+            (T
+             (return num))))))
+
 (defun configurator-main ()
   (with-simple-restart (quit "Quit.")
     (handler-bind (#+sbcl
@@ -174,20 +214,12 @@
       (unwind-protect
            (progn
              (loop
-                (out "-> Detected the following controllers:")
-                (poll-devices)
-                (loop for device in (list-devices)
-                      for i from 1
-                      do (out "~d) ~a" i (name device)))
-                (out "-> Please enter the number of a controller to configure, or nothing to exit.~%")
-                (let ((input (ignore-errors (parse-integer (read-line *query-io*)))))
-                  (unless input
-                    (return))
-                  (out "-> Enter 1 to configure the device, 2 to monitor the device, or nothing to exit.~%")
-                  (case (ignore-errors (parse-integer (read-line *query-io*)))
-                    (1 (configure-device (nth (1- input) (list-devices)) :mappings-file NIL))
-                    (2 (monitor-device (nth (1- input) (list-devices))))
-                    (T (return)))))
+               (let ((dev (%query-for-device)))
+                 (unless dev (return))
+                 (case (%query-device-action)
+                   (1 (configure-device dev :mappings-file NIL))
+                   (2 (monitor-device dev))
+                   (T (return)))))
              (out "-> Saving device mappings to ~s~%" "device-maps.lisp")
              (save-device-mappings "device-maps.lisp"))
         (shutdown)))))

@@ -10,27 +10,38 @@
   (format *query-io* "~&~?" str args)
   (finish-output *query-io*))
 
-(defun query-labels (labels device map confirm)
+(defun query-button-press (device confirm)
+  (loop with tentative = NIL
+        do (flet ((process (event)
+                    (typecase event
+                      (button-down
+                       (setf tentative (event-code event)))
+                      (button-up
+                       (when (and (eql tentative (event-code event))
+                                  (funcall confirm event))
+                         (loop-finish))))))
+             (poll-events device #'process))))
+
+(defun query-labels (labels device map &optional (confirm (constantly T)))
   (when (< 0 (length labels))
     (loop with i = 0
           for label = (aref labels i)
           for id = (inverse-gethash label map)
           do (out "Press <~a>~@[ (~a)~]~@[ ~a~] ~60t(<A> to skip, <B> to undo)"
                   label (getf +label-descriptions+ label) id)
-             (loop do (flet ((process (event)
-                               (when (or (when (typep event 'button-up)
-                                           (case (event-label event)
-                                             (:A
-                                              (out "  Skipped")
-                                              (when id (remhash id map))
-                                              (incf i))
-                                             (:B (decf i))))
-                                         (when (funcall confirm event)
-                                           (out "  Mapped to ~d" (event-code event))
-                                           (incf i)
-                                           (setf (gethash (event-code event) map) label)))
-                                 (loop-finish))))
-                        (poll-events device #'process)))
+             (flet ((process (event)
+                      (when (or (case (event-label event)
+                                  (:A
+                                   (out "  Skipped")
+                                   (when id (remhash id map))
+                                   (incf i))
+                                  (:B (decf i)))
+                                (when (funcall confirm event)
+                                  (out "  Mapped to ~d" (event-code event))
+                                  (incf i)
+                                  (setf (gethash (event-code event) map) label)))
+                        (loop-finish))))
+               (query-button-press device #'process))
           while (<= 0 i (1- (length labels))))))
 
 (defun configure-device (device &key (button-labels +common-buttons+)
@@ -61,17 +72,13 @@
     ;; Drop events until now.
     (poll-events device 'null)
     (out "Press <A> (~a)" (getf +label-descriptions+ :a))
-    (loop do (flet ((process (event)
-                      (when (typep event 'button-up)
-                        (setf (gethash (event-code event) button-map) :a)
-                        (loop-finish))))
-               (poll-events device #'process)))
+    (flet ((process (event)
+             (setf (gethash (event-code event) button-map) :a)))
+      (query-button-press device #'process))
     (out "Press <B> (~a)" (getf +label-descriptions+ :b))
-    (loop do (flet ((process (event)
-                      (when (typep event 'button-up)
-                        (setf (gethash (event-code event) button-map) :b)
-                        (loop-finish))))
-               (poll-events device #'process)))
+    (flet ((process (event)
+             (setf (gethash (event-code event) button-map) :b)))
+      (query-button-press device #'process))
     
     (out "-> Determining faulty axes. Please do not touch your controller.")
     ;; Sleep and discard to prevent user fudging
@@ -88,8 +95,7 @@
         (poll-events device #'process :timeout 0.25)))
     
     (out "-> Mapping buttons.~%")
-    (query-labels (remove :A (remove :B button-labels)) device button-map
-                  (lambda (event) (typep event 'button-up)))
+    (query-labels (remove :A (remove :B button-labels)) device button-map)
     
     (out "-> Mapping axes.~%")
     (let ((states (make-hash-table :test 'eql)))

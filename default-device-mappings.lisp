@@ -376,6 +376,16 @@
          :DPAD-H 65651 :DPAD-V)
   :orientations NIL)
 
+(define-device-mapping (:IOKIT 1356 3570)
+  :name "Sony DualSense Edge"
+  :icon-type :DUALSHOCK-4
+  :buttons (589826 :A 589827 :B 589825 :X 589828 :Y 589829 :L1 589831 :L2
+            589835 :L3 589830 :R1 589832 :R2 589836 :R3 589833 :SELECT 589837
+            :HOME 589834 :START)
+  :axes (65587 :L2 65588 :R2 65584 :L-H 65585 :L-V 65586 :R-H 65589 :R-V 65650
+         :DPAD-H 65651 :DPAD-V)
+  :orientations NIL)
+
 (define-device-mapping (:IOKIT 1406 8201)
   :name "Pro Controller"
   :icon-type :NINTENDO-SWITCH

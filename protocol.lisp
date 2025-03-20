@@ -16,7 +16,9 @@
                           :move-x :move-y :move-z
                           :wheel :gas :brake :throttle :rudder
                           :l-l :l-r :l-u :l-d
-                          :r-l :r-r :r-u :r-d))
+                          :r-l :r-r :r-u :r-d
+                          :l4 :l5 :l6
+                          :r4 :r5 :r6))
 
 (define-global +label-descriptions+
     '(:a "Lower button"
@@ -67,7 +69,13 @@
       :r-r "Right stick right"
       :r-l "Right stick left"
       :r-u "Right stick up"
-      :r-d "Right stick down"))
+      :r-d "Right stick down"
+      :l4 "Left backside paddle 1"
+      :l5 "Left backside paddle 2"
+      :l6 "Left backside paddle 3"
+      :r4 "Right backside paddle 1"
+      :r5 "Right backside paddle 2"
+      :r6 "Right backside paddle 3"))
 
 (define-global +icon-types+ #(:unknown
                               :generic-nintendo

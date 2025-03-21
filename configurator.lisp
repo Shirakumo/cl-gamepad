@@ -201,7 +201,7 @@
     (out "-> Detected the following controllers:")
     (loop for device in (list-devices)
           for i from 1
-          do (out "~d) ~a" i (name device)))
+          do (out "~d) ~a ~60t[~4,'0x:~4,'0x]" i (name device) (vendor device) (product device)))
     (out "-> Please enter the number of a controller to configure, or q to exit.~%")
     (let* ((input (read-line *query-io*))
            (num (ignore-errors (parse-integer input))))
@@ -210,9 +210,9 @@
             ((string-equal "" input)
              (return (first (list-devices))))
             ((null num)
-             (out "-> Please enter a proper command."))
-            ((not (< 0 num (1+ (length (list-devices)))))
              (out "-> Please enter a proper controller ID."))
+            ((not (< 0 num (1+ (length (list-devices)))))
+             (out "-> The entered ID is out of range."))
             (T
              (return (nth (1- num) (list-devices))))))))
 

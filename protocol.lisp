@@ -91,6 +91,10 @@
 
 (define-global +common-axes+ #(:l2 :r2 :l-h :l-v :r-h :r-v :dpad-h :dpad-v))
 
+(define-global +common-extra-buttons+ #(:capture :l4 :l5 :l6 :r4 :r5 :r6))
+
+(define-global +common-extra-axes+ #(:tilt-x :tilt-y :tilt-z))
+
 (define-condition gamepad-error (error)
   ())
 
@@ -205,11 +209,13 @@
   (check-type ramp function)
   (setf (aref (axis-ramps device) (label-id axis)) ramp))
 
-(defun ensure-device (device-ish)
+(defun ensure-device (device-ish &optional refresh)
   (init)
+  (when refresh (poll-devices))
   (etypecase device-ish
     (device device-ish)
-    ((eql T) (first (list-devices)))
+    ((eql T) (or (first (list-devices))
+                 (error "No devices recognised!")))
     (integer (nth device-ish (list-devices)))
     (string (or (find device-ish (list-devices) :key #'name :test #'string-equal)
                 (error "No such device ~s" device-ish)))))

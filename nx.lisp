@@ -1,5 +1,6 @@
 (in-package #:org.shirakumo.fraf.gamepad.impl)
 
+(defvar *default-device*)
 (defvar *device-list* (make-array MAX-DEVICES :initial-element NIL))
 (defvar *device-count* 0)
 
@@ -67,7 +68,21 @@
                  :driver :nx
                  :axis-map (make-label-table *nx-axis-labels*)
                  :button-map (make-label-table *nx-button-labels*)
-                 :icon-type :intendo-switch))
+                 :icon-type :nintendo-switch))
+
+(setf *default-device*
+      (make-instance 'device
+                     :id 0
+                     :index 0
+                     :pointer (cffi:null-pointer)
+                     :name "Nintendo Switch"
+                     :vendor 1406
+                     :product 8192
+                     :version 0
+                     :driver :nx
+                     :axis-map (make-label-table *nx-axis-labels*)
+                     :button-map (make-label-table *nx-button-labels*)
+                     :icon-type :nintendo-switch))
 
 (defun refresh-devices (&optional function)
   (cffi:with-foreign-object (list :pointer MAX-DEVICES)

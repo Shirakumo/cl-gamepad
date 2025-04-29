@@ -106,9 +106,9 @@
       (setf (effect-id effect) 65535)
       (setf (effect-direction effect) :up)
       (setf (ff-replay-length replay) 100)
-      (cond ((or (init-effect fd effect :constant)
-                  (init-effect fd effect :rumble)
-                  (init-effect fd effect :periodic))
+      (cond ((or (init-effect fd effect :rumble)
+                 (init-effect fd effect :constant)
+                 (init-effect fd effect :periodic))
              effect)
             (T
              (cffi:foreign-free effect)

@@ -45,7 +45,8 @@
   (setf (axis-map device) (or (getf mapping :axes)
                               (error "Malformed mapping, missing :AXES")))
   (setf (orientation-map device) (or (getf mapping :orientations)
-                                     (make-hash-table :test 'eql))))
+                                     (make-hash-table :test 'eql)))
+  (apply #'reinitialize-instance device (getf mapping :initargs)))
 
 (defmethod initialize-instance :after ((device device) &key)
   (let ((mapping (device-mapping device)))
@@ -62,7 +63,8 @@
                                   :buttons (button-map mapping)
                                   :axes (axis-map mapping)
                                   :orientations (orientation-map mapping)
-                                  :icon-type (icon-type mapping)))))
+                                  :icon-type (icon-type mapping)
+                                  :initargs ()))))
          (known (device-mapping id)))
     (cond (known
            ;; Update the values in place to immediately update all
@@ -74,7 +76,8 @@
              (setf (getf known :icon-type) (getf mapping :icon-type)))
            (copyhash (getf mapping :axes) (getf known :axes))
            (copyhash (getf mapping :buttons) (getf known :buttons))
-           (copyhash (getf mapping :orientations) (getf known :orientations)))
+           (copyhash (getf mapping :orientations) (getf known :orientations))
+           (setf (getf known :initargs) (getf mapping :initargs)))
           (T
            (setf (gethash id *device-mappings*) mapping)
            ;; Need to go through all devices to see if they match
@@ -109,7 +112,11 @@
                :buttons (plist-map ',(getf plist :buttons))
                :axes (plist-map ',(getf plist :axes))
                :orientations (plist-map ',(getf plist :orientations))
-               :icon-type ,(getf plist :icon-type :generic-xbox))))
+               :icon-type ,(getf plist :icon-type :generic-xbox)
+               :initargs (list ,@(loop for (k v) on plist by #'cddr
+                                    for special = (member k '(:name :buttons :axes :orientations :icon-type))
+                                    unless special collect k
+                                    unless special collect v)))))
 
 (defun save-device-mappings (&optional (file *default-mappings-file*))
   (with-open-file (stream file :direction :output
@@ -142,4 +149,5 @@
              (format stream "~%  :icon-type ~s" (getf map :icon-type :generic-xbox))
              (format stream "~%  :buttons ~s" (map-plist (getf map :buttons)))
              (format stream "~%  :axes ~s" (map-plist (getf map :axes)))
-             (format stream "~%  :orientations ~s)~%" (map-plist (getf map :orientations))))))
+             (format stream "~%  :orientations ~s" (map-plist (getf map :orientations)))
+             (format stream "~{~%  ~(~s~) ~s~})~%" (getf map :initargs)))))

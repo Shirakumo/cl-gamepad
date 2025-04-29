@@ -67,6 +67,27 @@
          (or (gamepad-p)
              (joystick-p)))))
 
+(defun init-effect (fd effect type)
+  (let ((data (cffi:foreign-slot-pointer effect '(:struct effect) 'data)))
+    (ecase type
+      (:constant
+       (setf (effect-type effect) :constant)
+       (setf (ff-constant-level data) #x7FFF)
+       (<= 0 (ioctl fd :send-effect effect)))
+      (:rumble
+       (setf (effect-type effect) :rumble)
+       (setf (ff-rumble-strong-magnitude data) #x7FFF)
+       (setf (ff-rumble-weak-magnitude data) #x7FFF)
+       (<= 0 (ioctl fd :send-effect effect)))
+      (:periodic
+       (setf (effect-type effect) :periodic)
+       (setf (ff-periodic-waveform data) :sine)
+       (setf (ff-periodic-period data) 1)
+       (setf (ff-periodic-magnitude data) #x7FFF)
+       (setf (ff-periodic-offset data) 0)
+       (setf (ff-periodic-phase data) 0)
+       (<= 0 (ioctl fd :send-effect effect))))))
+
 (defun probe-device-effect (fd)
   ;; We want to create an effect that lasts up to a tenth of a second of constant volume.
   ;; Unfortunately devices lie to us about what they support, so we have to
@@ -81,40 +102,27 @@
   ;; expose the minimal viable interface to the users, namely strength of rumbling.
   (let ((effect (cffi:foreign-alloc '(:struct effect))))
     (memset effect 0 (cffi:foreign-type-size '(:struct effect)))
-    (let ((replay (cffi:foreign-slot-pointer effect '(:struct effect) 'replay))
-          (data (cffi:foreign-slot-pointer effect '(:struct effect) 'data)))
+    (let ((replay (cffi:foreign-slot-pointer effect '(:struct effect) 'replay)))
       (setf (effect-id effect) 65535)
       (setf (effect-direction effect) :up)
       (setf (ff-replay-length replay) 100)
-      (block NIL
-        (setf (effect-type effect) :constant)
-        (setf (ff-constant-level data) #x7FFF)
-        (when (<= 0 (ioctl fd :send-effect effect))
-          (return effect))
-
-        (setf (effect-type effect) :rumble)
-        (setf (ff-rumble-strong-magnitude data) #x7FFF)
-        (setf (ff-rumble-weak-magnitude data) #x7FFF)
-        (when (<= 0 (ioctl fd :send-effect effect))
-          (return effect))
-        
-        (setf (effect-type effect) :periodic)
-        (setf (ff-periodic-waveform data) :sine)
-        (setf (ff-periodic-period data) 1)
-        (setf (ff-periodic-magnitude data) #x7FFF)
-        (setf (ff-periodic-offset data) 0)
-        (setf (ff-periodic-phase data) 0)
-        (when (<= 0 (ioctl fd :send-effect effect))
-          (return effect))
-        
-        (cffi:foreign-free effect)
-        NIL))))
+      (cond ((or (init-effect fd effect :constant)
+                  (init-effect fd effect :rumble)
+                  (init-effect fd effect :periodic))
+             effect)
+            (T
+             (cffi:foreign-free effect)
+             NIL)))))
 
 (defclass device (gamepad:device)
   ((id :initarg :id :reader id)
    (fd :initarg :fd :reader fd)
    (dev :initarg :dev :reader dev)
    (effect :initarg :effect :reader effect)))
+
+(defmethod shared-initialize :after ((device device) slots &key effect-type)
+  (when (and effect-type (effect device))
+    (init-effect (fd device) (effect device) effect-type)))
 
 (defun make-device-from-path (path)
   (let ((fd (u-open (namestring path)

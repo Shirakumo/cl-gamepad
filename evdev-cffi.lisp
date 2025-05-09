@@ -95,7 +95,7 @@
   (:send-effect         #x40304580)
   (:remove-effect       #x40044581)
   (:effect-count        #x80044584)
-  (:effect-capabilities #x80024535))
+  (:effect-capabilities #x80104535))
 
 (cffi:defbitfield (poll-event :short)
   (:in  #x001)
@@ -281,7 +281,7 @@
   (device :pointer)
   (code :uint))
 
-(cffi:defcfun (has-event-pending "libevdev_has_event_pending") errno
+(cffi:defcfun (has-event-pending "libevdev_has_event_pending") :int
   (device :pointer))
 
 (cffi:defcfun (next-event "libevdev_next_event") read-status
@@ -289,7 +289,7 @@
   (flag read-flag)
   (event :pointer))
 
-(cffi:defcfun (ioctl "ioctl") errno
+(cffi:defcfun (ioctl "ioctl") :int
   (fd fd)
   (request ioctl)
   (data :pointer))

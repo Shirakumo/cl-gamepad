@@ -35,4 +35,11 @@
   :defsystem-depends-on (:trivial-features :deploy)
   :depends-on ((:feature (:or :linux :windows :darwin :nx) :cffi)
                (:feature :windows :com-on)
-               :documentation-utils))
+               :documentation-utils)
+  :in-order-to ((asdf:test-op (asdf:test-op :cl-gamepad/tests))))
+
+(defsystem cl-gamepad/tests
+  :serial t
+  :components ((:file "package-test"))
+  :depends-on (:parachute)
+  :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :org.shirakumo.fraf.gamepad.test)))

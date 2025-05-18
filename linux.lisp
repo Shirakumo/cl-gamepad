@@ -114,6 +114,31 @@
              (cffi:foreign-free effect)
              NIL)))))
 
+(defun parse-effect-capabilities (ffbits)
+  (flet ((ffbit-is-set (bit-index)
+           ;; This operates in terms of :UNSIGNED-LONG rather than
+           ;; :UINT8 in order to support big-endian systems.
+           (let* ((long-size (cffi:foreign-type-size :unsigned-long))
+                  (long-mask (1- (ash long-size 3)))
+                  (long-index (ash bit-index
+                                   (- -2 (integer-length long-size)))))
+             (logbitp (logand bit-index long-mask)
+                      (cffi:mem-aref ffbits :unsigned-long long-index)))))
+    `(,@(loop for bit-name in '(:rumble :periodic :constant :spring
+                                :friction :damper :inertia :ramp)
+              when (ffbit-is-set (cffi:foreign-enum-value 'effect-type
+                                                          bit-name))
+              collect bit-name)
+      ,@(loop for bit-name in '(:square :triangle :sine :saw-up
+                                :saw-down :custom)
+              when (ffbit-is-set (cffi:foreign-enum-value 'periodic-effect-type
+                                                          bit-name))
+              collect bit-name)
+      ,@(loop for bit-name in '(:gain :autocenter)
+              when (ffbit-is-set (cffi:foreign-enum-value 'device-property
+                                                          bit-name))
+              collect bit-name))))
+
 (defclass device (gamepad:device)
   ((id :initarg :id :reader id)
    (fd :initarg :fd :reader fd)

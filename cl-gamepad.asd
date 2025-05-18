@@ -40,6 +40,7 @@
 
 (defsystem cl-gamepad/tests
   :serial t
-  :components ((:file "package-test"))
+  :components ((:file "package-test")
+               (:file "linux-test" :if-feature :linux))
   :depends-on (:parachute)
   :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :org.shirakumo.fraf.gamepad.test)))

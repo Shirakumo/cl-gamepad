@@ -85,6 +85,10 @@
   (:saw-down #x5C)
   (:custom   #x5D))
 
+(cffi:defcenum (device-property :uint16)
+  (:gain       #x60)
+  (:autocenter #x61))
+
 (cffi:defcenum (effect-direction :uint16)
   (:down  #x0000)
   (:left  #x4000)

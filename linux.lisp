@@ -139,11 +139,17 @@
                                                           bit-name))
               collect bit-name))))
 
+(defun get-effect-capabilities (fd)
+  (cffi:with-foreign-objects ((ffbits :uint8 16))
+    (when (= 16 (ioctl fd :effect-capabilities ffbits))
+     (parse-effect-capabilities ffbits))))
+
 (defclass device (gamepad:device)
   ((id :initarg :id :reader id)
    (fd :initarg :fd :reader fd)
    (dev :initarg :dev :reader dev)
-   (effect :initarg :effect :reader effect)))
+   (effect :initarg :effect :reader effect)
+   (effect-capabilities :initarg :effect-capabilities :reader effect-capabilities)))
 
 (defmethod shared-initialize :after ((device device) slots &key effect-type)
   (when (and effect-type (effect device))
@@ -169,6 +175,7 @@
                                    :version (get-id-version dev)
                                    :driver :evdev
                                    :effect (probe-device-effect fd)
+                                   :effect-capabilities (get-effect-capabilities fd)
                                    :button-map (device-button-map dev)
                                    :axis-map axis-map
                                    :orientation-map orientation-map)))))))

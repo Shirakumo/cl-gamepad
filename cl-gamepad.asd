@@ -36,11 +36,11 @@
   :depends-on ((:feature (:or :linux :windows :darwin :nx) :cffi)
                (:feature :windows :com-on)
                :documentation-utils)
-  :in-order-to ((asdf:test-op (asdf:test-op :cl-gamepad/tests))))
+  :in-order-to ((asdf:test-op (asdf:test-op :cl-gamepad/test))))
 
-(defsystem cl-gamepad/tests
-  :serial t
-  :components ((:file "package-test")
-               (:file "linux-test" :if-feature :linux))
+(defsystem cl-gamepad/test
+  :serial T
+  :components ((:file "test")
+               (:file "test-linux" :if-feature :linux))
   :depends-on (:parachute)
   :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :org.shirakumo.fraf.gamepad.test)))

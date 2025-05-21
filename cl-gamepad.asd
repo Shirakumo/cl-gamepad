@@ -38,9 +38,9 @@
                :documentation-utils)
   :in-order-to ((asdf:test-op (asdf:test-op :cl-gamepad/tests))))
 
-(defsystem cl-gamepad/tests
-  :serial t
-  :components ((:file "package-test")
-               (:file "linux-test" :if-feature :linux))
+(defsystem cl-gamepad/test
+  :serial T
+  :components ((:file "test")
+               (:file "test-linux" :if-feature :linux))
   :depends-on (:parachute)
   :perform (asdf:test-op (op c) (uiop:symbol-call :parachute :test :org.shirakumo.fraf.gamepad.test)))

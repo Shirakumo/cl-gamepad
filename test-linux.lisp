@@ -14,13 +14,10 @@
   (cffi:with-foreign-objects ((ffbits :uint8 16))
     (loop for index from 0 to 7
           do (setf (cffi:mem-aref ffbits :uint8 index) 0))
-    (loop with long-mask = #+little-endian 0
-                           #+big-endian (1- (cffi:foreign-type-size
-                                             :unsigned-long))
+    (loop with long-mask = #+little-endian 0 #+big-endian (1- (cffi:foreign-type-size :unsigned-long))
           for index from 8
           for octet in input-octets
-          do (setf (cffi:mem-aref ffbits :uint8 (logxor index long-mask))
-                   octet))
+          do (setf (cffi:mem-aref ffbits :uint8 (logxor index long-mask)) octet))
     (org.shirakumo.fraf.gamepad.impl::parse-effect-capabilities ffbits)))
 
 (defun same-set (a b)

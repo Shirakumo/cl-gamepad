@@ -4,9 +4,9 @@
   :author "Yukari Hafner <shinmera@tymoon.eu>"
   :maintainer "Yukari Hafner <shinmera@tymoon.eu>"
   :description "Portability library for gamepad and joystick access."
-  :homepage "https://Shirakumo.github.io/cl-gamepad/"
-  :bug-tracker "https://github.com/Shirakumo/cl-gamepad/issues"
-  :source-control (:git "https://github.com/Shirakumo/cl-gamepad.git")
+  :homepage "https://shirakumo.org/docs/cl-gamepad/"
+  :bug-tracker "https://shirakumo.org/project/cl-gamepad/issues"
+  :source-control (:git "https://shirakumo.org/project/cl-gamepad.git")
   :build-operation "deploy-console-op"
   :build-pathname
   #+windows "gamepad-configurator.exe"

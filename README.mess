@@ -40,7 +40,7 @@ In order to make portable interaction with gamepads possible, their features (bu
 
 To this end cl-gamepad includes a database of mappings in ``default-device-mappings.lisp``. These mappings are automatically loaded for any matching controller and should thus apply immediately, making the listed controllers compatible. If your controller is not listed and auto-detection fails, please use ``configure-device`` from a terminal. It will guide you through the process of mapping the device features to the proper labels, and will then save the mapping to the aforementioned file to make it persistent.
 
-If you do configure a new device, please "submit the updated mapping file"(https://github.com/Shirakumo/cl-gamepad/compare) to the upstream repository so that it can be included in the main distribution.
+If you do configure a new device, please "submit the updated mapping file"(https://shirakumo.org/project/cl-gamepad/compare) to the upstream repository so that it can be included in the main distribution.
 
 ## Supported Platforms
 Currently the following platforms are supported:
